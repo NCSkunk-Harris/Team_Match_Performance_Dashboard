@@ -180,6 +180,11 @@
     align-items: center;
     gap: 8px;
     overflow-x: auto;
+    /* Lock the section pills in view just below the sticky 64px header */
+    position: sticky;
+    top: 64px;
+    z-index: 90;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
   }
 
   .subtab-nav-spacer { flex: 1; min-width: 16px; }
@@ -566,6 +571,18 @@
     border-right: 1px solid var(--border-soft);
     background: var(--bg-surface);
   }
+  .obv-h2h-table td.h2h-metric .h2h-arrow {
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    vertical-align: middle;
+  }
+  .obv-h2h-table td.h2h-metric .h2h-arrow.ncc { color: var(--courage-red); }
+  .obv-h2h-table td.h2h-metric .h2h-arrow.opp { color: var(--courage-navy); }
+  .obv-h2h-table td.h2h-metric .h2h-arrow.tie { color: var(--text-muted); font-weight: 600; }
+  .obv-h2h-table td.h2h-metric .h2h-metric-label { vertical-align: middle; }
   .obv-h2h-table td.h2h-val {
     font-family: 'Barlow Condensed', sans-serif;
     font-weight: 700;
@@ -2126,7 +2143,7 @@
     <div class="table-section">
       <div class="section-header" style="margin-top:8px;">
         <span class="section-tag">Box Domination</span>
-        <span class="section-title">Finishing &amp; GK Influence</span>
+        <span class="section-title">Finishing</span>
       </div>
       <div class="table-section-title">Shot quality &amp; opposition goalkeeper</div>
       <table class="metrics-table">
@@ -2197,7 +2214,7 @@
     <div class="table-section">
       <div class="section-header" style="margin-top:8px;">
         <span class="section-tag">Box Resilience</span>
-        <span class="section-title">Nullifying &amp; GK Performance</span>
+        <span class="section-title">Nullifying</span>
       </div>
       <div class="table-section-title">Shot suppression &amp; NCC goalkeeper</div>
       <table class="metrics-table">
@@ -2345,7 +2362,7 @@
           <span class="leg-opp">Opposition</span>
         </div>
         <div class="obv-radar-legend" style="margin-top:4px;font-size:10px;font-style:italic;">
-          <span style="display:inline;">Shaded gap shows the per-axis differential — wider shade = bigger lead. Numbers beside each axis show NCC − Opp.</span>
+          <span style="display:inline;">Each axis is scaled across both sides — a polygon reaching further out means more on-ball value added on that metric.</span>
         </div>
       </div>
     </div>
@@ -2356,7 +2373,6 @@
         <span class="section-tag">On-Ball Value</span>
         <span class="section-title">NCC vs Opposition — Head-to-Head</span>
       </div>
-      <div class="table-section-title">How much value each side's actions added per match (StatsBomb OBV model). Higher is better for the team in question.</div>
       <table class="obv-h2h-table">
         <colgroup>
           <col style="width:14%"><col style="width:22%">
@@ -2374,7 +2390,6 @@
         </thead>
         <tbody id="obv-h2h-rows"></tbody>
       </table>
-      <p class="data-source-note">Source: StatsBomb — OBV (On-Ball Value) measures the probability change in scoring/conceding caused by each action. Values can be negative. Grades are scored independently per side (NCC: higher = better; Opp: lower = better from NCC's perspective).</p>
     </div>
   </div>
 
@@ -3041,78 +3056,35 @@ function renderOBVRadars() {
 
   let html = '';
 
-  // ── DIFFERENTIAL WEDGES ─────────────────────────────────────────────────
-  // For each axis, draw a wedge spanning half-way to each neighbouring axis.
-  // The wedge is filled with the leader's colour, and its radial extent
-  // matches the LEADER's value (red for NCC ahead, navy for Opp ahead).
-  // The trailing team's overlapping share is then over-painted in their
-  // colour up to their own value — what remains visible is the gap.
-  function wedgePath(i, r01) {
-    const aMid   = angle(i);
-    const aPrev  = angle((i - 1 + n) % n);
-    const aNext  = angle((i + 1) % n);
-    // Half-way angles to the neighbours
-    let aLeft  = (aPrev + aMid) / 2;
-    let aRight = (aMid + aNext) / 2;
-    // Handle wrap so the wedge stays a thin slice around aMid
-    function normalise(a, ref) {
-      while (a - ref >  Math.PI) a -= 2 * Math.PI;
-      while (a - ref < -Math.PI) a += 2 * Math.PI;
-      return a;
-    }
-    aLeft  = normalise(aLeft,  aMid);
-    aRight = normalise(aRight, aMid);
-    const r = R * r01;
-    const pL = { x: cx + r * Math.cos(aLeft),  y: cy + r * Math.sin(aLeft)  };
-    const pM = { x: cx + r * Math.cos(aMid),   y: cy + r * Math.sin(aMid)   };
-    const pR = { x: cx + r * Math.cos(aRight), y: cy + r * Math.sin(aRight) };
-    // Two straight-line triangles meeting at the centre — good enough at
-    // this size and avoids the headache of SVG arc flags.
-    return `M${cx},${cy} L${pL.x.toFixed(2)},${pL.y.toFixed(2)} L${pM.x.toFixed(2)},${pM.y.toFixed(2)} Z ` +
-           `M${cx},${cy} L${pM.x.toFixed(2)},${pM.y.toFixed(2)} L${pR.x.toFixed(2)},${pR.y.toFixed(2)} Z`;
-  }
+  // ── CLEAN TWO-POLYGON RADAR ─────────────────────────────────────────────
+  // Grid rings at 25/50/75/100% with a subtle dashed style, plain spokes,
+  // then two translucent filled polygons (NCC red, Opp navy) on top. No
+  // differential wedges or per-axis number chips — just a clean comparison.
 
-  // Differential per axis (scaled). Positive = NCC ahead, negative = Opp ahead.
-  const diffs01 = nccVals01.map((v, i) => v - oppVals01[i]);
-  const maxAbsDiff = Math.max(0.0001, ...diffs01.map(Math.abs));
-
-  for (let i = 0; i < n; i++) {
-    const leader   = diffs01[i] >= 0 ? nccVals01[i] : oppVals01[i];
-    const trailer  = diffs01[i] >= 0 ? oppVals01[i] : nccVals01[i];
-    const leaderColor = diffs01[i] >= 0 ? '#C8102E' : '#13264B';
-    // Opacity ramps from 0.10 (tiny gap) to 0.55 (largest gap on this chart)
-    const opacity = 0.10 + 0.45 * (Math.abs(diffs01[i]) / maxAbsDiff);
-    // Leader-coloured wedge out to the leader's value
-    html += `<path d="${wedgePath(i, leader)}" fill="${leaderColor}" fill-opacity="${opacity.toFixed(3)}" stroke="none"/>`;
-    // Carve out the trailing team's portion (paint over with white) — this
-    // leaves only the "gap" visible as the leader's colour
-    html += `<path d="${wedgePath(i, trailer)}" fill="#F5F2EB" fill-opacity="0.95" stroke="none"/>`;
-  }
-
-  // Grid rings at 25%, 50%, 75%, 100% (drawn over wedges so structure stays readable)
+  // Grid rings
   [0.25, 0.5, 0.75, 1.0].forEach(t => {
     const pts = nccRows.map((_, i) => {
       const p = polar(R * t, i);
       return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
     }).join(' ');
-    html += `<polygon points="${pts}" fill="none" stroke="#C8C4BB" stroke-width="${t === 1.0 ? 1.2 : 0.6}" stroke-dasharray="${t === 1.0 ? 'none' : '3,3'}"/>`;
+    html += `<polygon points="${pts}" fill="none" stroke="#D8D4CB" stroke-width="${t === 1.0 ? 1.1 : 0.7}" stroke-dasharray="${t === 1.0 ? 'none' : '2,3'}"/>`;
   });
 
   // Spokes
   nccRows.forEach((_, i) => {
     const outer = polar(R, i);
-    html += `<line x1="${cx}" y1="${cy}" x2="${outer.x.toFixed(2)}" y2="${outer.y.toFixed(2)}" stroke="#C8C4BB" stroke-width="0.8"/>`;
+    html += `<line x1="${cx}" y1="${cy}" x2="${outer.x.toFixed(2)}" y2="${outer.y.toFixed(2)}" stroke="#D8D4CB" stroke-width="0.7"/>`;
   });
 
-  // Opposition polygon outline (no fill — fill is now the wedges)
-  html += `<polygon points="${polyPts(oppVals01)}" fill="none" stroke="#13264B" stroke-width="2" stroke-opacity="0.9" stroke-linejoin="round"/>`;
+  // Opposition filled polygon (navy)
+  html += `<polygon points="${polyPts(oppVals01)}" fill="#13264B" fill-opacity="0.12" stroke="#13264B" stroke-width="2" stroke-opacity="0.85" stroke-linejoin="round"/>`;
   oppVals01.forEach((v, i) => {
     const p = polar(R * v, i);
     html += `<circle cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="3.2" fill="#13264B" stroke="white" stroke-width="1.2"/>`;
   });
 
-  // NCC polygon outline
-  html += `<polygon points="${polyPts(nccVals01)}" fill="none" stroke="#C8102E" stroke-width="2.2" stroke-linejoin="round"/>`;
+  // NCC filled polygon (red) — drawn last so it reads as the focus team
+  html += `<polygon points="${polyPts(nccVals01)}" fill="#C8102E" fill-opacity="0.16" stroke="#C8102E" stroke-width="2.4" stroke-linejoin="round"/>`;
   nccVals01.forEach((v, i) => {
     const p = polar(R * v, i);
     html += `<circle cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="3.5" fill="#C8102E" stroke="white" stroke-width="1.2"/>`;
@@ -3125,14 +3097,6 @@ function renderOBVRadars() {
     .replace(' OBV', '')
   );
 
-  // Raw-value differential per axis (in original OBV units, not scaled)
-  function rawDiff(i) {
-    if (isSeason) return ranges[i].nccAvg - ranges[i].oppAvg;
-    const nv = nccRows[i].vals[idx], ov = oppRows[i].vals[idx];
-    if (nv === null || nv === undefined || ov === null || ov === undefined) return null;
-    return nv - ov;
-  }
-
   const LABEL_PAD = 16;
   labels.forEach((lbl, i) => {
     const a = angle(i);
@@ -3144,20 +3108,8 @@ function renderOBVRadars() {
     const ly = cy + (R + LABEL_PAD) * ay;
     html += `<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}"
       text-anchor="${anchor}" dominant-baseline="middle"
-      font-size="10" font-family="Barlow Condensed, sans-serif"
+      font-size="10.5" font-family="Barlow Condensed, sans-serif"
       font-weight="600" fill="#4A4A45">${lbl}</text>`;
-
-    // Differential chip just below the axis label
-    const d = rawDiff(i);
-    if (d !== null) {
-      const sign = d >= 0 ? '+' : '−';
-      const fill = d >= 0 ? '#C8102E' : '#13264B';
-      const dy = ly + 12;
-      html += `<text x="${lx.toFixed(2)}" y="${dy.toFixed(2)}"
-        text-anchor="${anchor}" dominant-baseline="middle"
-        font-size="9" font-family="Barlow Condensed, sans-serif"
-        font-weight="700" fill="${fill}">${sign}${Math.abs(d).toFixed(3)}</text>`;
-    }
   });
 
   // Centre label
@@ -3206,17 +3158,34 @@ function renderOBVH2HTable() {
     return { valCell, gradeCell };
   }
 
+  // Decide who won the battle on a metric and build a directional arrow.
+  // NCC wins when it added more on-ball value than the opposition did;
+  // higher raw OBV is better for the side in question.
+  function winnerArrow(ncc, opp) {
+    if (isSeason) return '';
+    const nv = ncc.vals[idx], ov = opp.vals[idx];
+    if (nv === null || nv === undefined || ov === null || ov === undefined) return '';
+    if (nv === ov) {
+      return `<span class="h2h-arrow tie" title="Even">=</span>`;
+    }
+    const nccWon = nv > ov;
+    const arrow = nccWon ? '◀' : '▶';
+    const cls   = nccWon ? 'ncc' : 'opp';
+    const who   = nccWon ? 'NCC won this battle' : 'Opposition won this battle';
+    return `<span class="h2h-arrow ${cls}" title="${who}">${arrow}</span>`;
+  }
+
   tbody.innerHTML = nccRows.map((ncc, i) => {
     const opp = oppRows[i];
     const nccC = sideCells(ncc, 'ncc');
     const oppC = sideCells(opp, 'opp');
 
     // Column order (left → right):
-    //   NCC Grade | NCC Value | Metric | Opp Value | Opp Grade
+    //   NCC Grade | NCC Value | Metric (+winner arrow) | Opp Value | Opp Grade
     return `<tr>
       ${nccC.gradeCell}
       ${nccC.valCell}
-      <td class="h2h-metric">${shortLabel(ncc.label)}</td>
+      <td class="h2h-metric">${winnerArrow(ncc, opp)}<span class="h2h-metric-label">${shortLabel(ncc.label)}</span></td>
       ${oppC.valCell}
       ${oppC.gradeCell}
     </tr>`;
@@ -4142,7 +4111,7 @@ function renderInsights() {
           <div class="ctx-card-title">Box Domination</div>
         </div>
         <div class="ctx-card-body">
-          <p class="ctx-body-text">Box Domination measures NCC's ability to penetrate the opposition box and create high-quality chances. The <strong>Penetration</strong> table tracks entries (touches, passes into and inside the box, crosses), while the <strong>Finishing & GK Influence</strong> table assesses the quality of what NCC did once inside.</p>
+          <p class="ctx-body-text">Box Domination measures NCC's ability to penetrate the opposition box and create high-quality chances. The <strong>Penetration</strong> table tracks entries (touches, passes into and inside the box, crosses), while the <strong>Finishing</strong> table assesses the quality of what NCC did once inside.</p>
           <p class="ctx-body-text"><strong>Post-Shot xG</strong> (Non Penalty PSxG Faced) measures the quality of shot placement — going beyond pre-shot position to account for where in the goal the shot was aimed. Higher PSxG indicates NCC placed shots in more dangerous areas of the frame.</p>
           <p class="ctx-body-text">The <strong>Opposition GK metrics</strong> (GSAA and NP Save %) measure how well the opposing goalkeeper performed. A high GSAA means the opp GK saved more than statistically expected — this is negative for NCC and graded accordingly (lower is better from NCC's perspective).</p>
           <p class="ctx-body-text"><strong>Source:</strong> Match Stats spreadsheet for most metrics. Post-Shot xG (PSxG), GSAA, and NP Save % are sourced from StatsBomb match report PDFs (GK shot stopping table). Tackles Won from PDF match stats page (spreadsheet Tackles column = 0 for all matches).</p>

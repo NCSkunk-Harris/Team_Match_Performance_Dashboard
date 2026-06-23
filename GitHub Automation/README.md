@@ -14,11 +14,16 @@ Team Performance Dashboard/
 ├── build_dashboard.py                       # Build script — run weekly
 ├── template_dashboard.html                  # HTML template (do NOT edit)
 ├── Courage_Team_Performance_Dashboard.html  # Generated output (overwritten each run)
-├── requirements.txt                         # Python dependencies (openpyxl)
+├── .gitignore                               # (must stay at root)
+├── .github/workflows/build-and-deploy.yml   # Auto-rebuild + deploy (must stay at root)
 ├── Data Source/
 │   ├── NWSL Match Data - Team Level.xlsx     # Match data — update weekly (sheet: "NCC Data")
 │   └── Data Metric Glossarys/                # Reference glossaries
-└── .github/workflows/build-and-deploy.yml   # Auto-rebuild + deploy on push
+└── GitHub Automation/                       # Automation docs + config
+    ├── README.md                            # This file
+    ├── CONTRIBUTING.md
+    ├── SETUP_GITHUB.md                      # One-time push/Pages setup
+    └── requirements.txt                     # Python dependencies (openpyxl)
 ```
 
 > Note: `Courage_Team_Performance_Dashboard.html` is regenerated automatically
@@ -40,7 +45,7 @@ Team Performance Dashboard/
 ### Running it locally (optional)
 
 ```bash
-pip install -r requirements.txt
+pip install -r "GitHub Automation/requirements.txt"
 python build_dashboard.py
 ```
 
