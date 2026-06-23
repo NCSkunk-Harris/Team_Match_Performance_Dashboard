@@ -1,0 +1,17 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Excel lock/temp files
+~$*.xlsx
+*.tmp
+
+# Editor
+.vscode/
+.idea/

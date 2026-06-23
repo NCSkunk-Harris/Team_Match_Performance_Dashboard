@@ -1,0 +1,64 @@
+name: Build & Deploy Dashboard
+
+# Rebuilds the dashboard whenever data or the build script changes,
+# then publishes the HTML to GitHub Pages.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:        # lets you trigger a rebuild manually from the Actions tab
+
+permissions:
+  contents: write           # allows committing the regenerated HTML back
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build dashboard
+        run: python build_dashboard.py
+
+      - name: Commit regenerated HTML (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Courage_Team_Performance_Dashboard.html
+          git diff --staged --quiet || git commit -m "Auto-rebuild dashboard [skip ci]"
+          git push
+
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p _site
+          cp Courage_Team_Performance_Dashboard.html _site/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,4652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NC Courage 2026 — Team Performance Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --courage-red: #C8102E;
+    --courage-navy: #13264B;
+    --courage-gold: #D4AF37;
+    --bg-dark: #F2F0EB;
+    --bg-card: #FFFFFF;
+    --bg-surface: #EAE8E3;
+    --bg-elevated: #E2DFD9;
+    --text-primary: #1A1A18;
+    --text-secondary: #4A4A45;
+    --text-muted: #7A7A74;
+    --border: rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.15);
+    --grade-excellent: #2ECC71;
+    --grade-good: #7FBA00;
+    --grade-typical: #D4AF37;
+    --grade-poor: #E67E22;
+    --grade-abysmal: #C0392B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--courage-navy);
+    border-bottom: 3px solid var(--courage-red);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .header-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: white;
+  }
+
+  .header-subtitle {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .header-meta {
+    text-align: right;
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* MATCH SELECTOR */
+  .match-bar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 52px;
+    overflow: visible;
+  }
+
+  .match-bar-pills-scroll {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    flex: 1;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 4px 0;
+  }
+  .match-bar-pills-scroll::-webkit-scrollbar { display: none; }
+
+  .match-bar-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+    margin-right: 8px;
+  }
+
+  .match-pill {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    padding: 6px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    line-height: 1.2;
+  }
+
+  .match-pill span.opp { font-size: 10px; color: var(--text-muted); font-weight: 400; }
+  .match-pill span.loc { font-size: 9px; }
+  .match-pill span.loc.home { color: var(--courage-red); }
+  .match-pill span.loc.away { color: #6699FF; }
+
+  .match-pill:hover { border-color: var(--courage-red); color: var(--text-primary); }
+  .match-pill.active {
+    background: var(--courage-red);
+    border-color: var(--courage-red);
+    color: white;
+  }
+  .match-pill.active span.opp { color: rgba(255,255,255,0.65); }
+  .match-pill.active span.loc { color: rgba(255,255,255,0.65); }
+
+  .match-pill-season {
+    margin-left: auto;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--courage-gold);
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 3px;
+    padding: 6px 14px;
+    white-space: nowrap;
+  }
+  .match-pill-season:hover, .match-pill-season.active {
+    background: var(--courage-gold);
+    color: #1A1A18;
+  }
+
+  /* SUB-TAB NAV */
+  .subtab-nav {
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .subtab-nav-spacer { flex: 1; min-width: 16px; }
+  .subtab {
+    padding: 8px 18px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1.5px solid var(--border-strong);
+    background: var(--bg-card);
+    white-space: nowrap;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .subtab:hover {
+    color: var(--courage-navy);
+    border-color: var(--courage-navy);
+    background: var(--bg-elevated);
+  }
+
+  .subtab.active {
+    color: white !important;
+    background: var(--courage-navy);
+    border-color: var(--courage-navy);
+  }
+
+  /* Disabled / coming-soon tabs and pills */
+  .subtab.disabled,
+  .match-pill-season.disabled {
+    color: var(--text-muted) !important;
+    background: var(--bg-elevated);
+    border-color: var(--border-subtle, rgba(0,0,0,0.12)) !important;
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+    font-weight: 500 !important;
+  }
+  .subtab.disabled:hover,
+  .match-pill-season.disabled:hover {
+    color: var(--text-muted) !important;
+    background: var(--bg-elevated);
+    border-color: var(--border-subtle, rgba(0,0,0,0.12)) !important;
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    padding: 28px 32px;
+    max-width: 1400px;
+  }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .section-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--courage-red);
+    background: rgba(200,16,46,0.1);
+    border: 1px solid rgba(200,16,46,0.25);
+    border-radius: 2px;
+    padding: 3px 8px;
+  }
+
+  .section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+  }
+
+  /* TABLE SECTION */
+  .table-section {
+    margin-bottom: 32px;
+  }
+
+  .table-section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    padding-left: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .table-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* METRICS TABLE */
+  .metrics-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    table-layout: auto;
+    width: 100%;
+  }
+
+  .metrics-table thead tr {
+    background: var(--courage-navy);
+    border-bottom: 2px solid var(--courage-red);
+  }
+
+  .metrics-table th {
+    padding: 10px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.85);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .metrics-table th.center { text-align: left; }
+  .metrics-table th.right  { text-align: left; }
+
+  .metrics-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  .metrics-table tbody tr:last-child { border-bottom: none; }
+  .metrics-table tbody tr:hover { background: var(--bg-surface); }
+
+  .metrics-table td {
+    padding: 11px 14px;
+    font-size: 13px;
+    color: var(--text-primary);
+    vertical-align: middle;
+  }
+
+  .metrics-table td.metric-name {
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 400;
+  }
+
+  .metrics-table td.metric-name .context-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6699FF;
+    background: rgba(102,153,255,0.1);
+    border: 1px solid rgba(102,153,255,0.2);
+    border-radius: 2px;
+    padding: 1px 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .metrics-table td.metric-name .context-badge.neg {
+    color: var(--courage-red);
+    background: rgba(200,16,46,0.08);
+    border-color: rgba(200,16,46,0.2);
+  }
+
+  .metrics-table td.val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: left;
+    color: var(--text-primary);
+    min-width: 70px;
+  }
+
+  .metrics-table td.val.empty {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 400;
+    font-family: 'Barlow', sans-serif;
+    font-style: italic;
+  }
+
+  .metrics-table td.stat { text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; min-width: 60px; }
+  .metrics-table td.stat.best { color: var(--grade-good); }
+  .metrics-table td.stat.worst { color: var(--grade-poor); }
+  .metrics-table td.stat.avg { color: var(--text-secondary); }
+
+  /* SCALE BAR */
+  .scale-bar-wrap {
+    padding: 0 4px;
+  }
+  .scale-bar-track {
+    position: relative;
+    height: 6px;
+    background: var(--bg-elevated);
+    border-radius: 3px;
+    overflow: visible;
+  }
+  .scale-bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    border-radius: 3px;
+    opacity: 0.55;
+  }
+  .scale-bar-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    z-index: 2;
+  }
+  .scale-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+
+
+  .grade {
+    display: inline-block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 2px;
+  }
+
+  .grade.excellent { background: rgba(46,204,113,0.15); color: var(--grade-excellent); border: 1px solid rgba(46,204,113,0.3); }
+  .grade.good { background: rgba(127,186,0,0.12); color: var(--grade-good); border: 1px solid rgba(127,186,0,0.25); }
+  .grade.typical { background: rgba(212,175,55,0.12); color: var(--grade-typical); border: 1px solid rgba(212,175,55,0.25); }
+  .grade.poor { background: rgba(230,126,34,0.12); color: var(--grade-poor); border: 1px solid rgba(230,126,34,0.25); }
+  .grade.abysmal { background: rgba(192,57,43,0.12); color: var(--grade-abysmal); border: 1px solid rgba(192,57,43,0.25); }
+  .grade.pending { background: rgba(0,0,0,0.05); color: var(--text-muted); border: 1px solid var(--border-strong); font-style: italic; }
+
+  /* GRADE SCALE LEGEND */
+  .grade-legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .grade-legend-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-right: 4px;
+  }
+
+  /* DATA SOURCE NOTICE */
+  .data-source-note {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 6px;
+    padding-left: 2px;
+  }
+
+  /* ── OBV RADAR CHARTS ───────────────────────────────────────────────────── */
+  .obv-radar-row {
+    display: flex;
+    gap: 16px;
+    padding: 20px 0 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .obv-radar-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 16px 20px 12px;
+    flex: 1 1 320px;
+    max-width: 440px;
+    min-width: 280px;
+  }
+  .obv-radar-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .obv-radar-legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .obv-radar-legend span { display: flex; align-items: center; gap: 5px; }
+  .obv-radar-legend span::before {
+    content: '';
+    display: inline-block;
+    width: 22px;
+    height: 3px;
+    border-radius: 2px;
+  }
+  .obv-radar-legend .leg-match::before  { background: var(--courage-red); }
+  .obv-radar-legend .leg-season::before { background: var(--courage-navy); opacity: 0.45; }
+  .obv-radar-legend .leg-ncc::before    { background: var(--courage-red); }
+  .obv-radar-legend .leg-opp::before    { background: var(--courage-navy); opacity: 0.7; }
+
+  /* ── COMBINED OBV HEAD-TO-HEAD TABLE ────────────────────────────────────── */
+  .obv-h2h-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    font-family: 'Inter', sans-serif;
+    table-layout: fixed;
+  }
+  .obv-h2h-table thead tr {
+    background: var(--bg-surface);
+    border-bottom: 2px solid var(--border-strong);
+  }
+  .obv-h2h-table th {
+    padding: 9px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+  .obv-h2h-table th.ncc-side { color: var(--courage-red); }
+  .obv-h2h-table th.opp-side { color: var(--courage-navy); }
+  .obv-h2h-table tbody tr {
+    border-bottom: 1px solid var(--border-soft);
+    transition: background 120ms;
+  }
+  .obv-h2h-table tbody tr:last-child { border-bottom: none; }
+  .obv-h2h-table tbody tr:hover { background: var(--bg-surface); }
+  .obv-h2h-table td {
+    padding: 10px 8px;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  .obv-h2h-table td.h2h-metric {
+    text-align: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+    border-left: 1px solid var(--border-soft);
+    border-right: 1px solid var(--border-soft);
+    background: var(--bg-surface);
+  }
+  .obv-h2h-table td.h2h-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text-primary);
+  }
+  .obv-h2h-table td.h2h-val.ncc { text-align: right; padding-right: 14px; }
+  .obv-h2h-table td.h2h-val.opp { text-align: left;  padding-left:  14px; }
+  .obv-h2h-table td.h2h-val.empty { color: var(--text-muted); font-weight: 400; font-size: 13px; }
+  .obv-h2h-table td.h2h-grade { text-align: center; }
+  .obv-h2h-table td.h2h-spark { padding: 6px 10px; }
+  .obv-h2h-table td.h2h-spark.ncc { text-align: right; }
+  .obv-h2h-table td.h2h-spark.opp { text-align: left; }
+
+  /* EMPTY SUBTAB */
+  .empty-state {
+    background: var(--bg-card);
+    border: 1px dashed var(--border-strong);
+    border-radius: 6px;
+    padding: 48px 32px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  .empty-state h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+
+  .empty-state p { font-size: 12px; line-height: 1.6; max-width: 380px; margin: 0 auto; }
+
+  /* SEASON SUMMARY BAR */
+  .season-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .season-stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .season-stat-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .season-stat-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+
+  .season-stat-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* TABS CONTAINER */
+  .subtab-content { display: none; }
+  .subtab-content.active { display: block; }
+
+  /* BYPASS SEGMENTS (Packing Momentum) */
+  .bypass-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    padding: 8px 4px 4px;
+  }
+  .bypass-cell {
+    background: var(--bg-surface);
+    border-radius: 6px;
+    padding: 10px 8px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .bypass-cell-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .bypass-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+  }
+  .bypass-bar-label {
+    width: 26px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+  }
+  .bypass-bar-track {
+    flex: 1;
+    height: 14px;
+    background: var(--bg-elevated);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bypass-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+  .bypass-bar-fill.ncc { background: var(--courage-navy); }
+  .bypass-bar-fill.opp { background: var(--courage-red); opacity: 0.8; }
+  .bypass-bar-value {
+    width: 36px;
+    text-align: right;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--text-primary);
+  }
+  .bypass-cell-diff {
+    margin-top: 6px;
+    text-align: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 6px;
+    border-radius: 3px;
+  }
+  .bypass-cell-diff.positive {
+    color: #1F7A3A;
+    background: rgba(46, 204, 113, 0.15);
+  }
+  .bypass-cell-diff.negative {
+    color: #A02029;
+    background: rgba(200, 16, 46, 0.12);
+  }
+  .bypass-cell-diff.neutral {
+    color: var(--text-muted);
+    background: var(--bg-elevated);
+  }
+  .bypass-cell-empty {
+    color: var(--text-muted);
+    font-size: 11px;
+    text-align: center;
+    padding: 12px 0;
+  }
+  @media (max-width: 900px) {
+    .bypass-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .bypass-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .main { padding: 20px 16px; }
+    .header { padding: 0 16px; }
+    .match-bar { padding: 0 16px; }
+    .subtab-nav { padding: 0 16px; }
+    .season-bar { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* SPARKLINE */
+  .sparkline { display: block; overflow: visible; }
+
+  /* PRINT BUTTON */
+  .print-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 4px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .print-btn:hover { color: var(--courage-navy); border-color: var(--courage-navy); }
+
+  /* PRINT VIEW — hidden on screen */
+  #print-view { display: none; }
+
+  /* SHARED PRINT STYLES */
+  .pv-page {
+    width: 100%;
+    background: white;
+    font-family: 'Barlow', Arial, sans-serif;
+    box-sizing: border-box;
+    font-size: 8pt;
+  }
+  .pv-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    border-bottom: 3px solid #C8102E;
+    padding-bottom: 5px; margin-bottom: 7px;
+  }
+  .pv-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15pt; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase; color: #13264B;
+    line-height: 1.1;
+  }
+  .pv-subtitle {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 7.5pt; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #7A7A74; margin-top: 2px;
+  }
+  .pv-meta { font-size: 7.5pt; color: #7A7A74; text-align: right; line-height: 1.5; }
+  .pv-meta strong { color: #13264B; font-size: 10.5pt; }
+
+  /* OVERVIEW BAR — page 1 */
+  .pv-overview { display: flex; gap: 5px; margin-bottom: 6px; }
+  .pv-ov-item { flex: 1; background: #13264B; border-radius: 3px; padding: 5px 7px; }
+  .pv-ov-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 6pt; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: rgba(255,255,255,0.55);
+  }
+  .pv-ov-grade {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10pt; font-weight: 700; margin-top: 1px;
+  }
+  .pv-ov-grade.excellent { color: #2ECC71; }
+  .pv-ov-grade.good      { color: #7FBA00; }
+  .pv-ov-grade.typical   { color: #D4AF37; }
+  .pv-ov-grade.poor      { color: #E67E22; }
+  .pv-ov-grade.abysmal   { color: #E74C3C; }
+
+  /* NARRATIVE — page 1 */
+  .pv-narrative {
+    background: #F2F0EB; border-left: 3px solid #C8102E;
+    padding: 4px 7px; font-size: 7pt; line-height: 1.55;
+    margin-bottom: 7px; color: #1A1A18;
+  }
+  .pv-narrative strong { color: #13264B; }
+
+  /* METRIC TABLES */
+  .pv-section { margin-bottom: 6px; }
+  .pv-section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 7pt; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    background: #13264B; color: white;
+    padding: 3px 6px; margin-bottom: 0;
+    border-radius: 3px 3px 0 0;
+  }
+  .pv-table { width: 100%; border-collapse: collapse; font-size: 7pt; }
+  .pv-table thead tr { background: #EDECEA; border-bottom: 1px solid #CCC9C4; }
+  .pv-table th {
+    padding: 2.5px 5px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 6pt; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: #7A7A74; text-align: left;
+  }
+  .pv-table td {
+    padding: 2px 5px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    color: #1A1A18;
+    line-height: 1.25;
+  }
+  .pv-table tr:last-child td { border-bottom: none; }
+  .pv-table tr:nth-child(even) td { background: #FAFAF8; }
+  .pv-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 8.5pt; font-weight: 600; color: #13264B;
+  }
+  .pv-grade {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 6pt; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 1px 4px; border-radius: 2px; white-space: nowrap;
+  }
+  .pv-grade.excellent { background: rgba(46,204,113,0.15);  color: #1E8449; }
+  .pv-grade.good      { background: rgba(127,186,0,0.12);   color: #4A7C00; }
+  .pv-grade.typical   { background: rgba(212,175,55,0.12);  color: #9A6F00; }
+  .pv-grade.poor      { background: rgba(230,126,34,0.12);  color: #C0520A; }
+  .pv-grade.abysmal   { background: rgba(192,57,43,0.12);   color: #A93226; }
+  .pv-grade.pending   { background: rgba(0,0,0,0.05); color: #7A7A74; font-style: italic; }
+  .pv-grade.na        { color: #AAAAAA; font-style: italic; }
+
+  /* PAGE BREAK */
+  .pv-page-break { page-break-before: always; break-before: page; }
+
+  /* LEGEND — page 3 */
+  .pv-legend {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 8px; padding-top: 6px;
+    border-top: 1px solid #D0CEC9;
+  }
+  .pv-legend-item { display: flex; align-items: center; gap: 4px; font-size: 6.5pt; color: #4A4A45; }
+  .pv-legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* FOOTER */
+  .pv-footer {
+    font-size: 6.5pt; color: #9A9A92;
+    text-align: center;
+    border-top: 1px solid #D0CEC9;
+    padding-top: 4px; margin-top: 6px;
+    overflow: hidden;
+  }
+  .pv-page-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 6.5pt; color: #9A9A92; float: right;
+  }
+
+  @media print {
+    @page {
+      size: letter portrait;
+      margin: 0.35in 0.65in 0.35in 0.65in;
+    }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body > *:not(#print-view) { display: none !important; }
+    #print-view { display: block !important; }
+    .pv-page {
+      padding: 0;
+      height: 10.3in;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .pv-page-break { page-break-before: always; break-before: page; margin-top: 0; }
+    .pv-section { page-break-inside: avoid; break-inside: avoid; }
+  }
+
+  /* ── INSIGHTS TAB ───────────────────────────────────────────────────────── */
+
+  #tab-insights { padding-bottom: 32px; }
+
+  .ins-zone-header {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .ins-zone-sub {
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: var(--text-muted);
+    margin-left: 8px;
+    font-size: 10px;
+  }
+
+  /* ── ZONE 1: Scorecards ── */
+  .ins-scorecards {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .ins-sc-card {
+    background: var(--bg-card);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    padding: 12px 14px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ins-sc-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .ins-sc-grade {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .ins-sc-grade.excellent { color: var(--grade-excellent); }
+  .ins-sc-grade.good      { color: var(--grade-good); }
+  .ins-sc-grade.typical   { color: var(--grade-typical); }
+  .ins-sc-grade.poor      { color: var(--grade-poor); }
+  .ins-sc-grade.abysmal   { color: var(--grade-abysmal); }
+
+  .ins-sc-dots {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+  .ins-sc-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .ins-sc-dot.excellent { background: var(--grade-excellent); }
+  .ins-sc-dot.good      { background: var(--grade-good); }
+  .ins-sc-dot.typical   { background: var(--grade-typical); }
+  .ins-sc-dot.poor      { background: var(--grade-poor); }
+  .ins-sc-dot.abysmal   { background: var(--grade-abysmal); }
+
+  .ins-sc-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bg-surface);
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .ins-sc-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  /* ── ZONE 2: Heatmap ── */
+  .ins-heatmap-wrap {
+    background: var(--bg-card);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .ins-heatmap {
+    min-width: 560px;
+  }
+  .ins-hm-row {
+    display: grid;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .ins-hm-row:last-child { border-bottom: none; }
+  .ins-hm-row.header-row {
+    background: var(--bg-surface);
+    border-bottom: 2px solid var(--border-strong);
+  }
+  .ins-hm-label {
+    padding: 7px 14px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ins-hm-row.header-row .ins-hm-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .ins-hm-section-tag {
+    padding: 7px 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .ins-hm-cell {
+    padding: 5px 4px;
+    text-align: center;
+  }
+  .ins-hm-cell-inner {
+    border-radius: 4px;
+    padding: 5px 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    min-width: 54px;
+  }
+  .ins-hm-cell-inner.excellent { background: var(--grade-excellent); }
+  .ins-hm-cell-inner.good      { background: var(--grade-good); color: #fff; }
+  .ins-hm-cell-inner.typical   { background: var(--grade-typical); color: #1A1A18; }
+  .ins-hm-cell-inner.poor      { background: var(--grade-poor); }
+  .ins-hm-cell-inner.abysmal   { background: var(--grade-abysmal); }
+  .ins-hm-cell-inner.na        { background: var(--bg-elevated); color: var(--text-muted); }
+  .ins-hm-val  { font-size: 12px; line-height: 1; }
+  .ins-hm-glabel { font-size: 8px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.85; line-height: 1; }
+  .ins-hm-col-head {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 7px 4px;
+  }
+  .ins-hm-col-head .hm-result {
+    font-size: 9px;
+    font-weight: 400;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 1px;
+  }
+  .ins-hm-section-divider {
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .ins-hm-section-divider .ins-hm-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--courage-red);
+    padding: 5px 14px;
+  }
+
+  /* ── ZONE 3: Callout Cards ── */
+  .ins-callouts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .ins-callout-card {
+    background: var(--bg-card);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    border-left-width: 3px;
+    padding: 11px 13px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .ins-callout-card.excellent { border-left-color: var(--grade-excellent); }
+  .ins-callout-card.good      { border-left-color: var(--grade-good); }
+  .ins-callout-card.typical   { border-left-color: var(--grade-typical); }
+  .ins-callout-card.poor      { border-left-color: var(--grade-poor); }
+  .ins-callout-card.abysmal   { border-left-color: var(--grade-abysmal); }
+
+  .ins-cc-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    line-height: 1.3;
+  }
+  .ins-cc-value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .ins-cc-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+  .ins-cc-avg {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .ins-cc-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .ins-cc-spark { flex-shrink: 0; }
+  .ins-cc-grade-pill {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    color: #fff;
+  }
+  .ins-cc-grade-pill.excellent { background: var(--grade-excellent); }
+  .ins-cc-grade-pill.good      { background: var(--grade-good); }
+  .ins-cc-grade-pill.typical   { background: var(--grade-typical); color: #1A1A18; }
+  .ins-cc-grade-pill.poor      { background: var(--grade-poor); }
+  .ins-cc-grade-pill.abysmal   { background: var(--grade-abysmal); }
+
+  .ins-season-msg {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 18px 0;
+  }
+
+  /* keep ib-grade used in print view */
+  .ib-grade {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1px 5px;
+    border-radius: 2px;
+    vertical-align: middle;
+    margin-left: 2px;
+  }
+
+  /* ── CONTEXT & LOGIC TAB ────────────────────────────────────────────────── */
+  .ctx-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 20px;
+  }
+
+  .ctx-grid.single { grid-template-columns: 1fr; }
+
+  .ctx-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .ctx-card-header {
+    background: var(--courage-navy);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ctx-card-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: white;
+  }
+
+  .ctx-card-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    background: var(--courage-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: white;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .ctx-card-body {
+    padding: 14px;
+  }
+
+  .ctx-body-text {
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+
+  .ctx-body-text:last-child { margin-bottom: 0; }
+
+  .ctx-body-text strong { color: var(--text-primary); font-weight: 500; }
+
+  /* Grade scale visual */
+  .ctx-grade-scale {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .ctx-grade-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+  }
+
+  .ctx-grade-bar-wrap {
+    flex: 1;
+    background: var(--bg-surface);
+    border-radius: 3px;
+    height: 8px;
+    overflow: hidden;
+  }
+
+  .ctx-grade-bar {
+    height: 100%;
+    border-radius: 3px;
+  }
+
+  .ctx-grade-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    width: 72px;
+    flex-shrink: 0;
+  }
+
+  .ctx-grade-range {
+    font-size: 10px;
+    color: var(--text-muted);
+    width: 80px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  /* Source table */
+  .ctx-source-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin-top: 8px;
+  }
+
+  .ctx-source-table th {
+    text-align: left;
+    padding: 5px 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-strong);
+  }
+
+  .ctx-source-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+    vertical-align: top;
+  }
+
+  .ctx-source-table tr:last-child td { border-bottom: none; }
+  .ctx-source-table tr:nth-child(even) td { background: var(--bg-surface); }
+
+  .ctx-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+
+  .ctx-section-divider {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .ctx-section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  @media (max-width: 900px) {
+    .ctx-grid { grid-template-columns: 1fr; }
+    .insight-summary-bar { flex-wrap: wrap; }
+    #insights-panel { padding: 12px 16px; }
+  }
+
+  /* ===== INSIGHTS VIEW ===== */
+  #insights-view {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 28px 32px 48px;
+  }
+  .ins-view-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 28px;
+    border-bottom: 2px solid var(--courage-navy);
+    padding-bottom: 14px;
+  }
+  .ins-view-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--courage-navy);
+    text-transform: uppercase;
+  }
+  .ins-view-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .ins-section {
+    margin-bottom: 36px;
+  }
+  .ins-section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ins-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .ins-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .ins-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    border-left: 4px solid var(--border);
+    position: relative;
+  }
+  .ins-card.strength  { border-left-color: var(--grade-excellent); }
+  .ins-card.good      { border-left-color: var(--grade-good); }
+  .ins-card.concern   { border-left-color: var(--grade-poor); }
+  .ins-card.alert     { border-left-color: var(--grade-poor); }
+  .ins-card.neutral   { border-left-color: var(--grade-typical); }
+  .ins-card.balance   { border-left-color: var(--courage-navy); }
+  .ins-card-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .ins-card.strength .ins-card-tag  { color: var(--grade-excellent); }
+  .ins-card.good .ins-card-tag      { color: var(--grade-good); }
+  .ins-card.concern .ins-card-tag   { color: var(--grade-poor); }
+  .ins-card.alert .ins-card-tag     { color: var(--grade-poor); }
+  .ins-card.neutral .ins-card-tag   { color: var(--grade-typical); }
+  .ins-card.balance .ins-card-tag   { color: var(--courage-navy); }
+  .ins-card-headline {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+  .ins-card-body {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .ins-card-data {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .ins-card-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .ins-card-stat-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+  .ins-card-stat-lbl {
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .ins-spark {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 28px;
+    margin-left: auto;
+  }
+  .ins-spark-bar {
+    width: 7px;
+    border-radius: 2px 2px 0 0;
+    min-height: 3px;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+  .ins-spark-bar.up   { background: var(--grade-good); }
+  .ins-spark-bar.down { background: var(--grade-poor); }
+  .ins-spark-bar.peak { background: var(--grade-excellent); }
+  .ins-spark-bar.cur  { background: var(--courage-navy); }
+  .ins-split-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .ins-split-table th {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    text-align: left;
+    padding: 4px 8px 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ins-split-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+    vertical-align: middle;
+  }
+  .ins-split-table tr:last-child td { border-bottom: none; }
+  .ins-split-table tr:hover td { background: var(--bg-surface); }
+  .ins-split-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 120px;
+  }
+  .ins-split-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--courage-navy);
+    opacity: 0.7;
+  }
+  .ins-split-bar.away { background: var(--courage-red); opacity: 0.65; }
+  .ins-split-diff {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .ins-split-diff.pos { color: var(--grade-good); background: rgba(57,168,69,0.1); }
+  .ins-split-diff.neg { color: var(--grade-poor); background: rgba(200,16,46,0.1); }
+  .ins-split-diff.neu { color: var(--text-secondary); }
+  @media (max-width: 900px) {
+    #insights-view { padding: 16px; }
+    .ins-cards { grid-template-columns: 1fr; }
+  }
+
+  /* ===== MATCH INSIGHTS SUBTAB ===== */
+  .mi-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--courage-navy);
+  }
+  .mi-result-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    padding: 4px 14px;
+    border-radius: 6px;
+    line-height: 1;
+  }
+  .mi-result-badge.win  { background: rgba(57,168,69,0.15); color: var(--grade-good); }
+  .mi-result-badge.loss { background: rgba(200,16,46,0.12); color: var(--grade-poor); }
+  .mi-result-badge.draw { background: rgba(204,154,0,0.12); color: var(--grade-typical); }
+  .mi-result-badge.unknown { background: var(--bg-surface); color: var(--text-secondary); }
+  .mi-header-meta { flex: 1; }
+  .mi-header-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.03em;
+  }
+  .mi-header-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .mi-xg-ncc { font-size: 20px; font-weight: 800; color: var(--courage-navy); font-family: 'Barlow Condensed', sans-serif; }
+  .mi-xg-opp { font-size: 20px; font-weight: 800; color: var(--courage-red); font-family: 'Barlow Condensed', sans-serif; }
+  .mi-xg-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .mi-section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin: 22px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mi-section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+  .mi-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+  }
+  .mi-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    border-left: 4px solid var(--border);
+  }
+  .mi-card.positive { border-left-color: var(--grade-excellent); }
+  .mi-card.good     { border-left-color: var(--grade-good); }
+  .mi-card.warning  { border-left-color: var(--grade-typical); }
+  .mi-card.negative { border-left-color: var(--grade-poor); }
+  .mi-card.neutral  { border-left-color: var(--courage-navy); }
+  .mi-card-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .mi-card.positive .mi-card-tag { color: var(--grade-excellent); }
+  .mi-card.good .mi-card-tag     { color: var(--grade-good); }
+  .mi-card.warning .mi-card-tag  { color: var(--grade-typical); }
+  .mi-card.negative .mi-card-tag { color: var(--grade-poor); }
+  .mi-card.neutral .mi-card-tag  { color: var(--courage-navy); }
+  .mi-card-headline {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.25;
+    margin-bottom: 5px;
+  }
+  .mi-card-body {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin-bottom: 10px;
+  }
+  .mi-card-body strong { color: var(--text-primary); }
+  .mi-stats-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .mi-stat { display: flex; flex-direction: column; gap: 1px; }
+  .mi-stat-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text-primary);
+  }
+  .mi-stat-val.ncc { color: var(--courage-navy); }
+  .mi-stat-val.opp { color: var(--courage-red); }
+  .mi-stat-val.good { color: var(--grade-good); }
+  .mi-stat-val.poor { color: var(--grade-poor); }
+  .mi-stat-lbl {
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .mi-vs-divider {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    color: var(--text-secondary);
+    align-self: center;
+    padding-bottom: 2px;
+  }
+  .mi-season-ctx {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+    font-style: italic;
+  }
+  .mi-no-match {
+    padding: 40px 0;
+    text-align: center;
+    color: var(--text-secondary);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+  }
+  @media (max-width: 900px) {
+    .mi-cards { grid-template-columns: 1fr; }
+  }
+
+  /* ===== PRINT: MATCH INSIGHTS PAGE ===== */
+  .pv-insights-header {
+    display: flex;
+    align-items: center;
+    gap: 8pt;
+    margin-bottom: 6pt;
+    padding-bottom: 5pt;
+    border-bottom: 1.5pt solid #13264B;
+  }
+  .pv-ins-score {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18pt;
+    font-weight: 800;
+    padding: 2pt 8pt;
+    border-radius: 3pt;
+    line-height: 1;
+  }
+  .pv-ins-score.win  { background: rgba(57,168,69,0.15); color: #1E8449; }
+  .pv-ins-score.loss { background: rgba(200,16,46,0.12); color: #B0001A; }
+  .pv-ins-score.draw { background: rgba(204,154,0,0.12); color: #8A5A00; }
+  .pv-ins-score.unknown { background: #EDECEA; color: #7A7A74; }
+  .pv-ins-title { font-family: 'Barlow Condensed', sans-serif; font-size: 11pt; font-weight: 700; color: #13264B; }
+  .pv-ins-sub { font-size: 7pt; color: #7A7A74; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
+  .pv-ins-xg { text-align: right; font-family: 'Barlow Condensed', sans-serif; }
+  .pv-ins-xg-vals { font-size: 14pt; font-weight: 800; }
+  .pv-ins-xg-ncc { color: #13264B; }
+  .pv-ins-xg-opp { color: #C8102E; }
+  .pv-ins-xg-lbl { font-size: 6.5pt; color: #7A7A74; text-transform: uppercase; letter-spacing: 0.06em; }
+  .pv-ins-summary {
+    background: #F0F2F7;
+    border-left: 3pt solid #13264B;
+    padding: 5pt 8pt;
+    margin-bottom: 7pt;
+    font-size: 7.5pt;
+    color: #333;
+    line-height: 1.5;
+  }
+  .pv-ins-summary strong { color: #13264B; }
+  .pv-ins-section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #7A7A74;
+    border-bottom: 0.5pt solid #CCC9C4;
+    margin: 6pt 0 4pt;
+    padding-bottom: 2pt;
+  }
+  .pv-ins-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 5pt;
+    margin-bottom: 4pt;
+  }
+  .pv-ins-card {
+    border: 0.5pt solid #D5D3CE;
+    border-radius: 3pt;
+    padding: 5pt 6pt;
+    border-left: 2.5pt solid #CCC9C4;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .pv-ins-card.positive { border-left-color: #2ECC71; }
+  .pv-ins-card.good     { border-left-color: #7FBA00; }
+  .pv-ins-card.warning  { border-left-color: #D4AF37; }
+  .pv-ins-card.negative { border-left-color: #E74C3C; }
+  .pv-ins-card.neutral  { border-left-color: #13264B; }
+  .pv-ins-card-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 6pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2pt;
+    color: #7A7A74;
+  }
+  .pv-ins-card.positive .pv-ins-card-tag { color: #1E8449; }
+  .pv-ins-card.good .pv-ins-card-tag     { color: #4A7C00; }
+  .pv-ins-card.warning .pv-ins-card-tag  { color: #8A5A00; }
+  .pv-ins-card.negative .pv-ins-card-tag { color: #A93226; }
+  .pv-ins-card.neutral .pv-ins-card-tag  { color: #13264B; }
+  .pv-ins-card-headline {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 8pt;
+    font-weight: 700;
+    color: #1A1A16;
+    line-height: 1.2;
+    margin-bottom: 3pt;
+  }
+  .pv-ins-card-body {
+    font-size: 6.5pt;
+    color: #4A4A45;
+    line-height: 1.45;
+    margin-bottom: 4pt;
+  }
+  .pv-ins-card-body strong { color: #1A1A16; }
+  .pv-ins-stats {
+    display: flex;
+    gap: 8pt;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    border-top: 0.5pt solid #E8E6E1;
+    padding-top: 3pt;
+  }
+  .pv-ins-stat { display: flex; flex-direction: column; gap: 1pt; }
+  .pv-ins-stat-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11pt;
+    font-weight: 800;
+    line-height: 1;
+    color: #1A1A16;
+  }
+  .pv-ins-stat-val.ncc  { color: #13264B; }
+  .pv-ins-stat-val.opp  { color: #C8102E; }
+  .pv-ins-stat-val.good { color: #1E8449; }
+  .pv-ins-stat-val.poor { color: #A93226; }
+  .pv-ins-stat-lbl {
+    font-size: 5.5pt;
+    color: #7A7A74;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .pv-ins-ctx {
+    font-size: 6pt;
+    color: #9A9A92;
+    margin-top: 3pt;
+    font-style: italic;
+    border-top: 0.5pt solid #E8E6E1;
+    padding-top: 2pt;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div>
+      <div class="header-title">North Carolina Courage</div>
+      <div class="header-subtitle">2026 NWSL Season &mdash; Team Performance</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="header-meta">
+      <div>7 matches played</div>
+      <div style="margin-top:2px;">Updated May 4, 2026</div>
+    </div>
+    <button class="print-btn" onclick="openPrint()">&#x2399; Match Summary</button>
+  </div>
+</div>
+
+<!-- MATCH SELECTOR -->
+<div class="match-bar" id="match-bar">
+  <div class="match-bar-label">Match</div>
+  <div class="match-bar-pills-scroll" id="match-pills"></div>
+  <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;padding-left:8px;">
+    <button class="match-pill-season disabled" id="seasonBtn" aria-disabled="true" title="Coming soon" disabled>Season View</button>
+    <button class="match-pill-season" id="insightsBtn" onclick="openInsightsView(this)" style="border-color:rgba(19,38,75,0.4);color:var(--courage-navy);">Insights</button>
+    <button class="match-pill-season" id="contextBtn" onclick="openContextView(this)" style="border-color:rgba(200,16,46,0.4);color:var(--courage-red);">Context &amp; Logic</button>
+  </div>
+</div>
+
+<!-- SUB-TAB NAV -->
+<div class="subtab-nav">
+  <div class="subtab active" onclick="selectSubtab('sop', this)">SOP Grading</div>
+  <div class="subtab" onclick="selectSubtab('packing', this)">Packing &amp; Progression</div>
+  <div class="subtab" onclick="selectSubtab('box-dom', this)">Box Domination</div>
+  <div class="subtab" onclick="selectSubtab('box-res', this)">Box Resilience</div>
+  <div class="subtab" onclick="selectSubtab('def-int', this)">Defensive Intensity</div>
+  <div class="subtab" onclick="selectSubtab('obv', this)">On-Ball Value</div>
+  <div class="subtab disabled" aria-disabled="true" title="Coming soon">Match Insights</div>
+</div>
+
+<div class="main">
+
+  <!-- SEASON SUMMARY ROW -->
+  <div class="season-bar" id="seasonSummary" style="display:none;">
+    <div class="season-stat">
+      <div class="season-stat-label">Matches Played</div>
+      <div class="season-stat-value">4</div>
+      <div class="season-stat-sub">2026 NWSL</div>
+    </div>
+    <div class="season-stat">
+      <div class="season-stat-label">Goals Scored</div>
+      <div class="season-stat-value" id="stat-goals">—</div>
+      <div class="season-stat-sub">across all matches</div>
+    </div>
+    <div class="season-stat">
+      <div class="season-stat-label">Goals Conceded</div>
+      <div class="season-stat-value" id="stat-conceded">6</div>
+      <div class="season-stat-sub">1.50 per match</div>
+    </div>
+    <div class="season-stat">
+      <div class="season-stat-label">Avg xG</div>
+      <div class="season-stat-value" id="stat-xg">1.35</div>
+      <div class="season-stat-sub">per match</div>
+    </div>
+  </div>
+
+  <!-- GRADE LEGEND -->
+  <div class="grade-legend">
+    <span class="grade-legend-label">Grade scale:</span>
+    <span class="grade excellent">Excellent</span>
+    <span class="grade good">Good</span>
+    <span class="grade typical">Typical</span>
+    <span class="grade poor">Poor</span>
+    <span class="grade abysmal">Abysmal</span>
+    <span style="margin-left:12px;font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">&#x2502; Match Grade vs season min/max &nbsp;&#x25CB;&nbsp; 3-Match Form vs season mean &nbsp;&#x25CB;&nbsp; Form activates from GW3</span>
+  </div>
+
+  <!-- ===================== SOP GRADING ===================== -->
+  <div class="subtab-content active" id="tab-sop">
+
+    <!-- Progression Zones -->
+    <div class="table-section">
+      <div class="section-header">
+        <span class="section-tag">SOP Grading</span>
+        <span class="section-title">Progression Zones</span>
+      </div>
+      <div class="table-section-title">Zone metrics</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="sop-progression-rows">
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Finishing Zones -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">SOP Grading</span>
+        <span class="section-title">Finishing Zones</span>
+      </div>
+      <div class="table-section-title">Zone metrics</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="sop-finishing-rows">
+        </tbody>
+      </table>
+      <p class="data-source-note">Source: StatsBomb zone tracking — spreadsheet data</p>
+    </div>
+  </div>
+
+  <!-- ===================== PACKING & PROGRESSION ===================== -->
+  <div class="subtab-content" id="tab-packing">
+
+    <!-- Progression Volume -->
+    <div class="table-section">
+      <div class="section-header">
+        <span class="section-tag">Packing &amp; Progression</span>
+        <span class="section-title">Progression Volume</span>
+      </div>
+      <div class="table-section-title">Bypassing &amp; ball carry metrics</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="packing-volume-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- Line Breaking -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">Packing &amp; Progression</span>
+        <span class="section-title">Line Breaking</span>
+      </div>
+      <div class="table-section-title">Line-breaking pass metrics — final third</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="packing-linebreak-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- Packing Momentum -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">Packing &amp; Progression</span>
+        <span class="section-title">Packing Momentum</span>
+      </div>
+      <div class="table-section-title">Bypassed players per 15-minute segment — NCC vs Opposition</div>
+      <div id="bypass-segments-container" class="bypass-grid">
+        <!-- rendered by renderBypassSegments() -->
+      </div>
+      <p class="data-source-note" style="margin-top:8px;">
+        Higher NCC bars = we bypassed more opponents in that window (good).
+        Higher Opp bars = the opponent bypassed more of us (bad).
+        In Season view, values are per-match averages across all matches.
+      </p>
+      <p class="data-source-note">Source: Impect packing data &amp; StatsBomb — spreadsheet data</p>
+    </div>
+  </div>
+
+  <!-- ===================== BOX DOMINATION ===================== -->
+  <div class="subtab-content" id="tab-box-dom">
+
+    <!-- Penetration -->
+    <div class="table-section">
+      <div class="section-header">
+        <span class="section-tag">Box Domination</span>
+        <span class="section-title">Penetration</span>
+      </div>
+      <div class="table-section-title">Box entry &amp; delivery metrics</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="dom-penetration-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- Finishing & GK Influence -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">Box Domination</span>
+        <span class="section-title">Finishing &amp; GK Influence</span>
+      </div>
+      <div class="table-section-title">Shot quality &amp; opposition goalkeeper</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="dom-finishing-rows"></tbody>
+      </table>
+      <p class="data-source-note">Source: StatsBomb — post-shot xG from match report PDFs for some metrics</p>
+    </div>
+  </div>
+
+  <!-- ===================== BOX RESILIENCE ===================== -->
+  <div class="subtab-content" id="tab-box-res">
+
+    <!-- Denying -->
+    <div class="table-section">
+      <div class="section-header">
+        <span class="section-tag">Box Resilience</span>
+        <span class="section-title">Denying</span>
+      </div>
+      <div class="table-section-title">Opposition box entry allowed</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="res-denying-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- Nullifying & GK Performance -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">Box Resilience</span>
+        <span class="section-title">Nullifying &amp; GK Performance</span>
+      </div>
+      <div class="table-section-title">Shot suppression &amp; NCC goalkeeper</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="res-nullifying-rows"></tbody>
+      </table>
+      <p class="data-source-note">Source: StatsBomb — post-shot xG &amp; GSAA from match report PDFs for some metrics</p>
+    </div>
+  </div>
+
+  <!-- ===================== DEFENSIVE INTENSITY ===================== -->
+  <div class="subtab-content" id="tab-def-int">
+
+    <!-- Volume & Aggression -->
+    <div class="table-section">
+      <div class="section-header">
+        <span class="section-tag">Defensive Intensity</span>
+        <span class="section-title">Volume &amp; Aggression</span>
+      </div>
+      <div class="table-section-title">Pressure count &amp; intensity metrics</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="def-volume-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- Forward Leaning -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">Defensive Intensity</span>
+        <span class="section-title">Forward Leaning</span>
+      </div>
+      <div class="table-section-title">Press height &amp; directional metrics</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="def-forward-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- Progression Allowed -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">Defensive Intensity</span>
+        <span class="section-title">Progression Allowed</span>
+      </div>
+      <div class="table-section-title">Opposition progression conceded</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="def-progallowed-rows"></tbody>
+      </table>
+      <p class="data-source-note">Source: StatsBomb — PA metrics use formula: raw ÷ opp. possession% × 0.5. Possession% from match report PDFs. Tackles (Won) from PDF match stats page.</p>
+    </div>
+  </div>
+
+  <!-- ON-BALL VALUE TAB -->
+  <div class="subtab-content" id="tab-obv">
+
+    <!-- Combined OBV Radar — NCC vs Opposition on shared axes -->
+    <div class="obv-radar-row">
+      <div class="obv-radar-card" style="max-width:540px;">
+        <div class="obv-radar-card-title">On-Ball Value — NCC vs Opposition</div>
+        <svg id="obv-radar-combined" width="100%" viewBox="0 0 380 320" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="obv-radar-legend">
+          <span class="leg-ncc">NC Courage</span>
+          <span class="leg-opp">Opposition</span>
+        </div>
+        <div class="obv-radar-legend" style="margin-top:4px;font-size:10px;font-style:italic;">
+          <span style="display:inline;">Shaded gap shows the per-axis differential — wider shade = bigger lead. Numbers beside each axis show NCC − Opp.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Head-to-head OBV table — NCC left, metric centre, Opp right -->
+    <div class="table-section">
+      <div class="section-header">
+        <span class="section-tag">On-Ball Value</span>
+        <span class="section-title">NCC vs Opposition — Head-to-Head</span>
+      </div>
+      <div class="table-section-title">How much value each side's actions added per match (StatsBomb OBV model). Higher is better for the team in question.</div>
+      <table class="obv-h2h-table">
+        <colgroup>
+          <col style="width:14%"><col style="width:22%">
+          <col style="width:28%">
+          <col style="width:22%"><col style="width:14%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="ncc-side">Grade</th>
+            <th class="ncc-side">NCC Value</th>
+            <th>Metric</th>
+            <th class="opp-side">Opp Value</th>
+            <th class="opp-side">Grade</th>
+          </tr>
+        </thead>
+        <tbody id="obv-h2h-rows"></tbody>
+      </table>
+      <p class="data-source-note">Source: StatsBomb — OBV (On-Ball Value) measures the probability change in scoring/conceding caused by each action. Values can be negative. Grades are scored independently per side (NCC: higher = better; Opp: lower = better from NCC's perspective).</p>
+    </div>
+  </div>
+
+  <!-- MATCH INSIGHTS TAB -->
+  <div class="subtab-content" id="tab-match-insights">
+    <div id="match-insights-inner" style="padding:24px 0 40px;"></div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const MATCHES = [
+  { label: 'GW1', date: 'Mar 15', opp: 'Racing Louisville FC', loc: 'Home', result: 'W 2-1' },
+  { label: 'GW2', date: 'Mar 22', opp: 'NJ/NY Gotham FC', loc: 'Away', result: 'D 0-0' },
+  { label: 'GW3', date: 'Mar 29', opp: 'Bay FC', loc: 'Home', result: 'L 1-3' },
+  { label: 'GW4', date: 'Apr 5', opp: 'Portland Thorns', loc: 'Home', result: 'D 2-2' },
+  { label: 'GW5', date: 'Apr 26', opp: 'Houston Dash', loc: 'Away', result: 'W 1-0' },
+  { label: 'GW6a', date: 'Apr 30', opp: 'Boston Legacy W', loc: 'Away', result: 'D 2-2' },
+  { label: 'GW6b', date: 'May 2', opp: 'KC Current', loc: 'Home', result: 'L 1-2' }
+];
+
+const DATA = {
+  sop: {
+    progression: [
+      { id:'Z2_att', label:'Zone 2 Attempts', vals:[46,69,53,53,49,55,53], higherBetter:true },
+      { id:'Z2_comp', label:'Zone 2 Completions', vals:[36,47,37,36,46,36,38], higherBetter:true },
+      { id:'Z2_pct', label:'Zone 2 Completion %', vals:[0.7826,0.6812,0.6981,0.6792,0.9388,0.6545,0.717], higherBetter:true, pct:true, dec:3 },
+      { id:'Z2_pts', label:'Zone 2 Points', vals:[36,48,37,36,46,36,38], higherBetter:true },
+      { id:'Z3_att', label:'Zone 3 Attempts', vals:[20,26,24,21,20,25,7], higherBetter:true },
+      { id:'Z3_comp', label:'Zone 3 Completions', vals:[12,8,4,11,11,7,6], higherBetter:true },
+      { id:'Z3_pct', label:'Zone 3 Completion %', vals:[0.6,0.3077,0.1667,0.5238,0.55,0.28,0.8571], higherBetter:true, pct:true, dec:3 },
+      { id:'Z3_pts', label:'Zone 3 Points', vals:[24,16,8,22,22,14,12], higherBetter:true }
+    ],
+    finishing: [
+      { id:'PZ_att', label:'Pass Zone Attempts', vals:[15,12,15,17,14,22,18], higherBetter:true },
+      { id:'PZ_comp', label:'Pass Zone Completions', vals:[13,11,11,17,11,13,11], higherBetter:true },
+      { id:'PZ_pct', label:'Pass Zone Completion %', vals:[0.8667,0.9167,0.7333,1,0.7857,0.5909,0.6111], higherBetter:true, pct:true, dec:3 },
+      { id:'PZ_pts', label:'Pass Zone Points', vals:[39,33,33,51,33,39,33], higherBetter:true },
+      { id:'SZ_att', label:'Shoot Zone Attempts', vals:[19,16,16,22,14,16,30], higherBetter:true },
+      { id:'SZ_comp', label:'Shoot Zone Completions', vals:[5,5,4,7,3,1,5], higherBetter:true },
+      { id:'SZ_pct', label:'Shoot Zone Completion %', vals:[0.2632,0.3125,0.25,0.3182,0.2143,0.0625,0.1667], higherBetter:true, pct:true, dec:3 },
+      { id:'SZ_pts', label:'Shoot Zone Points', vals:[25,25,20,35,15,5,25], higherBetter:true }
+    ]
+  },
+  packing: {
+    volume: [
+      { id:'byp_opp', label:'Bypassed Opponents', vals:[445,378,363,358,371,320,345], higherBetter:true },
+      { id:'byp_def', label:'Bypassed Defenders', vals:[71,49,43,40,48,40,68], higherBetter:true },
+      { id:'bw_opp', label:'Ball Win Removed Opponents', vals:[194,195,194,174,213,194,254], higherBetter:true },
+      { id:'bw_def', label:'Ball Win Removed Defenders', vals:[10,12,7,4,7,15,14], higherBetter:true },
+      { id:'crit_loss', label:'Critical Ball Loss', vals:[13,9,15,21,10,11,8], higherBetter:false, context:'neg' },
+      { id:'bl_team', label:'Ball Loss Removed Teammates', vals:[196,129,176,167,149,138,128], higherBetter:false, context:'neg' },
+      { id:'deep_prog', label:'Final 3rd Entries', vals:[43,35,39,43,54,53,66], higherBetter:true }
+    ],
+    linebreak: [
+      { id:'thru', label:'Through Passes', vals:[0,1,0,0,1,0,2], higherBetter:true },
+      { id:'lb_f3', label:'LB Passes in Final Third', vals:[26,23,23,30,25,28,null], higherBetter:true },
+      { id:'lb_comp_f3', label:'LB Passes Completed in Final Third', vals:[16,11,7,16,8,9,null], higherBetter:true },
+      { id:'lb_pct_f3', label:'LB Completion % (Final Third)', vals:[0.6153,0.4782,0.3043,0.5333,0.32,0.3214,null], higherBetter:true, pct:true, dec:3 },
+      { id:'lb_obv_f3', label:'LB Passes OBV (Final Third)', vals:[0.351,0.319,0.248,0.583,0.11,0.362,null], higherBetter:true, dec:3 }
+    ]
+  },
+  boxdom: {
+    penetration: [
+      { id:'tib', label:'Touches in Box', vals:[41,32,35,54,36,54,55], higherBetter:true },
+      { id:'bca', label:'Box Crosses Attempted', vals:[10,7,11,9,6,14,25], higherBetter:true, dec:0 },
+      { id:'pitb', label:'Passes Into Box Attempted', vals:[28,21,30,29,27,33,54], higherBetter:true },
+      { id:'spitb', label:'Successful Passes Into Box', vals:[10,9,10,16,8,14,14], higherBetter:true },
+      { id:'sbc', label:'Successful Box Crosses', vals:[1,3,4,3,1,6,4], higherBetter:true }
+    ],
+    finishing: [
+      { id:'xg', label:'Total xG', vals:[1.388,1.324,1.608,1.086,1.517,1.854,1.935], higherBetter:true, dec:3 },
+      { id:'spxg', label:'Set Piece xG', vals:[0.031,0.348,0.445,0.354,0.203,1.26,0.167], higherBetter:true, dec:3 },
+      { id:'shots', label:'Shots', vals:[15,14,13,11,16,21,16], higherBetter:true },
+      { id:'xgps', label:'xG/Shot', vals:[0.092,0.095,0.124,0.099,0.095,0.088,0.121], higherBetter:true, dec:3 },
+      { id:'psxg', label:'Post-Shot xG', vals:[1.44,0,2.34,2.74,0.12,1.61,1.27], higherBetter:true, dec:2 },
+      { id:'qc', label:'Quality Chances', vals:[1,2,3,1,null,null,null], higherBetter:true },
+      { id:'bc', label:'Big Chances', vals:[1,1,2,1,null,null,null], higherBetter:true },
+      { id:'opp_gsaa', label:'Opposition GK — GSAA', vals:[0.36,0.65,0.28,-0.54,0.84,0.18,0.63], higherBetter:false, dec:2, context:'opp' },
+      { id:'opp_npsave', label:'Opposition GK — NP Save %', vals:[0.6,1,0.5,0.667,0.857,0.333,0.667], higherBetter:false, pct:true, context:'opp' }
+    ]
+  },
+  boxres: {
+    denying: [
+      { id:'opp_tib', label:'Opp. Touches in Box', vals:[42,30,29,41,54,23,33], higherBetter:false, context:'opp' },
+      { id:'opp_bca', label:'Opp. Box Crosses Attempted', vals:[12,11,10,12,17,9,7], higherBetter:false, dec:0, context:'opp' },
+      { id:'opp_pitb', label:'Opp. Passes Into Box Attempted', vals:[27,22,21,30,37,24,20], higherBetter:false, context:'opp' },
+      { id:'opp_spitb', label:'Opp. Successful Passes Into Box', vals:[9,10,12,15,16,9,9], higherBetter:false, context:'opp' },
+      { id:'opp_sbc', label:'Opp. Successful Box Crosses', vals:[4,3,5,4,5,4,3], higherBetter:false, context:'opp' }
+    ],
+    nullifying: [
+      { id:'opp_xg', label:'Opp. Total xG', vals:[1.909,0.653,1.045,1.487,1.382,0.781,2.176], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_spxg', label:'Opp. Set Piece xG', vals:[0.175,0.104,0.215,0.173,0.645,0.106,0.184], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_shots', label:'Opp. Shots', vals:[17,10,14,16,16,7,11], higherBetter:false, context:'opp' },
+      { id:'opp_xgps', label:'Opp. xG/Shot', vals:[0.112,0.065,0.075,0.093,0.086,0.112,0.198], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_psxg', label:'Opp. Post-Shot xG', vals:[2.36,0.65,1.28,1.46,1.84,2.18,1.63], higherBetter:false, dec:2, context:'opp' },
+      { id:'opp_qc', label:'Opp. Quality Chances', vals:[1,1,3,3,null,null,null], higherBetter:false, context:'opp' },
+      { id:'opp_bc', label:'Opp. Big Chances', vals:[1,0,0,1,null,null,null], higherBetter:false, context:'opp' },
+      { id:'ncc_gsaa', label:'NCC GK — GSAA', vals:[0.44,0,-0.66,0.74,0.12,-0.39,-0.73], higherBetter:true, dec:2 },
+      { id:'ncc_npsave', label:'NCC GK — NP Save %', vals:[0.75,null,0.5,0.667,1,0,0], higherBetter:true, pct:true }
+    ]
+  },
+  defint: {
+    volume: [
+      { id:'pressures', label:'Pressures (PA)', vals:[217.1,217.8,254,175.6,179.8,246.9,110.7], higherBetter:true, dec:1 },
+      { id:'cp', label:'Counterpressures (PA)', vals:[97.4,59.3,87,74.4,52.9,70.4,34.5], higherBetter:true, dec:1 },
+      { id:'agg_actions', label:'Aggressive Actions (PA)', vals:[80.3,122.9,129,91.5,97.1,123.5,64.3], higherBetter:true, dec:1 },
+      { id:'tack_int', label:'Tackles + Interceptions (PA)', vals:[36.8,32.2,36,24.4,31.7,30.6,26.2], higherBetter:true, dec:1 }
+    ],
+    forward: [
+      { id:'def_dist', label:'Defensive Action Distance', vals:[48.2,55.4,61.9,54.9,47.2,64.9,62.1], higherBetter:true, dec:1 },
+      { id:'press_def3', label:'Opp. Pressured Passes in Def. Third (PA)', vals:[27.6,41.5,43,40.2,20.2,68.4,17.9], higherBetter:true, dec:1 },
+      { id:'press_oh', label:'Pressures in Opp. Half (PA)', vals:[84.2,99.2,147,86.6,66.3,151,69], higherBetter:true, dec:1 },
+      { id:'press_oh_pct', label:'Pressures in Opp. Half %', vals:[0.3878,0.4552,0.5787,0.493,0.3689,0.6115,0.6236], higherBetter:true, pct:true, dec:3 },
+      { id:'cp_oh', label:'Counterpressures in Opp. Half (PA)', vals:[55.3,28.8,66,42.7,28.8,54.1,26.2], higherBetter:true, dec:1 }
+    ],
+    progallowed: [
+      { id:'opp_dp', label:'Opp. Deep Progressions', vals:[27,56,37,26,55,18,29], higherBetter:false, context:'opp' },
+      { id:'opp_thru', label:'Opp. Through Passes', vals:[1,1,0,0,2,6,2], higherBetter:false, context:'opp' },
+      { id:'opp_lb_f3', label:'Opp. LB Passes in Final Third', vals:[16,21,24,23,36,19,null], higherBetter:false, context:'opp' },
+      { id:'opp_lb_comp_f3', label:'Opp. LB Completed (Final Third)', vals:[6,9,9,13,21,12,null], higherBetter:false, context:'opp' },
+      { id:'opp_lb_pct', label:'Opp. LB Completion % (F3)', vals:[0.375,0.4285,0.375,0.5652,0.5833,0.6315,null], higherBetter:false, pct:true, dec:3, context:'opp' }
+    ]
+  },
+  obv: {
+    ncc: [
+      { id:'obv_total',   label:'Total OBV',             vals:[null,null,null,null,null,null,null], higherBetter:true, dec:3 },
+      { id:'obv_pass',    label:'Pass OBV',               vals:[null,null,null,null,null,null,null], higherBetter:true, dec:3 },
+      { id:'obv_shot',    label:'Shot OBV',               vals:[null,null,null,null,null,null,null], higherBetter:true, dec:3 },
+      { id:'obv_dribble', label:'Dribble & Carry OBV',   vals:[null,null,null,null,null,null,null], higherBetter:true, dec:3 },
+      { id:'obv_def',     label:'Defensive Action OBV',  vals:[null,null,null,null,null,null,null], higherBetter:true, dec:3 }
+    ],
+    opp: [
+      { id:'opp_obv_total',   label:'Opp. Total OBV',             vals:[null,null,null,null,null,null,null], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_obv_pass',    label:'Opp. Pass OBV',              vals:[null,null,null,null,null,null,null], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_obv_shot',    label:'Opp. Shot OBV',              vals:[null,null,null,null,null,null,null], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_obv_dribble', label:'Opp. Dribble & Carry OBV',  vals:[null,null,null,null,null,null,null], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_obv_def',     label:'Opp. Defensive Action OBV', vals:[null,null,null,null,null,null,null], higherBetter:false, dec:3, context:'opp' }
+    ]
+  }
+};
+
+let currentMatch = 0;
+let currentSubtab = 'sop';
+
+function fmt(val, row) {
+  if (val === null || val === undefined) return null;
+  if (row.pct) return (val * 100).toFixed(1) + '%';
+  if (row.dec !== undefined) return val.toFixed(row.dec);
+  return Number.isInteger(val) ? val.toString() : val.toFixed(2);
+}
+
+// Season stats use only the matches played so far (non-null values)
+function seasonStats(vals, higherBetter) {
+  const clean = vals.filter(v => v !== null);
+  if (!clean.length) return { best: null, worst: null, avg: null };
+  const best = higherBetter ? Math.max(...clean) : Math.min(...clean);
+  const worst = higherBetter ? Math.min(...clean) : Math.max(...clean);
+  const avg = clean.reduce((a, b) => a + b, 0) / clean.length;
+  return { best, worst, avg };
+}
+
+// Rolling 3-match average — only populates when matchIdx >= 2 (GW3+, i.e. 3 full matches available)
+// Season view (-1) returns null — no rolling avg shown there
+function rollingAvg(vals, matchIdx) {
+  if (matchIdx < 2) return null;
+  if (matchIdx === -1) return null;
+  const window = vals.slice(0, matchIdx + 1).filter(v => v !== null);
+  if (window.length < 3) return null;
+  const last3 = window.slice(-3);
+  return last3.reduce((a, b) => a + b, 0) / last3.length;
+}
+
+// Match Grade — min-max normalisation vs season range.
+// Answers: "how did this game compare to our season so far?"
+function getGrade(val, row) {
+  if (val === null) return null;
+  const { best, worst } = seasonStats(row.vals, row.higherBetter);
+  if (best === worst) return 'typical';
+  const range = best - worst;
+  const pos = (val - worst) / range;
+  if (pos >= 0.85) return 'excellent';
+  if (pos >= 0.65) return 'good';
+  if (pos >= 0.35) return 'typical';
+  if (pos >= 0.15) return 'poor';
+  return 'abysmal';
+}
+
+// 3-Match Form — deviation from season mean, scaled by season range.
+// Answers: "is our current form above or below where we have been all season?"
+// ±10% of range = Typical boundary · ±35% = Excellent/Abysmal boundary.
+// Wider bands prevent hypersensitivity since rolling averages smooth toward centre.
+function getRollingGrade(rollVal, row) {
+  if (rollVal === null) return null;
+  const { best, worst, avg } = seasonStats(row.vals, row.higherBetter);
+  if (best === worst || avg === null) return 'typical';
+  const range = best - worst;
+  const deviation = row.higherBetter ? (rollVal - avg) / range : (avg - rollVal) / range;
+  if (deviation >=  0.35) return 'excellent';
+  if (deviation >=  0.10) return 'good';
+  if (deviation >= -0.10) return 'typical';
+  if (deviation >= -0.35) return 'poor';
+  return 'abysmal';
+}
+
+function gradeHTML(grade) {
+  if (!grade) return `<span class="grade pending">—</span>`;
+  const label = grade.charAt(0).toUpperCase() + grade.slice(1);
+  return `<span class="grade ${grade}">${label}</span>`;
+}
+
+// Slope-colored area-fill sparkline.
+// The line + fill are tinted by overall trend direction (green = improving,
+// red = declining, amber = flat), adjusted for whether higher is better.
+// The most recent data point is enlarged to emphasize current trajectory.
+let __sparkGradId = 0;
+function buildSparkline(vals, higherBetter, currentIdx, isSeason) {
+  const W = 72, H = 26, PAD = 3;
+  const points = vals.map((v, i) => ({ v, i }));
+  const nonNull = points.filter(p => p.v !== null);
+  if (nonNull.length < 2) {
+    return `<svg class="sparkline" width="${W}" height="${H}"><text x="${W/2}" y="${H/2+4}" text-anchor="middle" font-size="10" fill="#aaa">—</text></svg>`;
+  }
+  const allV = nonNull.map(p => p.v);
+  const minV = Math.min(...allV), maxV = Math.max(...allV);
+  const range = maxV - minV || 1;
+  const xStep = (W - PAD*2) / (vals.length - 1);
+  const yOf = v => PAD + (H - PAD*2) * (1 - (v - minV) / range);
+
+  // Determine trend direction from first → last non-null value.
+  const firstV = nonNull[0].v, lastV = nonNull[nonNull.length - 1].v;
+  let raw = lastV - firstV;
+  if (higherBetter === false) raw = -raw;            // flip so + always = good
+  const spread = (maxV - minV) || 1;
+  const norm = raw / spread;                          // -1 .. 1 relative to range
+  let dir;
+  if (norm > 0.08) dir = 'up';
+  else if (norm < -0.08) dir = 'down';
+  else dir = 'flat';
+  const TREND_COLOR = { up: '#2ECC71', down: '#C0392B', flat: '#D4AF37' };
+  const stroke = TREND_COLOR[dir];
+
+  const xs = nonNull.map(p => PAD + p.i * xStep);
+  const ys = nonNull.map(p => yOf(p.v));
+
+  // Line path
+  const linePath = nonNull.map((p, k) => `${k === 0 ? 'M' : 'L'}${xs[k]},${ys[k]}`).join(' ');
+  // Area path (down to baseline) for the gradient fill
+  const baseY = H - PAD;
+  const areaPath = `${linePath} L${xs[xs.length-1]},${baseY} L${xs[0]},${baseY} Z`;
+
+  const gid = `sparkfill${__sparkGradId++}`;
+
+  // Highlight last point (current trajectory); also enlarge active match dot.
+  let dots = '';
+  nonNull.forEach((p, k) => {
+    const isLast = k === nonNull.length - 1;
+    const isActive = !isSeason && p.i === currentIdx;
+    if (!isLast && !isActive) return;                // only draw notable dots
+    const r = isLast ? 3.2 : 3.5;
+    dots += `<circle cx="${xs[k]}" cy="${ys[k]}" r="${r}" fill="${stroke}" stroke="white" stroke-width="${isActive ? 1.5 : 1}"/>`;
+  });
+
+  return `<svg class="sparkline" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+    <defs>
+      <linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${stroke}" stop-opacity="0.30"/>
+        <stop offset="100%" stop-color="${stroke}" stop-opacity="0.02"/>
+      </linearGradient>
+    </defs>
+    <path d="${areaPath}" fill="url(#${gid})" stroke="none"/>
+    <path d="${linePath}" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+  </svg>`;
+}
+
+function buildRow(row, matchIdx, isSeason) {
+  const val = isSeason ? null : row.vals[matchIdx];
+  const stats = seasonStats(row.vals, row.higherBetter);
+  const displayVal = fmt(val, row);
+  const grade = val !== null ? getGrade(val, row) : null;
+
+  const rollVal = rollingAvg(row.vals, isSeason ? -1 : matchIdx);
+  const rollGrade = rollVal !== null ? getRollingGrade(rollVal, row) : null;
+
+  let contextBadge = '';
+  if (row.context === 'opp') contextBadge = '<span class="context-badge">Opp</span>';
+  if (row.context === 'neg') contextBadge = '<span class="context-badge neg">Neg</span>';
+
+  const hasSource = !!(row.source);
+  const isPending = (val === null) && hasSource;
+
+  const worstDisp = stats.worst !== null ? fmt(stats.worst, row) : '—';
+  const bestDisp  = stats.best  !== null ? fmt(stats.best,  row) : '—';
+
+  const valCell = displayVal !== null
+    ? `<td class="val">${displayVal}</td>`
+    : isPending && !isSeason
+      ? `<td class="val empty" style="font-style:italic;font-size:11px;color:var(--text-muted)">pending</td>`
+      : `<td class="val empty">—</td>`;
+
+  let matchGradeCell = '';
+  if (val !== null && grade) {
+    matchGradeCell = `<td>${gradeHTML(grade)}</td>`;
+  } else if (isPending && !isSeason) {
+    matchGradeCell = `<td><span class="grade pending">Pending</span></td>`;
+  } else {
+    matchGradeCell = `<td><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
+  }
+
+  const rollGradeCell = rollGrade !== null
+    ? `<td>${gradeHTML(rollGrade)}</td>`
+    : `<td><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
+
+  const sparkCell = `<td style="padding:8px 14px;">${buildSparkline(row.vals, row.higherBetter, matchIdx, isSeason)}</td>`;
+
+  return `<tr>
+    <td class="metric-name">${row.label}${contextBadge}</td>
+    ${sparkCell}
+    <td class="stat worst">${worstDisp}</td>
+    ${valCell}
+    <td class="stat best">${bestDisp}</td>
+    ${matchGradeCell}
+    ${rollGradeCell}
+  </tr>`;
+}
+
+
+// ── INSIGHTS TAB ────────────────────────────────────────────────────────────
+
+const GRADE_ORDER = ['excellent','good','typical','poor','abysmal'];
+
+// Grade colour for heatmap — returns hex
+const GRADE_HEX = {
+  excellent: '#2ECC71',
+  good:      '#7FBA00',
+  typical:   '#D4AF37',
+  poor:      '#E67E22',
+  abysmal:   '#C0392B'
+};
+
+function sectionOverallGradeForInsights(key, idx) {
+  const rows = ALL_SECTIONS[key];
+  const graded = rows.map(r => r.vals[idx] !== null ? getGrade(r.vals[idx], r) : null).filter(Boolean);
+  if (!graded.length) return 'typical';
+  const avg = Math.round(graded.reduce((a, g) => a + GRADE_ORDER.indexOf(g), 0) / graded.length);
+  return GRADE_ORDER[Math.min(avg, 4)];
+}
+
+// Score 0–100 based on grade (for scorecard fill bar)
+const GRADE_SCORE = { excellent: 92, good: 72, typical: 50, poor: 28, abysmal: 8 };
+const GRADE_BAR_COLOR = { excellent:'var(--grade-excellent)', good:'var(--grade-good)', typical:'var(--grade-typical)', poor:'var(--grade-poor)', abysmal:'var(--grade-abysmal)' };
+
+function gradeSpan(grade) {
+  const label = grade.charAt(0).toUpperCase() + grade.slice(1);
+  return `<span class="ib-grade grade ${grade}">${label}</span>`;
+}
+
+function fmtInsight(val, row) {
+  if (val === null) return '—';
+  if (row.pct) return (val * 100).toFixed(1) + '%';
+  if (row.dec !== undefined) return val.toFixed(row.dec);
+  return Number.isInteger(val) ? val.toString() : val.toFixed(2);
+}
+
+// Mini sparkline for callout cards — highlights the selected match
+function buildCalloutSparkline(vals, higherBetter, selectedIdx) {
+  const W = 60, H = 22, PAD = 2;
+  const clean = vals.filter(v => v !== null);
+  if (clean.length < 2) return '';
+  const mn = Math.min(...clean), mx = Math.max(...clean);
+  const range = mx - mn || 1;
+  const points = vals.map((v, i) => {
+    if (v === null) return null;
+    const x = PAD + (i / (vals.length - 1)) * (W - PAD * 2);
+    const y = PAD + (1 - (v - mn) / range) * (H - PAD * 2);
+    return { x, y, i };
+  }).filter(Boolean);
+  const pathD = points.map((p, pi) => `${pi === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const dots = points.map(p => {
+    const isSelected = p.i === selectedIdx;
+    const g = getGrade(vals[p.i], { vals, higherBetter });
+    const col = GRADE_HEX[g] || '#aaa';
+    return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isSelected ? 3.5 : 2}" fill="${isSelected ? col : '#ccc'}" stroke="${isSelected ? '#fff' : 'none'}" stroke-width="1"/>`;
+  }).join('');
+  return `<svg width="${W}" height="${H}" style="display:block;overflow:visible">
+    <polyline points="${points.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}" fill="none" stroke="#ccc" stroke-width="1.2"/>
+    ${dots}
+  </svg>`;
+}
+
+// Key metrics for the heatmap — one representative from each area
+const HEATMAP_METRICS = [
+  { id:'Z3_pct',        sectionKey:'sop'     },
+  { id:'SZ_comp',       sectionKey:'sop'     },
+  { id:'prog_passes',   sectionKey:'packing' },
+  { id:'lb_comp_f3',    sectionKey:'packing' },
+  { id:'tib',           sectionKey:'box-dom' },
+  { id:'xg',            sectionKey:'box-dom' },
+  { id:'opp_tib',       sectionKey:'box-res' },
+  { id:'opp_xg',        sectionKey:'box-res' },
+  { id:'ncc_gsaa',      sectionKey:'box-res' },
+  { id:'pressures',     sectionKey:'def-int' },
+  { id:'aggression',    sectionKey:'def-int' },
+  { id:'cp_oh',         sectionKey:'def-int' },
+  { id:'tack_int',      sectionKey:'def-int' },
+];
+
+function buildInsightsForMatch(idx) {
+  const scorecardsEl = document.getElementById('ins-scorecards');
+  const heatmapEl    = document.getElementById('ins-heatmap');
+  const calloutsEl   = document.getElementById('ins-callouts');
+  const seasonMsg    = document.getElementById('ins-season-msg');
+  const calloutsHdr  = document.getElementById('ins-callouts-header');
+  if (!scorecardsEl) return;
+
+  // ── ZONE 1: Section Scorecards (always render) ───────────────────────────
+  // Use current match if one selected, else season average position
+  const scoreIdx = idx === -1 ? 0 : idx;
+  scorecardsEl.innerHTML = Object.keys(ALL_SECTIONS).map(key => {
+    const rows = ALL_SECTIONS[key];
+    // For each match compute grade, then show all 4 match dots
+    const matchGrades = MATCHES.map((_, mi) => {
+      const graded = rows.map(r => r.vals[mi] !== null ? getGrade(r.vals[mi], r) : null).filter(Boolean);
+      if (!graded.length) return 'typical';
+      const avg = Math.round(graded.reduce((a, g) => a + GRADE_ORDER.indexOf(g), 0) / graded.length);
+      return GRADE_ORDER[Math.min(avg, 4)];
+    });
+    const displayGrade = idx === -1
+      ? (() => {
+          const avg = Math.round(matchGrades.reduce((a, g) => a + GRADE_ORDER.indexOf(g), 0) / matchGrades.length);
+          return GRADE_ORDER[Math.min(avg, 4)];
+        })()
+      : matchGrades[idx];
+    const label = displayGrade.charAt(0).toUpperCase() + displayGrade.slice(1);
+    const score = GRADE_SCORE[displayGrade];
+    const dots = matchGrades.map((g, mi) => {
+      const isActive = idx === -1 || mi === idx;
+      return `<div class="ins-sc-dot ${g}" style="opacity:${isActive ? 1 : 0.3}" title="${MATCHES[mi].label}: ${g.charAt(0).toUpperCase()+g.slice(1)}"></div>`;
+    }).join('');
+    return `<div class="ins-sc-card">
+      <div class="ins-sc-name">${SECTION_LABELS[key]}</div>
+      <div class="ins-sc-grade ${displayGrade}">${label}</div>
+      <div class="ins-sc-dots">${dots}</div>
+      <div class="ins-sc-bar"><div class="ins-sc-bar-fill" style="width:${score}%;background:${GRADE_BAR_COLOR[displayGrade]}"></div></div>
+    </div>`;
+  }).join('');
+
+  // ── ZONE 2: Heatmap (always render all matches) ──────────────────────────
+  // Build lookup of id → row across all sections
+  const allRowsFlat = Object.values(ALL_SECTIONS).flat();
+  const rowById = {};
+  allRowsFlat.forEach(r => { rowById[r.id] = r; });
+
+  // Column headers
+  const colCount = MATCHES.length + 2; // label col + section col + 4 match cols
+  const gridCols = `220px 90px repeat(${MATCHES.length}, 1fr)`;
+
+  let hmHTML = `<div class="ins-hm-row header-row" style="grid-template-columns:${gridCols}">
+    <div class="ins-hm-label">Metric</div>
+    <div class="ins-hm-section-tag">Area</div>
+    ${MATCHES.map((m, mi) => {
+      const isActive = idx === -1 || mi === idx;
+      return `<div class="ins-hm-col-head" style="opacity:${isActive ? 1 : 0.45}">${m.label}<span class="hm-result">${m.result}</span></div>`;
+    }).join('')}
+  </div>`;
+
+  let lastSection = null;
+  HEATMAP_METRICS.forEach(({ id, sectionKey }) => {
+    const row = rowById[id];
+    if (!row) return;
+    // Section divider
+    if (sectionKey !== lastSection) {
+      hmHTML += `<div class="ins-hm-section-divider" style="grid-template-columns:${gridCols};display:grid">
+        <div class="ins-hm-label" style="grid-column:1/-1">${SECTION_LABELS[sectionKey]}</div>
+      </div>`;
+      lastSection = sectionKey;
+    }
+    const cells = MATCHES.map((_, mi) => {
+      const v = row.vals[mi];
+      if (v === null) return `<div class="ins-hm-cell"><div class="ins-hm-cell-inner na"><span class="ins-hm-val">—</span></div></div>`;
+      const g = getGrade(v, row);
+      const dispV = fmtInsight(v, row);
+      const isActive = idx === -1 || mi === idx;
+      const gLabel = g.charAt(0).toUpperCase() + g.slice(1);
+      return `<div class="ins-hm-cell" style="opacity:${isActive ? 1 : 0.4}">
+        <div class="ins-hm-cell-inner ${g}">
+          <span class="ins-hm-val">${dispV}</span>
+          <span class="ins-hm-glabel">${gLabel}</span>
+        </div>
+      </div>`;
+    }).join('');
+    hmHTML += `<div class="ins-hm-row" style="grid-template-columns:${gridCols}">
+      <div class="ins-hm-label">${row.label}</div>
+      <div class="ins-hm-section-tag" style="color:var(--text-muted)">${SECTION_LABELS[sectionKey].split(' ')[0]}</div>
+      ${cells}
+    </div>`;
+  });
+  heatmapEl.innerHTML = hmHTML;
+
+  // ── ZONE 3: Callout Cards (only for specific match, not season view) ──────
+  if (idx === -1) {
+    calloutsEl.style.display = 'none';
+    calloutsHdr.style.display = 'none';
+    seasonMsg.style.display = 'block';
+    return;
+  }
+  calloutsEl.style.display = '';
+  calloutsHdr.style.display = '';
+  seasonMsg.style.display = 'none';
+
+  const highlights = [];
+  allRowsFlat.forEach(row => {
+    const val = row.vals[idx];
+    if (val === null) return;
+    const grade = getGrade(val, row);
+    if (grade === 'excellent' || grade === 'abysmal') {
+      highlights.push({ row, val, grade });
+    }
+  });
+
+  const excellents = highlights.filter(h => h.grade === 'excellent').slice(0, 5);
+  const abysmalls  = highlights.filter(h => h.grade === 'abysmal').slice(0, 5);
+  const combined   = [...excellents, ...abysmalls];
+
+  if (combined.length === 0) {
+    calloutsEl.innerHTML = `<div style="color:var(--text-muted);font-size:12px;font-style:italic;padding:12px 0;grid-column:1/-1;">No metrics graded Excellent or Abysmal — performance was broadly consistent this match.</div>`;
+    return;
+  }
+
+  calloutsEl.innerHTML = combined.map(({ row, val, grade }) => {
+    const dispVal  = fmtInsight(val, row);
+    const { avg }  = seasonStats(row.vals, row.higherBetter);
+    const avgDisp  = fmtInsight(avg, row);
+    const spark    = buildCalloutSparkline(row.vals, row.higherBetter, idx);
+    const gLabel   = grade.charAt(0).toUpperCase() + grade.slice(1);
+    return `<div class="ins-callout-card ${grade}">
+      <div class="ins-cc-label">${row.label}</div>
+      <div class="ins-cc-value-row">
+        <div class="ins-cc-value">${dispVal}</div>
+        <div class="ins-cc-avg">avg ${avgDisp}</div>
+      </div>
+      <div class="ins-cc-footer">
+        <div class="ins-cc-spark">${spark}</div>
+        <span class="ins-cc-grade-pill ${grade}">${gLabel}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openContextView(el) {
+  document.querySelectorAll('.match-pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('seasonBtn').classList.remove('active');
+  document.getElementById('insightsBtn').classList.remove('active');
+  document.getElementById('contextBtn').classList.add('active');
+  document.querySelectorAll('.subtab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.subtab-nav').style.display = 'none';
+  document.querySelector('.main').style.display = 'none';
+  document.getElementById('context-view').style.display = 'block';
+  document.getElementById('insights-view').style.display = 'none';
+}
+
+function exitContextView() {
+  document.getElementById('contextBtn').classList.remove('active');
+  document.querySelector('.subtab-nav').style.display = '';
+  document.querySelector('.main').style.display = '';
+  document.getElementById('context-view').style.display = 'none';
+  // Restore the first subtab as active if none is
+  if (!document.querySelector('.subtab.active')) {
+    document.querySelector('.subtab').classList.add('active');
+    document.getElementById('tab-sop').classList.add('active');
+  }
+}
+
+function openInsightsView(el) {
+  document.querySelectorAll('.match-pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('seasonBtn').classList.remove('active');
+  document.getElementById('contextBtn').classList.remove('active');
+  document.getElementById('insightsBtn').classList.add('active');
+  document.querySelectorAll('.subtab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.subtab-nav').style.display = 'none';
+  document.querySelector('.main').style.display = 'none';
+  document.getElementById('context-view').style.display = 'none';
+  const iv = document.getElementById('insights-view');
+  iv.style.display = 'block';
+  if (!iv.dataset.rendered) {
+    renderInsights();
+    iv.dataset.rendered = '1';
+  }
+}
+
+function exitInsightsView() {
+  document.getElementById('insightsBtn').classList.remove('active');
+  document.querySelector('.subtab-nav').style.display = '';
+  document.querySelector('.main').style.display = '';
+  document.getElementById('insights-view').style.display = 'none';
+  if (!document.querySelector('.subtab.active')) {
+    document.querySelector('.subtab').classList.add('active');
+    document.getElementById('tab-sop').classList.add('active');
+  }
+}
+
+
+// ── OBV RADAR CHART RENDERER (combined NCC vs Opposition) ────────────────────
+function renderOBVRadars() {
+  const svg = document.getElementById('obv-radar-combined');
+  if (!svg) return;
+
+  const isSeason = currentMatch === -1;
+  const idx = isSeason ? 0 : currentMatch;
+
+  const nccRows = DATA.obv.ncc;
+  const oppRows = DATA.obv.opp;
+  const n = nccRows.length;                  // 5 axes
+
+  const W = 380, H = 300;
+  const cx = W / 2, cy = H / 2 + 8;
+  const R = 100;
+
+  // Per-axis range across BOTH NCC and Opp combined, so the two polygons
+  // sit on directly comparable scales.
+  const ranges = nccRows.map((row, i) => {
+    const oppRow = oppRows[i];
+    const combined = [...(row.vals || []), ...(oppRow ? oppRow.vals : [])]
+      .filter(v => v !== null && v !== undefined);
+    if (!combined.length) return { min: 0, max: 1, nccAvg: 0, oppAvg: 0 };
+    const min = Math.min(...combined);
+    const max = Math.max(...combined);
+    const nccValid = (row.vals || []).filter(v => v !== null && v !== undefined);
+    const oppValid = (oppRow ? oppRow.vals : []).filter(v => v !== null && v !== undefined);
+    const nccAvg = nccValid.length ? nccValid.reduce((a,b)=>a+b,0)/nccValid.length : 0;
+    const oppAvg = oppValid.length ? oppValid.reduce((a,b)=>a+b,0)/oppValid.length : 0;
+    return { min, max, nccAvg, oppAvg };
+  });
+
+  function scale(val, range) {
+    if (val === null || val === undefined) return 0;
+    const span = range.max - range.min;
+    if (span < 0.0001) return 0.5;
+    const lo = range.min - span * 0.1;
+    const hi = range.max + span * 0.1;
+    return Math.max(0, Math.min(1, (val - lo) / (hi - lo)));
+  }
+  function angle(i) { return (2 * Math.PI * i / n) - Math.PI / 2; }
+  function polar(r, i) {
+    const a = angle(i);
+    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+  }
+  function polyPts(vals01) {
+    return vals01.map((v, i) => {
+      const p = polar(R * v, i);
+      return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
+    }).join(' ');
+  }
+
+  const nccVals01 = nccRows.map((row, i) => scale(
+    isSeason ? ranges[i].nccAvg : (row.vals[idx] ?? null),
+    ranges[i]
+  ));
+  const oppVals01 = oppRows.map((row, i) => scale(
+    isSeason ? ranges[i].oppAvg : (row.vals[idx] ?? null),
+    ranges[i]
+  ));
+
+  let html = '';
+
+  // ── DIFFERENTIAL WEDGES ─────────────────────────────────────────────────
+  // For each axis, draw a wedge spanning half-way to each neighbouring axis.
+  // The wedge is filled with the leader's colour, and its radial extent
+  // matches the LEADER's value (red for NCC ahead, navy for Opp ahead).
+  // The trailing team's overlapping share is then over-painted in their
+  // colour up to their own value — what remains visible is the gap.
+  function wedgePath(i, r01) {
+    const aMid   = angle(i);
+    const aPrev  = angle((i - 1 + n) % n);
+    const aNext  = angle((i + 1) % n);
+    // Half-way angles to the neighbours
+    let aLeft  = (aPrev + aMid) / 2;
+    let aRight = (aMid + aNext) / 2;
+    // Handle wrap so the wedge stays a thin slice around aMid
+    function normalise(a, ref) {
+      while (a - ref >  Math.PI) a -= 2 * Math.PI;
+      while (a - ref < -Math.PI) a += 2 * Math.PI;
+      return a;
+    }
+    aLeft  = normalise(aLeft,  aMid);
+    aRight = normalise(aRight, aMid);
+    const r = R * r01;
+    const pL = { x: cx + r * Math.cos(aLeft),  y: cy + r * Math.sin(aLeft)  };
+    const pM = { x: cx + r * Math.cos(aMid),   y: cy + r * Math.sin(aMid)   };
+    const pR = { x: cx + r * Math.cos(aRight), y: cy + r * Math.sin(aRight) };
+    // Two straight-line triangles meeting at the centre — good enough at
+    // this size and avoids the headache of SVG arc flags.
+    return `M${cx},${cy} L${pL.x.toFixed(2)},${pL.y.toFixed(2)} L${pM.x.toFixed(2)},${pM.y.toFixed(2)} Z ` +
+           `M${cx},${cy} L${pM.x.toFixed(2)},${pM.y.toFixed(2)} L${pR.x.toFixed(2)},${pR.y.toFixed(2)} Z`;
+  }
+
+  // Differential per axis (scaled). Positive = NCC ahead, negative = Opp ahead.
+  const diffs01 = nccVals01.map((v, i) => v - oppVals01[i]);
+  const maxAbsDiff = Math.max(0.0001, ...diffs01.map(Math.abs));
+
+  for (let i = 0; i < n; i++) {
+    const leader   = diffs01[i] >= 0 ? nccVals01[i] : oppVals01[i];
+    const trailer  = diffs01[i] >= 0 ? oppVals01[i] : nccVals01[i];
+    const leaderColor = diffs01[i] >= 0 ? '#C8102E' : '#13264B';
+    // Opacity ramps from 0.10 (tiny gap) to 0.55 (largest gap on this chart)
+    const opacity = 0.10 + 0.45 * (Math.abs(diffs01[i]) / maxAbsDiff);
+    // Leader-coloured wedge out to the leader's value
+    html += `<path d="${wedgePath(i, leader)}" fill="${leaderColor}" fill-opacity="${opacity.toFixed(3)}" stroke="none"/>`;
+    // Carve out the trailing team's portion (paint over with white) — this
+    // leaves only the "gap" visible as the leader's colour
+    html += `<path d="${wedgePath(i, trailer)}" fill="#F5F2EB" fill-opacity="0.95" stroke="none"/>`;
+  }
+
+  // Grid rings at 25%, 50%, 75%, 100% (drawn over wedges so structure stays readable)
+  [0.25, 0.5, 0.75, 1.0].forEach(t => {
+    const pts = nccRows.map((_, i) => {
+      const p = polar(R * t, i);
+      return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
+    }).join(' ');
+    html += `<polygon points="${pts}" fill="none" stroke="#C8C4BB" stroke-width="${t === 1.0 ? 1.2 : 0.6}" stroke-dasharray="${t === 1.0 ? 'none' : '3,3'}"/>`;
+  });
+
+  // Spokes
+  nccRows.forEach((_, i) => {
+    const outer = polar(R, i);
+    html += `<line x1="${cx}" y1="${cy}" x2="${outer.x.toFixed(2)}" y2="${outer.y.toFixed(2)}" stroke="#C8C4BB" stroke-width="0.8"/>`;
+  });
+
+  // Opposition polygon outline (no fill — fill is now the wedges)
+  html += `<polygon points="${polyPts(oppVals01)}" fill="none" stroke="#13264B" stroke-width="2" stroke-opacity="0.9" stroke-linejoin="round"/>`;
+  oppVals01.forEach((v, i) => {
+    const p = polar(R * v, i);
+    html += `<circle cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="3.2" fill="#13264B" stroke="white" stroke-width="1.2"/>`;
+  });
+
+  // NCC polygon outline
+  html += `<polygon points="${polyPts(nccVals01)}" fill="none" stroke="#C8102E" stroke-width="2.2" stroke-linejoin="round"/>`;
+  nccVals01.forEach((v, i) => {
+    const p = polar(R * v, i);
+    html += `<circle cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="3.5" fill="#C8102E" stroke="white" stroke-width="1.2"/>`;
+  });
+
+  // Axis labels — short names from the NCC row (Opp uses same metric set)
+  const labels = nccRows.map(r => r.label
+    .replace('Dribble & Carry OBV', 'Dribble & Carry')
+    .replace('Defensive Action OBV', 'Def. Action')
+    .replace(' OBV', '')
+  );
+
+  // Raw-value differential per axis (in original OBV units, not scaled)
+  function rawDiff(i) {
+    if (isSeason) return ranges[i].nccAvg - ranges[i].oppAvg;
+    const nv = nccRows[i].vals[idx], ov = oppRows[i].vals[idx];
+    if (nv === null || nv === undefined || ov === null || ov === undefined) return null;
+    return nv - ov;
+  }
+
+  const LABEL_PAD = 16;
+  labels.forEach((lbl, i) => {
+    const a = angle(i);
+    const ax = Math.cos(a), ay = Math.sin(a);
+    let anchor = 'middle';
+    if (ax > 0.15) anchor = 'start';
+    else if (ax < -0.15) anchor = 'end';
+    const lx = cx + (R + LABEL_PAD) * ax;
+    const ly = cy + (R + LABEL_PAD) * ay;
+    html += `<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}"
+      text-anchor="${anchor}" dominant-baseline="middle"
+      font-size="10" font-family="Barlow Condensed, sans-serif"
+      font-weight="600" fill="#4A4A45">${lbl}</text>`;
+
+    // Differential chip just below the axis label
+    const d = rawDiff(i);
+    if (d !== null) {
+      const sign = d >= 0 ? '+' : '−';
+      const fill = d >= 0 ? '#C8102E' : '#13264B';
+      const dy = ly + 12;
+      html += `<text x="${lx.toFixed(2)}" y="${dy.toFixed(2)}"
+        text-anchor="${anchor}" dominant-baseline="middle"
+        font-size="9" font-family="Barlow Condensed, sans-serif"
+        font-weight="700" fill="${fill}">${sign}${Math.abs(d).toFixed(3)}</text>`;
+    }
+  });
+
+  // Centre label
+  const centreLabel = isSeason
+    ? 'Season Avg'
+    : (MATCHES[idx] ? `vs ${MATCHES[idx].opp.split(' ').slice(-1)[0]}` : '');
+  html += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle"
+    font-size="9.5" font-family="Barlow Condensed, sans-serif" fill="#9A9890" font-style="italic">${centreLabel}</text>`;
+
+  svg.innerHTML = html;
+}
+
+// ── OBV HEAD-TO-HEAD TABLE (NCC | Metric | Opp) ──────────────────────────────
+function renderOBVH2HTable() {
+  const tbody = document.getElementById('obv-h2h-rows');
+  if (!tbody) return;
+
+  const isSeason = currentMatch === -1;
+  const idx = isSeason ? 0 : currentMatch;
+  const nccRows = DATA.obv.ncc;
+  const oppRows = DATA.obv.opp;
+
+  // Short metric name shown in the centre column (no "OBV" suffix needed)
+  function shortLabel(label) {
+    return label
+      .replace('Opp. ', '')
+      .replace('Dribble & Carry OBV', 'Dribble & Carry')
+      .replace('Defensive Action OBV', 'Def. Action')
+      .replace(' OBV', '');
+  }
+
+  // Render value + grade cells for a single side of one metric row.
+  function sideCells(row, side) {
+    const val     = isSeason ? null : row.vals[idx];
+    const display = fmt(val, row);
+    const grade   = val !== null ? getGrade(val, row) : null;
+
+    const valCell = display !== null
+      ? `<td class="h2h-val ${side}">${display}</td>`
+      : `<td class="h2h-val ${side} empty">—</td>`;
+
+    const gradeCell = (val !== null && grade)
+      ? `<td class="h2h-grade">${gradeHTML(grade)}</td>`
+      : `<td class="h2h-grade"><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
+
+    return { valCell, gradeCell };
+  }
+
+  tbody.innerHTML = nccRows.map((ncc, i) => {
+    const opp = oppRows[i];
+    const nccC = sideCells(ncc, 'ncc');
+    const oppC = sideCells(opp, 'opp');
+
+    // Column order (left → right):
+    //   NCC Grade | NCC Value | Metric | Opp Value | Opp Grade
+    return `<tr>
+      ${nccC.gradeCell}
+      ${nccC.valCell}
+      <td class="h2h-metric">${shortLabel(ncc.label)}</td>
+      ${oppC.valCell}
+      ${oppC.gradeCell}
+    </tr>`;
+  }).join('');
+}
+
+function renderAll() {
+  const isSeason = currentMatch === -1;
+  const idx = isSeason ? 0 : currentMatch;
+
+  const sections = [
+    ['sop-progression-rows',  DATA.sop.progression],
+    ['sop-finishing-rows',    DATA.sop.finishing],
+    ['packing-volume-rows',   DATA.packing.volume],
+    ['packing-linebreak-rows',DATA.packing.linebreak],
+    ['dom-penetration-rows',  DATA.boxdom.penetration],
+    ['dom-finishing-rows',    DATA.boxdom.finishing],
+    ['res-denying-rows',      DATA.boxres.denying],
+    ['res-nullifying-rows',   DATA.boxres.nullifying],
+    ['def-volume-rows',       DATA.defint.volume],
+    ['def-forward-rows',      DATA.defint.forward],
+    ['def-progallowed-rows',  DATA.defint.progallowed],
+    // NOTE: OBV no longer has separate NCC / Opp tables — it's rendered
+    // as a single head-to-head table by renderOBVH2HTable() below.
+  ];
+
+  sections.forEach(([tbodyId, rows]) => {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    tbody.innerHTML = rows.map(r => buildRow(r, idx, isSeason)).join('');
+  });
+
+  document.getElementById('seasonSummary').style.display = isSeason ? 'grid' : 'none';
+  renderOBVRadars();
+  renderOBVH2HTable();
+  renderBypassSegments();
+}
+
+function selectMatch(idx, el) {
+  exitContextView();
+  exitInsightsView();
+  currentMatch = idx;
+  document.querySelectorAll('.match-pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('seasonBtn').classList.remove('active');
+  if (idx === -1) {
+    document.getElementById('seasonBtn').classList.add('active');
+  } else {
+    if (el) el.classList.add('active');
+  }
+  // Restore active subtab in the performance nav
+  const activeSub = document.querySelector('.subtab.was-active') || document.querySelector('.subtab:first-child');
+  if (activeSub && !document.querySelector('.subtab.active')) activeSub.classList.add('active');
+  renderAll();
+  if (currentSubtab === 'match-insights') renderMatchInsights(idx);
+}
+
+function selectSubtab(name, el) {
+  currentSubtab = name;
+  document.querySelectorAll('.subtab').forEach(t => { t.classList.remove('active'); t.classList.remove('was-active'); });
+  el.classList.add('active');
+  el.classList.add('was-active');
+  document.querySelectorAll('.subtab-content').forEach(c => c.classList.remove('active'));
+  const tabMap = {
+    'sop':            'tab-sop',
+    'packing':        'tab-packing',
+    'box-dom':        'tab-box-dom',
+    'box-res':        'tab-box-res',
+    'def-int':        'tab-def-int',
+    'obv':            'tab-obv',
+    'match-insights': 'tab-match-insights'
+  };
+  const target = document.getElementById(tabMap[name]);
+  if (target) target.classList.add('active');
+  if (name === 'match-insights') renderMatchInsights(currentMatch);
+  if (name === 'obv') { renderOBVRadars(); renderOBVH2HTable(); }
+}
+
+function buildMatchPills() {
+  const container = document.getElementById('match-pills');
+  if (!container) return;
+  // Colour logic per result
+  function resultColor(result) {
+    if (result.startsWith('W')) return 'var(--grade-good)';
+    if (result.startsWith('L')) return 'var(--grade-poor)';
+    return 'var(--grade-typical)';
+  }
+  container.innerHTML = MATCHES.map((m, i) => {
+    const locText = m.loc === 'Home' ? `&#x25CF; Home` : `&#x25CF; Away`;
+    const locClass = m.loc === 'Home' ? 'home' : 'away';
+    const activeClass = i === currentMatch ? 'active' : '';
+    return `<button class="match-pill ${activeClass}" onclick="selectMatch(${i}, this)">
+      <span>${m.label} &mdash; ${m.date}</span>
+      <span class="opp">${m.loc === 'Away' ? '@ ' : 'vs '}${m.opp}</span>
+      <span class="loc ${locClass}" style="color:${resultColor(m.result)}">${m.result} &nbsp;${locText}</span>
+    </button>`;
+  }).join('');
+}
+
+// =====================================================================
+//  MATCH REPORT DATA — extracted from StatsBomb PDFs
+//  Index order matches MATCHES array (0 = M1, 7 = M8)
+// =====================================================================
+const MATCH_REPORT_DATA = [
+  // M1: NCC 2-1 Racing Louisville FC (Home, W)
+  { ncc_goals:2, opp_goals:1, result:'W',
+    ncc_xg:1.62, opp_xg:1.91, ncc_xg_sp:0.09, opp_xg_sp:0.17,
+    ncc_shots:15, opp_shots:17, ncc_sot:5, opp_sot:5,
+    ncc_poss:62, opp_poss:38, ncc_pass_pct:81, opp_pass_pct:65,
+    ncc_pressures:165, opp_pressures:218, ncc_press_regains:56, opp_press_regains:53,
+    top_shooters:'Ashley Nicole Sanchez (5 shots, 0.25xG), Hannah Betfort (2, 0.64xG)',
+    top_kp:'Shinomi Koyama (3 KP, 0.11xG), Ryan Williams (2 KP, 0.17xG)',
+    note:'Won despite being xG-negative. Efficiency from open play key — 1.22xG from open play sources.' },
+  // M2: NCC 0-0 Gotham FC (Away, D)
+  { ncc_goals:0, opp_goals:0, result:'D',
+    ncc_xg:1.32, opp_xg:0.65, ncc_xg_sp:null, opp_xg_sp:null,
+    ncc_shots:14, opp_shots:9, ncc_sot:3, opp_sot:1,
+    ncc_poss:59, opp_poss:41, ncc_pass_pct:82, opp_pass_pct:76,
+    ncc_pressures:188, opp_pressures:257, ncc_press_regains:67, opp_press_regains:65,
+    top_shooters:null, top_kp:null,
+    note:'We dominated xG and territory but failed to convert. Their GK held firm.' },
+  // M3: NCC 1-3 Bay FC (Home, L)
+  { ncc_goals:1, opp_goals:3, result:'L',
+    ncc_xg:1.73, opp_xg:1.24, ncc_xg_sp:null, opp_xg_sp:null,
+    ncc_shots:13, opp_shots:13, ncc_sot:2, opp_sot:6,
+    ncc_poss:50, opp_poss:50, ncc_pass_pct:81, opp_pass_pct:78,
+    ncc_pressures:252, opp_pressures:215, ncc_press_regains:74, opp_press_regains:69,
+    top_shooters:null, top_kp:null,
+    note:'Lost despite higher xG. Bay FC converted 3 from 6 SOT — clinical finishing overturned the chance-quality gap.' },
+  // M4: NCC 2-2 Portland Thorns (Home, D)
+  { ncc_goals:2, opp_goals:2, result:'D',
+    ncc_xg:1.24, opp_xg:1.59, ncc_xg_sp:null, opp_xg_sp:null,
+    ncc_shots:11, opp_shots:16, ncc_sot:6, opp_sot:6,
+    ncc_poss:59, opp_poss:41, ncc_pass_pct:84, opp_pass_pct:75,
+    ncc_pressures:144, opp_pressures:167, ncc_press_regains:54, opp_press_regains:57,
+    top_shooters:null, top_kp:null,
+    note:'PSxG 2.74 — we generated our highest shot quality of the season. Allowed 6 SOT despite low opposition xG.' },
+  // M5: NCC 1-0 Houston Dash (Away, W)
+  { ncc_goals:1, opp_goals:0, result:'W',
+    ncc_xg:1.52, opp_xg:1.39, ncc_xg_sp:0.20, opp_xg_sp:0.65,
+    ncc_shots:16, opp_shots:16, ncc_sot:8, opp_sot:2,
+    ncc_poss:52, opp_poss:48, ncc_pass_pct:81, opp_pass_pct:79,
+    ncc_pressures:141, opp_pressures:187, ncc_press_regains:51, opp_press_regains:58,
+    top_shooters:'Manaka Matsukubo (8 shots, 0.76xG)', top_kp:'Avery Patterson (4 KP, 0.43xG)',
+    note:'Won on fine margins. Houston dominated set-piece xG (0.65) but we nullified it. Matsukubo led our attacking threat.' },
+  // M6: NCC 2-2 Boston Legacy W (Away, D)
+  { ncc_goals:2, opp_goals:2, result:'D',
+    ncc_xg:0.78, opp_xg:1.85, ncc_xg_sp:null, opp_xg_sp:null,
+    ncc_shots:21, opp_shots:7, ncc_sot:3, opp_sot:2,
+    ncc_poss:49, opp_poss:51, ncc_pass_pct:77, opp_pass_pct:78,
+    ncc_pressures:192, opp_pressures:242, ncc_press_regains:63, opp_press_regains:78,
+    top_shooters:null, top_kp:null,
+    note:'We scored 2 from just 0.78xG — season-high over-performance. Boston had 1.85xG but we held to a draw.' },
+  // M7: NCC 1-2 KC Current (Home, L)
+  { ncc_goals:1, opp_goals:2, result:'L',
+    ncc_xg:1.87, opp_xg:2.20, ncc_xg_sp:null, opp_xg_sp:null,
+    ncc_shots:14, opp_shots:10, ncc_sot:3, opp_sot:2,
+    ncc_poss:58, opp_poss:42, ncc_pass_pct:78, opp_pass_pct:76,
+    ncc_pressures:93, opp_pressures:106, ncc_press_regains:37, opp_press_regains:33,
+    top_shooters:null, top_kp:null,
+    note:'Season low in pressures (93). KC had season-high opp xG (2.20). Low press intensity linked to defensive exposure.' },
+  // M8: Orlando Pride 1-0 NCC (Away, L)
+  { ncc_goals:0, opp_goals:1, result:'L',
+    ncc_xg:0.78, opp_xg:0.45, ncc_xg_sp:null, opp_xg_sp:null,
+    ncc_shots:12, opp_shots:9, ncc_sot:1, opp_sot:2,
+    ncc_poss:57, opp_poss:43, ncc_pass_pct:82, opp_pass_pct:77,
+    ncc_pressures:154, opp_pressures:115, ncc_press_regains:37, opp_press_regains:29,
+    top_shooters:null, top_kp:null,
+    note:'Lost despite leading on xG (0.78 vs 0.45) and possession (57%). Orlando converted their only quality chance — we were clinical in neither box.' }
+];
+
+// =====================================================================
+//  BYPASS SEGMENTS (Packing Momentum)
+//  Populated by build_dashboard.py from the spreadsheet's
+//  "ByPassed Players 0 - 15 Min" through "76 - 90 Min" columns.
+// =====================================================================
+const BYPASS_SEGMENT_LABELS = ["0–15'","16–30'","31–45'","46–60'","61–75'","76–90'"];
+const BYPASS_SEGMENTS = [
+  { ncc:[0,0,0,0,0,0], opp:[0,0,0,0,0,0] }
+];
+
+function renderBypassSegments() {
+  const el = document.getElementById('bypass-segments-container');
+  if (!el) return;
+  const isSeason = currentMatch === -1;
+
+  // Decide which values to use: a single match, or per-window averages
+  let nccVals, oppVals;
+  if (isSeason) {
+    nccVals = BYPASS_SEGMENT_LABELS.map((_, i) => {
+      const xs = BYPASS_SEGMENTS.map(e => e.ncc[i]).filter(v => v !== null && v !== undefined);
+      return xs.length ? xs.reduce((a,b)=>a+b,0)/xs.length : null;
+    });
+    oppVals = BYPASS_SEGMENT_LABELS.map((_, i) => {
+      const xs = BYPASS_SEGMENTS.map(e => e.opp[i]).filter(v => v !== null && v !== undefined);
+      return xs.length ? xs.reduce((a,b)=>a+b,0)/xs.length : null;
+    });
+  } else {
+    const entry = BYPASS_SEGMENTS[currentMatch];
+    nccVals = entry ? entry.ncc : BYPASS_SEGMENT_LABELS.map(() => null);
+    oppVals = entry ? entry.opp : BYPASS_SEGMENT_LABELS.map(() => null);
+  }
+
+  // Scale: max of all values in this view, with a floor of 1
+  const allVals = [...nccVals, ...oppVals].filter(v => v !== null && v !== undefined);
+  const maxV = allVals.length ? Math.max(...allVals, 1) : 1;
+
+  const fmt = v => v === null || v === undefined ? '—' : (isSeason ? v.toFixed(0) : String(v));
+
+  const cells = BYPASS_SEGMENT_LABELS.map((label, i) => {
+    const nv = nccVals[i], ov = oppVals[i];
+    if (nv === null && ov === null) {
+      return `<div class="bypass-cell">
+        <div class="bypass-cell-label">${label}</div>
+        <div class="bypass-cell-empty">No data</div>
+      </div>`;
+    }
+    const nccPct = nv !== null ? Math.max(2, (nv / maxV) * 100) : 0;
+    const oppPct = ov !== null ? Math.max(2, (ov / maxV) * 100) : 0;
+    const diff = (nv !== null && ov !== null) ? nv - ov : null;
+    let diffCls = 'neutral', diffTxt = '—';
+    if (diff !== null) {
+      const sign = diff > 0 ? '+' : '';
+      diffTxt = `${sign}${isSeason ? diff.toFixed(1) : diff}`;
+      diffCls = diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'neutral';
+    }
+    return `<div class="bypass-cell">
+      <div class="bypass-cell-label">${label}</div>
+      <div class="bypass-bar-row">
+        <span class="bypass-bar-label">NCC</span>
+        <div class="bypass-bar-track"><div class="bypass-bar-fill ncc" style="width:${nccPct}%"></div></div>
+        <span class="bypass-bar-value">${fmt(nv)}</span>
+      </div>
+      <div class="bypass-bar-row">
+        <span class="bypass-bar-label">OPP</span>
+        <div class="bypass-bar-track"><div class="bypass-bar-fill opp" style="width:${oppPct}%"></div></div>
+        <span class="bypass-bar-value">${fmt(ov)}</span>
+      </div>
+      <div class="bypass-cell-diff ${diffCls}">Δ ${diffTxt}</div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = cells;
+}
+
+// =====================================================================
+//  MATCH INSIGHTS RENDERER
+// =====================================================================
+function renderMatchInsights(matchIdx) {
+  const el = document.getElementById('match-insights-inner');
+  if (!el) return;
+
+  if (matchIdx === -1) {
+    el.innerHTML = `<div class="mi-no-match">Select a specific match to view Match Insights.</div>`;
+    return;
+  }
+
+  const m   = MATCHES[matchIdx];
+  const rpt = MATCH_REPORT_DATA[matchIdx];
+  if (!rpt) { el.innerHTML = `<div class="mi-no-match">No match report data available.</div>`; return; }
+
+  function seasonAvg(metricId) {
+    const allSections = Object.values(DATA).flatMap(cat => Object.values(cat).flat());
+    const row = allSections.find(r => r.id === metricId);
+    if (!row) return null;
+    const clean = row.vals.filter(v => v !== null);
+    return clean.length ? clean.reduce((a,b)=>a+b,0)/clean.length : null;
+  }
+  function matchVal(metricId) {
+    const allSections = Object.values(DATA).flatMap(cat => Object.values(cat).flat());
+    const row = allSections.find(r => r.id === metricId);
+    return row ? row.vals[matchIdx] : null;
+  }
+
+  const res    = rpt.result;
+  const resCls = res==='W'?'win':res==='L'?'loss':res==='D'?'draw':'unknown';
+  const resLabel = res==='W'?'WIN':res==='L'?'LOSS':res==='D'?'DRAW':'TBD';
+  const score  = `${rpt.ncc_goals} – ${rpt.opp_goals}`;
+
+  const xgDiff = rpt.ncc_xg - rpt.opp_xg;
+  const xgWon  = rpt.ncc_xg > rpt.opp_xg;
+  const xgSeasonAvg    = MATCH_REPORT_DATA.reduce((a,b)=>a+b.ncc_xg,0)/MATCH_REPORT_DATA.length;
+  const oppXgSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.opp_xg,0)/MATCH_REPORT_DATA.length;
+  const psxg_ncc = matchVal('psxg');
+  const psxg_opp = matchVal('opp_psxg');
+
+  function card(type, tag, headline, body, statsHTML, ctxNote) {
+    return `<div class="mi-card ${type}">
+      <div class="mi-card-tag">${tag}</div>
+      <div class="mi-card-headline">${headline}</div>
+      <div class="mi-card-body">${body}</div>
+      <div class="mi-stats-row">${statsHTML}</div>
+      ${ctxNote ? `<div class="mi-season-ctx">${ctxNote}</div>` : ''}
+    </div>`;
+  }
+  function stat(val, lbl, cls='') {
+    return `<div class="mi-stat"><div class="mi-stat-val ${cls}">${val}</div><div class="mi-stat-lbl">${lbl}</div></div>`;
+  }
+  function vs() { return `<div class="mi-vs-divider">vs</div>`; }
+
+  const cards = [];
+
+  // CARD 1: xG & Result Story
+  const xgOutcome = xgWon && res==='W' ? 'We earned the result — our xG matched the scoreline.'
+    : !xgWon && res==='L' ? 'The result was backed by the numbers — we were second-best in xG terms.'
+    : xgWon && res==='L' ? 'A performance that deserved more — we led on xG but couldn\'t convert.'
+    : xgWon && res==='D' ? 'We shaded the xG but couldn\'t turn dominance into a win.'
+    : !xgWon && res==='W' ? 'A clinical win that outperformed the xG — we were ruthless when it mattered.'
+    : 'We were xG-negative but battled back — resilience earned the point.';
+  const xgCardType = (xgWon && (res==='W'||res==='D')) ? 'positive' : (!xgWon && res==='W') ? 'positive' : (xgWon && res==='L') ? 'negative' : (!xgWon && res==='L') ? 'negative' : 'warning';
+  cards.push(card(xgCardType, '⚖ xG vs Result',
+    xgOutcome,
+    `Our xG: <strong>${rpt.ncc_xg.toFixed(2)}</strong> vs opponent xG: <strong>${rpt.opp_xg.toFixed(2)}</strong>. Season avg is ${xgSeasonAvg.toFixed(2)} (us) vs ${oppXgSeasonAvg.toFixed(2)} (opp).`,
+    stat(rpt.ncc_xg.toFixed(2),'Our xG','ncc') + vs() + stat(rpt.opp_xg.toFixed(2),'Opp xG','opp') +
+    (xgDiff>=0 ? stat('+'+xgDiff.toFixed(2),'xG advantage','good') : stat(xgDiff.toFixed(2),'xG deficit','poor')),
+    `Season avg: us ${xgSeasonAvg.toFixed(2)} xG/game · Opp ${oppXgSeasonAvg.toFixed(2)} xG/game`
+  ));
+
+  // CARD 2: Shot Conversion
+  const nccSotSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.ncc_sot,0)/MATCH_REPORT_DATA.length;
+  const sotVsAvg = rpt.ncc_sot > nccSotSeasonAvg ? 'above' : rpt.ncc_sot < nccSotSeasonAvg ? 'below' : 'at';
+  const sotEff = rpt.ncc_sot > 0 ? (rpt.ncc_goals/rpt.ncc_sot*100).toFixed(0) : '0';
+  const finType = rpt.ncc_goals >= 2 ? 'positive' : rpt.ncc_goals === 0 ? 'negative' : rpt.ncc_sot >= nccSotSeasonAvg ? 'good' : 'warning';
+  const psxgNote = psxg_ncc !== null ? ` Post-Shot xG was ${psxg_ncc.toFixed(2)} — ${psxg_ncc > rpt.ncc_xg ? 'shots were hitting dangerous zones.' : 'shot placement was below expectations.'}` : '';
+  cards.push(card(finType, '🎯 Shot Conversion',
+    rpt.ncc_goals === 0 ? 'We failed to find the net despite creating chances.'
+    : rpt.ncc_goals >= 2 ? `We were clinical, scoring ${rpt.ncc_goals} from ${rpt.ncc_sot} on target.`
+    : `We converted ${rpt.ncc_goals} of ${rpt.ncc_sot} shots on target.`,
+    `Our shots on target were ${sotVsAvg} the season average of ${nccSotSeasonAvg.toFixed(1)}.${psxgNote}`,
+    stat(rpt.ncc_shots,'Our Shots','ncc') + stat(rpt.ncc_sot,'On Target','ncc') +
+    stat(sotEff+'%','SOT→Goal%', rpt.ncc_goals>0?'good':'poor') +
+    (psxg_ncc!==null ? stat(psxg_ncc.toFixed(2),'PSxG') : ''),
+    `Season avg SOT: ${nccSotSeasonAvg.toFixed(1)} · This game: ${rpt.ncc_sot}`
+  ));
+
+  // CARD 3: Defensive Exposure
+  const oppSotSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.opp_sot,0)/MATCH_REPORT_DATA.length;
+  const defExposure = rpt.opp_sot > oppSotSeasonAvg*1.25 ? 'significantly higher' : rpt.opp_sot > oppSotSeasonAvg ? 'above' : rpt.opp_sot < oppSotSeasonAvg*0.75 ? 'well below' : 'below';
+  const defType = rpt.opp_goals === 0 ? 'positive' : rpt.opp_sot < oppSotSeasonAvg ? 'good' : rpt.opp_sot > oppSotSeasonAvg*1.2 ? 'negative' : 'warning';
+  const defHeadline = rpt.opp_goals === 0 ? 'Clean sheet — we were watertight defensively.'
+    : rpt.opp_sot < oppSotSeasonAvg ? `Solid shape held ${m.opp} to limited danger.`
+    : `${m.opp} tested us with ${rpt.opp_sot} shots on target.`;
+  const psxgOppNote = psxg_opp !== null ? ` Opp PSxG: ${psxg_opp.toFixed(2)} — ${psxg_opp > rpt.opp_xg ? 'opponents hit their spots well.' : 'GK positioning limited the damage.'}` : '';
+  cards.push(card(defType, '🛡 Defensive Exposure',
+    defHeadline,
+    `Opponent shots on target were ${defExposure} the season average of ${oppSotSeasonAvg.toFixed(1)}.${psxgOppNote}`,
+    stat(rpt.opp_shots,'Opp Shots','opp') + stat(rpt.opp_sot,'Opp SOT','opp') +
+    (psxg_opp!==null ? stat(psxg_opp.toFixed(2),'Opp PSxG','opp') : '') +
+    stat(rpt.opp_goals,'Conceded', rpt.opp_goals===0?'good':'poor'),
+    `Season avg Opp SOT: ${oppSotSeasonAvg.toFixed(1)} · This game: ${rpt.opp_sot}`
+  ));
+
+  // CARD 4: Possession & Build-up
+  const possSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.ncc_poss,0)/MATCH_REPORT_DATA.length;
+  const passSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.ncc_pass_pct,0)/MATCH_REPORT_DATA.length;
+  const highPoss = rpt.ncc_poss >= possSeasonAvg;
+  const highPass = rpt.ncc_pass_pct >= passSeasonAvg;
+  const possType = highPoss && highPass ? 'positive' : !highPoss && !highPass ? 'warning' : 'good';
+  const possNote = highPoss && res==='W' ? 'Ball retention contributed to controlling the game.'
+    : highPoss && res==='L' ? 'Possession dominance didn\'t translate — quality of use under scrutiny.'
+    : !highPoss && res==='W' ? 'We were efficient without the ball — lower possession, same result.'
+    : 'Mixture of territory and execution this game.';
+  const z2pct = matchVal('Z2_pct'); const z2seaAvg = seasonAvg('Z2_pct');
+  const z3pct = matchVal('Z3_pct'); const z3seaAvg = seasonAvg('Z3_pct');
+  cards.push(card(possType, '⬡ Possession & Build-up',
+    possNote,
+    `We had <strong>${rpt.ncc_poss}%</strong> possession (avg: ${possSeasonAvg.toFixed(0)}%) with <strong>${rpt.ncc_pass_pct}%</strong> pass completion (avg: ${passSeasonAvg.toFixed(0)}%).` +
+    (z2pct!==null ? ` Zone 2 pass completion: <strong>${(z2pct*100).toFixed(1)}%</strong> vs avg ${(z2seaAvg*100).toFixed(1)}%.` : ''),
+    stat(rpt.ncc_poss+'%','Possession', rpt.ncc_poss>=possSeasonAvg?'ncc':'') +
+    stat(rpt.ncc_pass_pct+'%','Pass Comp%', rpt.ncc_pass_pct>=passSeasonAvg?'good':'poor') +
+    (z3pct!==null ? stat((z3pct*100).toFixed(0)+'%','Zone 3 Comp%', z3pct>=z3seaAvg?'good':'poor') : ''),
+    `Season avg possession: ${possSeasonAvg.toFixed(0)}% · Pass %: ${passSeasonAvg.toFixed(0)}%`
+  ));
+
+  // CARD 5: Press Intensity
+  const pressSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.ncc_pressures,0)/MATCH_REPORT_DATA.length;
+  const pressRegainSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.ncc_press_regains,0)/MATCH_REPORT_DATA.length;
+  const pressEff = rpt.ncc_pressures > 0 ? (rpt.ncc_press_regains/rpt.ncc_pressures*100).toFixed(0) : '—';
+  const pressEffSeason = pressSeasonAvg > 0 ? (pressRegainSeasonAvg/pressSeasonAvg*100).toFixed(0) : '—';
+  const highPress = rpt.ncc_pressures >= pressSeasonAvg;
+  const pressType = highPress ? (parseFloat(pressEff)>=parseFloat(pressEffSeason)?'positive':'good') : (res==='L'?'negative':'warning');
+  const pressHeadline = rpt.ncc_pressures <= 100 ? 'Season-low press intensity — we sat deeper than usual.'
+    : highPress ? `High-intensity press with ${rpt.ncc_press_regains} regains won.`
+    : 'Below-average press intensity this game.';
+  const pressOH = matchVal('press_oh_pct'); const pressOHSeaAvg = seasonAvg('press_oh_pct');
+  cards.push(card(pressType, '⬤ Press Intensity',
+    pressHeadline,
+    `We applied <strong>${rpt.ncc_pressures}</strong> pressures (avg: ${pressSeasonAvg.toFixed(0)}) and won <strong>${rpt.ncc_press_regains}</strong> regains (${pressEff}% eff vs ${pressEffSeason}% avg).` +
+    (pressOH!==null ? ` <strong>${(pressOH*100).toFixed(0)}%</strong> of pressures in opp half (avg: ${(pressOHSeaAvg*100).toFixed(0)}%).` : ''),
+    stat(rpt.ncc_pressures,'Pressures', highPress?'good':'poor') +
+    stat(rpt.ncc_press_regains,'Regains') +
+    stat(pressEff+'%','Press Eff%', parseFloat(pressEff)>=parseFloat(pressEffSeason)?'good':'poor') +
+    (pressOH!==null ? stat((pressOH*100).toFixed(0)+'%','Opp Half%', pressOH>=pressOHSeaAvg?'good':'poor') : ''),
+    (!highPress && res==='L') ? 'Reduced press correlates with the loss — opponents had more time in build-up.'
+    : `Season avg: ${pressSeasonAvg.toFixed(0)} pressures · ${pressRegainSeasonAvg.toFixed(0)} regains`
+  ));
+
+  // CARD 6: Box Penetration
+  const bea=matchVal('bea'), sbe=matchVal('sbe'), tib=matchVal('tib');
+  const beaAvg=seasonAvg('bea'), sbeAvg=seasonAvg('sbe'), tibAvg=seasonAvg('tib');
+  const oppBea=matchVal('opp_bea'), oppSbe=matchVal('opp_sbe');
+  const oppBeaAvg=seasonAvg('opp_bea'), oppSbeAvg=seasonAvg('opp_sbe');
+  if (bea !== null) {
+    const beaSucRate = bea>0 ? ((sbe/bea)*100).toFixed(0) : '—';
+    const beaType = bea>=beaAvg && sbe>=sbeAvg ? 'positive' : bea<beaAvg*0.8 ? 'negative' : 'good';
+    cards.push(card(beaType, '⬡ Box Penetration',
+      bea>=beaAvg*1.2 ? 'High box entry volume — we were dominant in attacking areas.'
+      : bea<beaAvg*0.8 ? 'Low box penetration — we struggled to threaten the area.'
+      : `Moderate box presence — ${sbe} successful entries from ${bea} attempts.`,
+      `Us: <strong>${sbe}</strong> successful entries from <strong>${bea}</strong> attempts (${beaSucRate}% success). Opp: <strong>${oppSbe}</strong> from <strong>${oppBea}</strong>.` +
+      (tib!==null ? ` Touches in box: <strong>${tib}</strong> (avg: ${tibAvg.toFixed(0)}).` : ''),
+      stat(bea,'Our Entries','ncc') + stat(sbe,'Successful', parseInt(beaSucRate)>=60?'good':'poor') +
+      vs() + stat(oppBea,'Opp Entries','opp') + stat(oppSbe,'Opp Successful', oppSbeAvg&&oppSbe<=oppSbeAvg?'good':'poor'),
+      `Season avg — us: ${beaAvg.toFixed(0)} entries, ${sbeAvg.toFixed(0)} successful · Opp: ${oppBeaAvg.toFixed(0)} entries`
+    ));
+  }
+
+  // CARD 7: Set Piece Threat
+  const spxg_ncc=matchVal('spxg'), spxg_opp=matchVal('opp_spxg');
+  const spxgAvg=seasonAvg('spxg'), oppSpxgAvg=seasonAvg('opp_spxg');
+  if (spxg_ncc !== null) {
+    const spType = spxg_ncc>=spxgAvg*1.3 ? 'positive' : spxg_opp>=oppSpxgAvg*1.5 ? 'negative' : spxg_ncc<spxgAvg*0.5 ? 'warning' : 'neutral';
+    cards.push(card(spType, '📐 Set Piece Threat',
+      spxg_opp>spxg_ncc*1.5 ? 'Set-pieces a vulnerability — opponent generated more SP threat.'
+      : spxg_ncc>=spxgAvg*1.2 ? 'Strong set-piece output — above-average SP xG generated.'
+      : 'Set pieces produced modest threat from both sides.',
+      `Our SP xG: <strong>${spxg_ncc.toFixed(3)}</strong> (avg: ${spxgAvg.toFixed(3)}). Opp SP xG: <strong>${spxg_opp.toFixed(3)}</strong> (avg: ${oppSpxgAvg.toFixed(3)}).`,
+      stat(spxg_ncc.toFixed(3),'Our SP xG', spxg_ncc>=spxgAvg?'good':'') +
+      vs() + stat(spxg_opp.toFixed(3),'Opp SP xG', spxg_opp>=oppSpxgAvg?'poor':'good'),
+      `Season avg — our SP xG: ${spxgAvg.toFixed(3)} · Opp SP xG: ${oppSpxgAvg.toFixed(3)}`
+    ));
+  }
+
+  // CARD 8: Final Third Access
+  const dp=matchVal('deep_prog'), dpAvg=seasonAvg('deep_prog');
+  const lbF3=matchVal('lb_f3'), lbPct=matchVal('lb_pct_f3'), lbPctAvg=seasonAvg('lb_pct_f3');
+  const oppDp=matchVal('opp_dp'), oppDpAvg=seasonAvg('opp_dp');
+  if (dp !== null) {
+    const dpType = dp>=dpAvg*1.1 ? 'positive' : dp<dpAvg*0.8 ? 'negative' : 'good';
+    cards.push(card(dpType, '↗ Final Third Access',
+      dp>=dpAvg*1.2 ? 'We were highly effective at entering the final third.'
+      : dp<dpAvg*0.8 ? 'Below-average final third access — the opponent restricted us well.'
+      : 'Solid final third entries — progression consistent with season norms.',
+      `We made <strong>${dp}</strong> final third entries (avg: ${dpAvg.toFixed(0)}). Opp made <strong>${oppDp}</strong> entries (avg: ${oppDpAvg.toFixed(0)}).` +
+      (lbF3!==null && lbPct!==null ? ` Line-break passes in F3: <strong>${lbF3}</strong> at <strong>${(lbPct*100).toFixed(0)}%</strong> completion (avg: ${(lbPctAvg*100).toFixed(0)}%).` : ''),
+      stat(dp,'Our F3 Entries', dp>=dpAvg?'good':'poor') +
+      vs() + stat(oppDp,'Opp F3 Entries', oppDp<=oppDpAvg?'good':'poor') +
+      (lbPct!==null ? stat((lbPct*100).toFixed(0)+'%','LB Comp%', lbPct>=lbPctAvg?'good':'poor') : ''),
+      `Season avg F3 entries — us: ${dpAvg.toFixed(0)} · Opp: ${oppDpAvg.toFixed(0)}`
+    ));
+  }
+
+  const resultContext = {'W':`<strong>Win context:</strong> ${rpt.note}`,'L':`<strong>Loss context:</strong> ${rpt.note}`,'D':`<strong>Draw context:</strong> ${rpt.note}`}[res] || rpt.note;
+
+  el.innerHTML = `
+    <div class="mi-header">
+      <div class="mi-result-badge ${resCls}">${score}</div>
+      <div class="mi-header-meta">
+        <div class="mi-header-title">${m.loc==='Home'?'vs':'@'} ${m.opp} &mdash; ${m.date}</div>
+        <div class="mi-header-sub">${m.label} &nbsp;·&nbsp; ${m.loc} &nbsp;·&nbsp; Result: ${resLabel}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="mi-xg-label">xG</div>
+        <div style="display:flex;gap:4px;align-items:baseline;">
+          <span class="mi-xg-ncc">${rpt.ncc_xg.toFixed(2)}</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;color:var(--text-secondary)">–</span>
+          <span class="mi-xg-opp">${rpt.opp_xg.toFixed(2)}</span>
+        </div>
+        <div class="mi-xg-label">Us &nbsp;·&nbsp; Opp</div>
+      </div>
+    </div>
+
+    <div class="mi-card neutral" style="margin-bottom:14px;border-left-color:var(--courage-navy)">
+      <div class="mi-card-tag" style="color:var(--courage-navy)">📋 Match Summary</div>
+      <div class="mi-card-body" style="margin-bottom:0">${resultContext}</div>
+    </div>
+
+    <div class="mi-section-label">Attacking Output</div>
+    <div class="mi-cards">${cards.slice(0,3).join('')}</div>
+
+    <div class="mi-section-label">Possession &amp; Press</div>
+    <div class="mi-cards">${cards.slice(3,5).join('')}</div>
+
+    <div class="mi-section-label">Territorial Control</div>
+    <div class="mi-cards">${cards.slice(5).join('')}</div>
+  `;
+}
+
+buildMatchPills();
+renderAll();
+
+// =====================================================================
+//  INSIGHTS ENGINE — season-level analysis
+// =====================================================================
+
+function renderInsights() {
+  const container = document.getElementById('insights-view');
+
+  // ---- helpers ----
+  function avg(arr) {
+    const clean = arr.filter(v => v !== null && v !== undefined);
+    return clean.length ? clean.reduce((a,b)=>a+b,0)/clean.length : null;
+  }
+  function fmtV(val, row) {
+    if (val === null || val === undefined) return '—';
+    if (row.pct) return (val*100).toFixed(1)+'%';
+    if (row.dec !== undefined) return val.toFixed(row.dec);
+    return Number.isInteger(val) ? String(val) : val.toFixed(1);
+  }
+  // Get all metric rows flat
+  function allRows() {
+    const rows = [];
+    Object.values(DATA).forEach(cat => Object.values(cat).forEach(group => group.forEach(r => rows.push(r))));
+    return rows;
+  }
+  // Season position 0–1 for a row (1 = best)
+  function seasonPos(row) {
+    const clean = row.vals.filter(v=>v!==null);
+    if (!clean.length) return null;
+    const mn = Math.min(...clean), mx = Math.max(...clean);
+    if (mx===mn) return 0.5;
+    const a = avg(clean);
+    return row.higherBetter ? (a-mn)/(mx-mn) : (mx-a)/(mx-mn);
+  }
+  // Sparkline bars for a metric's vals over matches
+  function spark(row) {
+    const vals = row.vals.filter(v=>v!==null);
+    if (!vals.length) return '';
+    const mn = Math.min(...vals), mx = Math.max(...vals), rng = mx-mn || 1;
+    return row.vals.map((v,i) => {
+      if (v===null) return `<div class="ins-spark-bar" style="opacity:0.15;height:3px"></div>`;
+      const h = Math.round(4 + ((v-mn)/rng)*24);
+      const isCur = (i === row.vals.length-1);
+      const cls = isCur ? 'cur' : '';
+      return `<div class="ins-spark-bar ${cls}" style="height:${h}px"></div>`;
+    }).join('');
+  }
+
+  // ---- SECTION 1: TREND ALERTS ----
+  function trendScore(vals) {
+    const clean = vals.map((v,i)=>v!==null?{v,i}:null).filter(Boolean);
+    if (clean.length < 4) return null;
+    const last3 = clean.slice(-3).map(x=>x.v);
+    const up = last3[1]>last3[0] && last3[2]>last3[1];
+    const dn = last3[1]<last3[0] && last3[2]<last3[1];
+    if (!up && !dn) return null;
+    const magnitude = Math.abs(last3[2]-last3[0]);
+    const seasonRange = Math.max(...clean.map(x=>x.v)) - Math.min(...clean.map(x=>x.v));
+    const relMag = seasonRange > 0 ? magnitude/seasonRange : 0;
+    return { direction: up?'up':'down', magnitude: relMag, last3 };
+  }
+
+  const trendRows = [];
+  allRows().forEach(row => {
+    const t = trendScore(row.vals);
+    if (!t) return;
+    const positive = (t.direction==='up' && row.higherBetter) || (t.direction==='down' && !row.higherBetter);
+    trendRows.push({ row, trend: t, positive, magnitude: t.magnitude });
+  });
+  trendRows.sort((a,b)=>b.magnitude-a.magnitude);
+  const topTrends = [
+    ...trendRows.filter(x=>x.positive).slice(0,2),
+    ...trendRows.filter(x=>!x.positive).slice(0,2)
+  ];
+
+  // ---- SECTION 2: SEASON STRENGTHS & CONCERNS ----
+  const ranked = allRows()
+    .map(row => ({ row, pos: seasonPos(row) }))
+    .filter(x=>x.pos!==null)
+    .sort((a,b)=>b.pos-a.pos);
+  const strengths = ranked.slice(0,4);
+  const concerns  = ranked.slice(-4).reverse();
+
+  // ---- SECTION 3: HOME vs AWAY splits ----
+  const homeIdx = MATCHES.map((m,i)=>m.loc==='Home'?i:null).filter(v=>v!==null);
+  const awayIdx = MATCHES.map((m,i)=>m.loc==='Away'?i:null).filter(v=>v!==null);
+
+  function splitAvg(vals, idxArr) {
+    const vs = idxArr.map(i=>vals[i]).filter(v=>v!==null);
+    return vs.length ? vs.reduce((a,b)=>a+b,0)/vs.length : null;
+  }
+
+  const splitRows = [];
+  const splitCandidates = [
+    ...DATA.boxdom.penetration, ...DATA.boxdom.finishing.filter(r=>!r.pct),
+    ...DATA.boxres.denying, ...DATA.boxres.nullifying.filter(r=>!r.pct),
+    ...DATA.defint.volume, ...DATA.packing.volume,
+  ].filter(r=>!r.id.includes('pct') && !r.pct);
+
+  splitCandidates.forEach(row => {
+    const h = splitAvg(row.vals, homeIdx);
+    const a = splitAvg(row.vals, awayIdx);
+    if (h===null || a===null) return;
+    const mn = Math.min(...row.vals.filter(v=>v!==null));
+    const mx = Math.max(...row.vals.filter(v=>v!==null));
+    const rng = mx-mn || 1;
+    const diff = Math.abs(h-a)/rng;
+    splitRows.push({ row, home: h, away: a, diff,
+      homeBetter: row.higherBetter ? h>a : h<a });
+  });
+  splitRows.sort((a,b)=>b.diff-a.diff);
+  const topSplits = splitRows.slice(0,6);
+  const splitMax = topSplits.length ? Math.max(...topSplits.map(s=>Math.max(s.home,s.away))) : 1;
+
+  // ---- SECTION 4: ATTACK vs DEFENCE BALANCE ----
+  const nccXG    = DATA.boxdom.finishing.find(r=>r.id==='xg');
+  const oppXG    = DATA.boxres.nullifying.find(r=>r.id==='opp_xg');
+  const nccShots = DATA.boxdom.finishing.find(r=>r.id==='shots');
+  const oppShots = DATA.boxres.nullifying.find(r=>r.id==='opp_shots');
+  const xgAvg    = avg(nccXG.vals);
+  const oppXGAvg = avg(oppXG.vals);
+  const shotsAvg = avg(nccShots.vals);
+  const oppShotsAvg = avg(oppShots.vals);
+  const xgRatio  = oppXGAvg > 0 ? xgAvg/oppXGAvg : null;
+
+  function pearson(a, b) {
+    const pairs = a.map((v,i)=>[v,b[i]]).filter(([x,y])=>x!==null&&y!==null);
+    if (pairs.length<3) return null;
+    const xa=avg(pairs.map(p=>p[0])), ya=avg(pairs.map(p=>p[1]));
+    const num=pairs.reduce((s,[x,y])=>s+(x-xa)*(y-ya),0);
+    const dx=Math.sqrt(pairs.reduce((s,[x])=>s+(x-xa)**2,0));
+    const dy=Math.sqrt(pairs.reduce((s,[,y])=>s+(y-ya)**2,0));
+    return (dx*dy)>0 ? num/(dx*dy) : null;
+  }
+  const pressVals   = DATA.defint.volume.find(r=>r.id==='pressures').vals;
+  const pressXGcorr = pearson(pressVals, oppXG.vals);
+  // 'bea' (Box Entries Attempted) and 'opp_bea' were removed from DATA;
+  // derive an aggregate from the remaining Cross&Pass + Carry attempts when
+  // present so the entries success-rate calc still has something to chew on.
+  function sumRows(section, ids) {
+    const rows = ids.map(id => section.find(r=>r.id===id)).filter(Boolean);
+    if (!rows.length) return null;
+    const n = rows[0].vals.length;
+    return { vals: Array.from({length:n}, (_,i) =>
+      rows.reduce((sum,r) => sum + (r.vals[i] || 0), 0)) };
+  }
+  const nccBEA = DATA.boxdom.penetration.find(r=>r.id==='bea')
+              || sumRows(DATA.boxdom.penetration, ['bea_cp','bea_carry'])
+              || { vals: [] };
+  const nccSBE = DATA.boxdom.penetration.find(r=>r.id==='sbe') || { vals: [] };
+  const beSucRate = avg(nccBEA.vals.map((v,i)=>v&&nccSBE.vals[i]!==null?nccSBE.vals[i]/v:null));
+  const oppBEA = DATA.boxres.denying.find(r=>r.id==='opp_bea')
+              || sumRows(DATA.boxres.denying, ['opp_bea_cp','opp_bea_carry'])
+              || { vals: [] };
+  const oppSBE = DATA.boxres.denying.find(r=>r.id==='opp_sbe') || { vals: [] };
+  const oppBeSucRate = avg(oppBEA.vals.map((v,i)=>v&&oppSBE.vals[i]!==null?oppSBE.vals[i]/v:null));
+
+  // ===================== BUILD HTML =====================
+
+  function card(type, tag, headline, body, dataHTML) {
+    return `<div class="ins-card ${type}">
+      <div class="ins-card-tag">${tag}</div>
+      <div class="ins-card-headline">${headline}</div>
+      <div class="ins-card-body">${body}</div>
+      <div class="ins-card-data">${dataHTML}</div>
+    </div>`;
+  }
+  function stat(val, lbl) {
+    return `<div class="ins-card-stat"><div class="ins-card-stat-val">${val}</div><div class="ins-card-stat-lbl">${lbl}</div></div>`;
+  }
+
+  // --- Trend cards ---
+  const trendCards = topTrends.map(({row, trend, positive}) => {
+    const dir = trend.direction;
+    const type = positive ? (trend.magnitude>0.4?'strength':'good') : 'alert';
+    const tag  = positive ? '↑ Positive Trend' : '↓ Declining Trend';
+    const dirWord = positive
+      ? (dir==='up' ? 'climbing' : 'tightening')
+      : (dir==='up' ? 'rising (opponent metric)' : 'falling');
+    const last  = fmtV(trend.last3[2], row);
+    const first = fmtV(trend.last3[0], row);
+    const body = `${row.label} has been ${dirWord} across the last 3 matches, moving from ${first} to ${last}.`;
+    return card(type, tag, row.label, body,
+      stat(last, 'Latest') + stat(first, '3 games ago') +
+      `<div class="ins-spark">${spark(row)}</div>`
+    );
+  });
+
+  // --- Strengths ---
+  const strengthCards = strengths.slice(0,3).map(({row, pos}) => {
+    const a = avg(row.vals.filter(v=>v!==null));
+    const type = pos>=0.75 ? 'strength' : 'good';
+    const pct = Math.round(pos*100);
+    const body = `Consistently one of our best performing metrics this season — season average sits in the top ${100-pct+1}% of the season range.`;
+    return card(type, '✦ Season Strength', row.label, body,
+      stat(fmtV(a, row), 'Season avg') + stat(pct+'%', 'Season rank') +
+      `<div class="ins-spark">${spark(row)}</div>`
+    );
+  });
+
+  // --- Concerns ---
+  const concernCards = concerns.slice(0,3).map(({row, pos}) => {
+    const a = avg(row.vals.filter(v=>v!==null));
+    const pct = Math.round(pos*100);
+    const body = `This metric ranks in the bottom ${pct+1}% of the season range — a persistent challenge across the campaign so far.`;
+    return card('concern', '⚠ Area of Concern', row.label, body,
+      stat(fmtV(a, row), 'Season avg') + stat(pct+'%', 'Season rank') +
+      `<div class="ins-spark">${spark(row)}</div>`
+    );
+  });
+
+  // --- Home/Away split table ---
+  const splitTableRows = topSplits.map(({row, home, away, homeBetter}) => {
+    const diffVal  = home - away;
+    const pctDiff  = away !== 0 ? ((home-away)/Math.abs(away)*100).toFixed(0) : '—';
+    const diffCls  = homeBetter ? 'pos' : 'neg';
+    const sign     = diffVal>=0?'+':'';
+    const barH = Math.round((home/splitMax)*80);
+    const barA = Math.round((away/splitMax)*80);
+    return `<tr>
+      <td style="font-size:12px;color:var(--text-primary);max-width:180px">${row.label}</td>
+      <td><div class="ins-split-bar-wrap"><div class="ins-split-bar" style="width:${barH}px"></div><span>${fmtV(home, row)}</span></div></td>
+      <td><div class="ins-split-bar-wrap"><div class="ins-split-bar away" style="width:${barA}px"></div><span>${fmtV(away, row)}</span></div></td>
+      <td><span class="ins-split-diff ${diffCls}">${sign}${pctDiff}%</span></td>
+    </tr>`;
+  }).join('');
+
+  const splitHTML = `
+    <div class="ins-card neutral" style="grid-column:1/-1;border-left-color:var(--courage-navy)">
+      <div class="ins-card-tag" style="color:var(--courage-navy)">⊕ Home vs Away</div>
+      <div class="ins-card-headline">Location splits across key metrics</div>
+      <div class="ins-card-body">${homeIdx.length} home match${homeIdx.length!==1?'es':''}, ${awayIdx.length} away match${awayIdx.length!==1?'es':''}. Diff % shows how home compares to away — positive means better at home.</div>
+      <table class="ins-split-table">
+        <thead><tr>
+          <th>Metric</th>
+          <th style="color:var(--courage-navy)">Home avg</th>
+          <th style="color:var(--courage-red)">Away avg</th>
+          <th>Diff</th>
+        </tr></thead>
+        <tbody>${splitTableRows}</tbody>
+      </table>
+    </div>`;
+
+  // --- Attack / Defence Balance cards ---
+  const xgRatioDisp = xgRatio ? xgRatio.toFixed(2) : '—';
+  const xgRatioType = xgRatio ? (xgRatio>=1.2?'strength':xgRatio>=0.9?'good':xgRatio>=0.7?'neutral':'concern') : 'neutral';
+  const xgRatioMsg  = xgRatio
+    ? (xgRatio>=1.2 ? 'We are generating significantly more xG than we concede — a strong overall balance.'
+      : xgRatio>=0.9 ? 'Our xG creation and concession are broadly even — room to tip the balance further.'
+      : 'We are conceding more xG than we create on average — defensive or attacking efficiency needs attention.')
+    : 'Insufficient data.';
+
+  const corrType = pressXGcorr!==null ? (pressXGcorr<-0.3?'strength':pressXGcorr<0.1?'good':'concern') : 'neutral';
+  const corrMsg  = pressXGcorr!==null
+    ? (pressXGcorr<-0.4
+        ? 'Higher pressing intensity is associated with lower opponent xG — the press is working defensively.'
+        : pressXGcorr<0 ? 'A mild negative correlation — pressing may be helping limit opponents, but inconsistently.'
+        : 'No negative correlation found between pressing and opponent xG — the press may not be translating into defensive gains.')
+    : '—';
+  const corrDisp = pressXGcorr!==null ? pressXGcorr.toFixed(2) : '—';
+
+  const xgpsRow    = DATA.boxdom.finishing.find(r=>r.id==='xgps');
+  const oppXgpsRow = DATA.boxres.nullifying.find(r=>r.id==='opp_xgps');
+  const nccXgps    = avg(xgpsRow.vals.filter(v=>v!==null));
+  const oppXgps    = avg(oppXgpsRow.vals.filter(v=>v!==null));
+
+  const balanceCards = [
+    card(xgRatioType, '⚖ xG Balance',
+      'Our xG created vs conceded',
+      xgRatioMsg,
+      stat(xgAvg!==null?xgAvg.toFixed(2):'—', 'Our xG/game') +
+      stat(oppXGAvg!==null?oppXGAvg.toFixed(2):'—', 'Opp xG/game') +
+      stat(xgRatioDisp, 'xG ratio') +
+      `<div class="ins-spark">${spark(nccXG)}</div>`
+    ),
+    card(corrType, '⬤ Press → Defence Link',
+      'Does pressing correlate with xG conceded?',
+      corrMsg,
+      stat(corrDisp, 'Pearson r') +
+      stat(avg(pressVals.filter(v=>v!==null))!==null?avg(pressVals.filter(v=>v!==null)).toFixed(1):'—', 'Pressures/game (PA)') +
+      `<div class="ins-spark">${spark(DATA.defint.volume.find(r=>r.id==='pressures'))}</div>`
+    ),
+    card('balance', '⬡ Box Entry Efficiency',
+      'Box entry success: us vs opponents',
+      `We convert ${beSucRate!==null?(beSucRate*100).toFixed(0):'—'}% of box entry attempts into successful entries. Opponents convert ${oppBeSucRate!==null?(oppBeSucRate*100).toFixed(0):'—'}%.`,
+      stat(beSucRate!==null?(beSucRate*100).toFixed(0)+'%':'—', 'Our success rate') +
+      stat(oppBeSucRate!==null?(oppBeSucRate*100).toFixed(0)+'%':'—', 'Opp. success rate') +
+      stat(fmtV(avg(nccBEA.vals.filter(v=>v!==null)), nccBEA), 'Our entries/game') +
+      stat(fmtV(avg(oppBEA.vals.filter(v=>v!==null)), oppBEA), 'Opp entries/game')
+    ),
+    card('balance', '🎯 Shot Quality',
+      'xG/Shot — us vs opponents',
+      'Higher xG per shot means better quality chances. We ' +
+      (nccXgps > oppXgps ? 'are creating higher-quality chances than we are conceding.' : 'are conceding higher-quality chances than we are creating.'),
+      stat(nccXgps!==null?nccXgps.toFixed(3):'—', 'Our xG/shot') +
+      stat(oppXgps!==null?oppXgps.toFixed(3):'—', 'Opp xG/shot') +
+      stat(avg(nccShots.vals.filter(v=>v!==null))!==null?avg(nccShots.vals.filter(v=>v!==null)).toFixed(1):'—', 'Our shots/game') +
+      stat(avg(oppShots.vals.filter(v=>v!==null))!==null?avg(oppShots.vals.filter(v=>v!==null)).toFixed(1):'—', 'Opp shots/game')
+    ),
+  ];
+
+  // ===================== ASSEMBLE =====================
+  container.innerHTML = `
+    <div id="insights-view-inner">
+      <div class="ins-view-header">
+        <span class="ins-view-title">Season Insights</span>
+        <span class="ins-view-sub">${MATCHES.length} matches · All figures are season averages</span>
+      </div>
+
+      <div class="ins-section">
+        <div class="ins-section-label">Trend Alerts — last 3 matches</div>
+        <div class="ins-cards">${trendCards.join('')}</div>
+      </div>
+
+      <div class="ins-section">
+        <div class="ins-section-label">Season Strengths</div>
+        <div class="ins-cards">${strengthCards.join('')}</div>
+      </div>
+
+      <div class="ins-section">
+        <div class="ins-section-label">Areas of Concern</div>
+        <div class="ins-cards">${concernCards.join('')}</div>
+      </div>
+
+      <div class="ins-section">
+        <div class="ins-section-label">Home vs Away Splits</div>
+        <div class="ins-cards">${splitHTML}</div>
+      </div>
+
+      <div class="ins-section">
+        <div class="ins-section-label">Attacking &amp; Defensive Balance</div>
+        <div class="ins-cards">${balanceCards.join('')}</div>
+      </div>
+    </div>`;
+}
+</script>
+
+<!-- INSIGHTS VIEW (top-level, hidden by default) -->
+<div id="insights-view" style="display:none;"></div>
+
+<!-- CONTEXT VIEW (top-level, hidden by default) -->
+<div id="context-view" style="display:none;">
+  <div class="main" style="max-width:1400px;">
+<!-- ===================== CONTEXT & LOGIC ===================== -->
+  <div id="tab-context">
+
+    <div class="ctx-section-divider">Grading System</div>
+    <div class="ctx-grid">
+
+      <div class="ctx-card">
+        <div class="ctx-card-header">
+          <div class="ctx-card-icon">G</div>
+          <div class="ctx-card-title">How Grades Are Calculated</div>
+        </div>
+        <div class="ctx-card-body">
+          <p class="ctx-body-text">Each metric uses <strong>two separate grading functions</strong> that answer different questions. <strong>Match Grade</strong> uses min-max normalisation across the current season — it positions the selected match on a 0–100% scale between NCC's season best and worst for that metric, then applies five bands (0–15% Abysmal through 85–100% Excellent). <strong>3-Match Form</strong> grades the rolling 3-match average against the <em>season mean</em>, not the extremes — measuring deviation from the baseline in units of the season range (±10% = Typical boundary, ±35% = Excellent/Abysmal boundary). This means a match can grade Poor on Match Grade yet Good on 3-Match Form, signalling a dip in a single game while the recent form window still tracks above the season baseline.</p>
+          <p class="ctx-body-text">A Z-score approach (standard deviation from the mean) was considered but rejected at this stage — with only 7 matches in the dataset, the standard deviation is still sensitive to single-game outliers. Min-max will remain the method until at least 8–10 matches are logged.</p>
+          <p class="ctx-body-text"><strong>Formula:</strong> Position = (Match Value − Season Worst) ÷ (Season Best − Season Worst)</p>
+          <div class="ctx-grade-scale">
+            <div class="ctx-grade-row">
+              <span class="ctx-grade-label" style="color:var(--grade-excellent)">Excellent</span>
+              <div class="ctx-grade-bar-wrap"><div class="ctx-grade-bar" style="width:100%;background:var(--grade-excellent)"></div></div>
+              <span class="ctx-grade-range">Top 15% of season</span>
+            </div>
+            <div class="ctx-grade-row">
+              <span class="ctx-grade-label" style="color:var(--grade-good)">Good</span>
+              <div class="ctx-grade-bar-wrap"><div class="ctx-grade-bar" style="width:75%;background:var(--grade-good)"></div></div>
+              <span class="ctx-grade-range">65–85% of range</span>
+            </div>
+            <div class="ctx-grade-row">
+              <span class="ctx-grade-label" style="color:var(--grade-typical)">Typical</span>
+              <div class="ctx-grade-bar-wrap"><div class="ctx-grade-bar" style="width:50%;background:var(--grade-typical)"></div></div>
+              <span class="ctx-grade-range">35–65% of range</span>
+            </div>
+            <div class="ctx-grade-row">
+              <span class="ctx-grade-label" style="color:var(--grade-poor)">Poor</span>
+              <div class="ctx-grade-bar-wrap"><div class="ctx-grade-bar" style="width:25%;background:var(--grade-poor)"></div></div>
+              <span class="ctx-grade-range">15–35% of range</span>
+            </div>
+            <div class="ctx-grade-row">
+              <span class="ctx-grade-label" style="color:var(--grade-abysmal)">Abysmal</span>
+              <div class="ctx-grade-bar-wrap"><div class="ctx-grade-bar" style="width:10%;background:var(--grade-abysmal)"></div></div>
+              <span class="ctx-grade-range">Bottom 15% of season</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ctx-card">
+        <div class="ctx-card-header">
+          <div class="ctx-card-icon">!</div>
+          <div class="ctx-card-title">Important Limitations</div>
+        </div>
+        <div class="ctx-card-body">
+          <p class="ctx-body-text"><strong>Grades are relative, not absolute.</strong> A grade of Excellent means this was NCC's best performance of the season for that metric — it does not mean it is objectively excellent by league standards. Equally, Abysmal means it was the team's worst showing this season, not that it was catastrophic in isolation.</p>
+          <p class="ctx-body-text"><strong>Small sample size.</strong> With 7 matches, the season range is building but grades will continue to recalibrate as more data arrives. A metric graded Excellent now may shift as stronger or weaker performances are recorded over the full season.</p>
+          <p class="ctx-body-text"><strong>Pressing metrics are possession-adjusted (PA).</strong> Pressures, Counterpressures, Aggressive Actions, Tackles+Interceptions, Pressures in Opp. Half, and Counterpressures in Opp. Half are scaled using the formula: <em>raw ÷ opponent possession% × 0.5</em>. This normalises to a 50/50 possession baseline so a team with 40% possession is directly comparable to one with 60%. Possession percentages are sourced from StatsBomb match report PDFs.</p>
+          <p class="ctx-body-text"><strong>3-Match Form activates from GW3 onwards.</strong> The Form column shows the average of the last 3 non-null values, graded against the <em>season mean</em> rather than the min/max range. The deviation bands are wider (±10% = Typical, ±35% = Excellent/Abysmal) to prevent hypersensitivity — rolling averages naturally smooth toward the centre, so tighter bands would produce artificially compressed grades. A Good or Excellent Form grade alongside a lower Match Grade signals positive trajectory: recent games are running above the season baseline even if the individual match underperformed.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctx-section-divider">Performance Areas</div>
+    <div class="ctx-grid">
+
+      <div class="ctx-card">
+        <div class="ctx-card-header">
+          <div class="ctx-card-icon">S</div>
+          <div class="ctx-card-title">SOP Grading</div>
+        </div>
+        <div class="ctx-card-body">
+          <p class="ctx-body-text">The Standard of Play (SOP) grading system tracks NCC's ability to progress the ball through defined pitch zones and convert that progression into finishing opportunities. The pitch is divided into four zones: <strong>Zone 2</strong> (defensive-to-midfield progression), <strong>Zone 3</strong> (midfield-to-final third), <strong>Pass Zone</strong> (pre-box delivery area), and <strong>Shoot Zone</strong> (shooting positions).</p>
+          <p class="ctx-body-text">Each zone tracks <strong>Attempts</strong> (volume), <strong>Completions</strong> (success), <strong>Completion %</strong> (efficiency), and <strong>Points</strong> (a composite score). A high volume of Zone 3 Attempts with a low Completion % signals the team is trying to enter the final third but being blocked — a pattern worth noting for tactical review.</p>
+          <p class="ctx-body-text"><strong>Source:</strong> Match Stats spreadsheet — Z2, Z3, PZ, SZ columns. Note: Completion % columns in the spreadsheet show 0 — calculated as Completions ÷ Attempts.</p>
+        </div>
+      </div>
+
+      <div class="ctx-card">
+        <div class="ctx-card-header">
+          <div class="ctx-card-icon">P</div>
+          <div class="ctx-card-title">Packing &amp; Progression</div>
+        </div>
+        <div class="ctx-card-body">
+          <p class="ctx-body-text">Packing metrics quantify how many opposition players NCC removes from the game through passing and carrying. <strong>Bypassed Opponents</strong> captures all players beaten by the ball; <strong>Bypassed Defenders</strong> focuses on the defensive unit specifically, making it a stronger indicator of genuine progression quality.</p>
+          <p class="ctx-body-text"><strong>Ball Win metrics</strong> (Removed Opponents/Defenders) measure the same concept in the defensive-to-offensive transition — opponents removed by winning the ball back. <strong>Critical Ball Loss</strong> and <strong>Ball Loss Removed Teammates</strong> are negative contribution metrics; lower values are better.</p>
+          <p class="ctx-body-text">The <strong>Line Breaking</strong> table focuses specifically on passes that beat at least one opposition line into the final third. <strong>LB OBV (On-Ball Value)</strong> contextualises volume with quality — a high OBV from fewer passes is often more dangerous than a high volume with low OBV.</p>
+          <p class="ctx-body-text"><strong>Source:</strong> Match Stats spreadsheet. Note: config originally specified Impect PDFs — data is available in the spreadsheet and used directly.</p>
+        </div>
+      </div>
+
+      <div class="ctx-card">
+        <div class="ctx-card-header">
+          <div class="ctx-card-icon">B</div>
+          <div class="ctx-card-title">Box Domination</div>
+        </div>
+        <div class="ctx-card-body">
+          <p class="ctx-body-text">Box Domination measures NCC's ability to penetrate the opposition box and create high-quality chances. The <strong>Penetration</strong> table tracks entries (touches, passes into and inside the box, crosses), while the <strong>Finishing & GK Influence</strong> table assesses the quality of what NCC did once inside.</p>
+          <p class="ctx-body-text"><strong>Post-Shot xG</strong> (Non Penalty PSxG Faced) measures the quality of shot placement — going beyond pre-shot position to account for where in the goal the shot was aimed. Higher PSxG indicates NCC placed shots in more dangerous areas of the frame.</p>
+          <p class="ctx-body-text">The <strong>Opposition GK metrics</strong> (GSAA and NP Save %) measure how well the opposing goalkeeper performed. A high GSAA means the opp GK saved more than statistically expected — this is negative for NCC and graded accordingly (lower is better from NCC's perspective).</p>
+          <p class="ctx-body-text"><strong>Source:</strong> Match Stats spreadsheet for most metrics. Post-Shot xG (PSxG), GSAA, and NP Save % are sourced from StatsBomb match report PDFs (GK shot stopping table). Tackles Won from PDF match stats page (spreadsheet Tackles column = 0 for all matches).</p>
+        </div>
+      </div>
+
+      <div class="ctx-card">
+        <div class="ctx-card-header">
+          <div class="ctx-card-icon">R</div>
+          <div class="ctx-card-title">Box Resilience</div>
+        </div>
+        <div class="ctx-card-body">
+          <p class="ctx-body-text">Box Resilience is the defensive mirror of Box Domination — tracking how well NCC prevented the opposition from penetrating their box and creating chances. All opponent-side metrics in this section are graded inversely: <strong>lower values are better</strong> for NCC, reflecting less opposition threat allowed.</p>
+          <p class="ctx-body-text">The <strong>Denying</strong> table tracks how often and successfully the opposition entered NCC's box. The <strong>Nullifying</strong> table assesses the quality of chances the opposition created and how well NCC's goalkeeper managed them.</p>
+          <p class="ctx-body-text"><strong>NCC GK GSAA</strong> (Goals Saved Above Average) is the most important goalkeeper metric on the dashboard — positive means Sheridan saved more than the post-shot model expected, negative means she conceded more. GW3 (−0.66) reflects a night where she faced exceptionally well-placed shots and conceded 3 goals against a PSxG of 2.34. GW2 (0.00) is notable — Sheridan faced no shots on target, making NP Save % unavailable for that match.</p>
+          <p class="ctx-body-text"><strong>Blocks per Shot</strong> and <strong>Clearances</strong> are positive metrics — higher values indicate NCC was more active in blocking and clearing before shots reached Sheridan. Very high Clearances can indicate sustained defensive pressure rather than dominance.</p>
+        </div>
+      </div>
+
+      <div class="ctx-card">
+        <div class="ctx-card-header">
+          <div class="ctx-card-icon">D</div>
+          <div class="ctx-card-title">Defensive Intensity</div>
+        </div>
+        <div class="ctx-card-body">
+          <p class="ctx-body-text">Defensive Intensity covers how actively and how high up the pitch NCC defends. It is divided into three areas: <strong>Volume & Aggression</strong> (how much NCC pressed), <strong>Forward Leaning / Pressure Height</strong> (where they pressed), and <strong>Progression Allowed</strong> (what the opposition managed to do through the press).</p>
+          <p class="ctx-body-text"><strong>Aggression Rate</strong> is the most possession-neutral metric in this section — measuring the proportion of opposition ball receipts that were pressed within 2 seconds, regardless of how many total receipts occurred. It is the best single indicator of NCC's defensive urgency.</p>
+          <p class="ctx-body-text"><strong>Defensive Action Distance</strong> is a key pressure height indicator — the average distance from NCC's own goal where defensive actions occur. Higher = NCC is defending further up the pitch. GW3 (61.9) was the season high, coinciding with the most progressive pressing profile.</p>
+          <p class="ctx-body-text"><strong>Opp. Pressured Passes in Def. Third</strong> measures how often NCC forced the opponent into pressured passes in NCC's defensive third — higher is better, indicating NCC's press stifled opposition progression. The Progression Allowed table tracks whether the opposition ultimately broke NCC's lines.</p>
+        </div>
+      </div>
+
+      <div class="ctx-card">
+        <div class="ctx-card-header">
+          <div class="ctx-card-icon">+/−</div>
+          <div class="ctx-card-title">Positive vs Negative Metrics</div>
+        </div>
+        <div class="ctx-card-body">
+          <p class="ctx-body-text">Every metric in this dashboard has a defined polarity. <strong>Positive metrics</strong> are ones where higher values indicate better performance — more touches in the box, more line-breaking passes, higher defensive OBV. <strong>Negative metrics</strong> are ones where lower values indicate better performance — fewer opposition touches in the box, lower opposition xG, lower critical ball losses.</p>
+          <p class="ctx-body-text">Opponent-side metrics (tagged <strong>Opp</strong> in the table) are always negative — they measure what the opposition achieved, so lower is better from NCC's perspective. The grading system automatically accounts for polarity; the season's worst defensive performance (highest opposition xG allowed) will always grade Abysmal regardless of whether the raw number is high or low.</p>
+          <p class="ctx-body-text">Metrics tagged <strong>Neg</strong> (in red) are NCC's own negative contribution metrics — things like Critical Ball Loss and Ball Loss Removed Teammates. These are things NCC did that harmed their own performance, so lower values are graded as better.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctx-section-divider">Data Sources</div>
+    <div class="ctx-grid single">
+      <div class="ctx-card">
+        <div class="ctx-card-header">
+          <div class="ctx-card-icon">&#x21E8;</div>
+          <div class="ctx-card-title">Data Sources &amp; Update Cadence</div>
+        </div>
+        <div class="ctx-card-body">
+          <table class="ctx-source-table">
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>Metrics</th>
+                <th>Coverage</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="ctx-dot" style="background:#2E7D32"></span><strong>Match Stats Spreadsheet</strong></td>
+                <td>SOP zones, packing, line-breaking, box penetration, xG, shots, quality & big chances, defensive intensity, opposition metrics</td>
+                <td>All 7 matches — complete (GW6b LB data pending)</td>
+                <td>Primary source. All NCC and opponent row values. Completion % for SOP zones calculated as Completions ÷ Attempts (spreadsheet column shows 0). GW6b (KC) Line Breaking columns are null in the spreadsheet — shown as — in the dashboard.</td>
+              </tr>
+              <tr>
+                <td><span class="ctx-dot" style="background:#1565C0"></span><strong>Player Stats Spreadsheet</strong></td>
+                <td>Post-Shot xG (Non Penalty PSxG Faced), Opposition Post-Shot xG</td>
+                <td>GW1–GW4 — complete; GW5–GW7 from PDFs</td>
+                <td>PSxG for GW5–GW7 sourced directly from StatsBomb match report PDFs (GK shot stopping table) since Player Stats spreadsheet not yet available for those matches.</td>
+              </tr>
+              <tr>
+                <td><span class="ctx-dot" style="background:#8B4513"></span><strong>StatsBomb Match Report PDFs</strong></td>
+                <td>Opposition GK GSAA, Opposition GK NP Save %, NCC GK GSAA, NCC GK NP Save %, Tackles (Won), Possession %, PSxG (GW5–GW7)</td>
+                <td>All 7 matches — complete</td>
+                <td>GSAA = PSxG faced on SOT minus goals conceded. NP Save % = saves ÷ non-penalty shots on target. Tackles Won from PDF match stats page. Possession % used for all PA calculations (formula: raw ÷ opp_poss% × 0.5). GW2 NCC NP Save % is null — Sheridan faced 0 shots on target.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </div>
+</div>
+
+<!-- PRINT VIEW — 3 pages -->
+<div id="print-view">
+
+  <!-- PAGE 1: Header + Overview + SOP Grading + Packing & Progression -->
+  <div class="pv-page" id="pv-page1">
+    <div class="pv-header">
+      <div>
+        <div class="pv-title" id="pv-title">NC Courage — Match Summary</div>
+        <div class="pv-subtitle" id="pv-subtitle"></div>
+      </div>
+      <div class="pv-meta" id="pv-meta"></div>
+    </div>
+    <div class="pv-overview" id="pv-overview"></div>
+    <div class="pv-narrative" id="pv-narrative"></div>
+    <div id="pv-page1-sections"></div>
+    <div class="pv-footer"><span class="pv-page-num">1 / 4</span>North Carolina Courage &nbsp;·&nbsp; 2026 NWSL Season &nbsp;·&nbsp; StatsBomb / Impect Data</div>
+  </div>
+
+  <!-- PAGE 2: Box Domination + Box Resilience -->
+  <div class="pv-page pv-page-break" id="pv-page2">
+    <div class="pv-header">
+      <div>
+        <div class="pv-title" id="pv-title2"></div>
+        <div class="pv-subtitle" id="pv-subtitle2"></div>
+      </div>
+      <div class="pv-meta" id="pv-meta2"></div>
+    </div>
+    <div id="pv-page2-sections"></div>
+    <div class="pv-footer"><span class="pv-page-num">2 / 4</span>North Carolina Courage &nbsp;·&nbsp; 2026 NWSL Season &nbsp;·&nbsp; StatsBomb / Impect Data</div>
+  </div>
+
+  <!-- PAGE 3: Defensive Intensity + Grade Legend -->
+  <div class="pv-page pv-page-break" id="pv-page3">
+    <div class="pv-header">
+      <div>
+        <div class="pv-title" id="pv-title3"></div>
+        <div class="pv-subtitle" id="pv-subtitle3"></div>
+      </div>
+      <div class="pv-meta" id="pv-meta3"></div>
+    </div>
+    <div id="pv-page3-sections"></div>
+    <div class="pv-legend">
+      <div class="pv-legend-item"><div class="pv-legend-dot" style="background:#2ECC71"></div> Excellent — season best performance</div>
+      <div class="pv-legend-item"><div class="pv-legend-dot" style="background:#7FBA00"></div> Good — above season average</div>
+      <div class="pv-legend-item"><div class="pv-legend-dot" style="background:#D4AF37"></div> Typical — around season average</div>
+      <div class="pv-legend-item"><div class="pv-legend-dot" style="background:#E67E22"></div> Poor — below season average</div>
+      <div class="pv-legend-item"><div class="pv-legend-dot" style="background:#C0392B"></div> Abysmal — season worst performance</div>
+      <div class="pv-legend-item" style="margin-left:8px;color:#9A9A92;font-style:italic;">Match Grade vs season min/max · 3-Match Form vs season mean</div>
+    </div>
+    <div class="pv-footer"><span class="pv-page-num">3 / 4</span>North Carolina Courage &nbsp;·&nbsp; 2026 NWSL Season &nbsp;·&nbsp; StatsBomb / Impect Data &nbsp;·&nbsp; Printed <span id="pv-date"></span></div>
+  </div>
+
+  <!-- PAGE 4: Match Insights -->
+  <div class="pv-page pv-page-break" id="pv-page4">
+    <div class="pv-header">
+      <div>
+        <div class="pv-title" id="pv-title4">NC Courage — Match Insights</div>
+        <div class="pv-subtitle" id="pv-subtitle4"></div>
+      </div>
+      <div class="pv-meta" id="pv-meta4"></div>
+    </div>
+    <div id="pv-insights-content"></div>
+    <div class="pv-footer"><span class="pv-page-num">4 / 4</span>North Carolina Courage &nbsp;·&nbsp; 2026 NWSL Season &nbsp;·&nbsp; StatsBomb / Impect Data</div>
+  </div>
+
+</div>
+
+<script>
+const MATCH_INFO = [
+  { label:'GW1',  date:'Mar 15, 2026', opp:'Racing Louisville FC', loc:'Home', result:'W 2–1' },
+  { label:'GW2',  date:'Mar 22, 2026', opp:'NJ/NY Gotham FC',      loc:'Away', result:'D 0–0' },
+  { label:'GW3',  date:'Mar 29, 2026', opp:'Bay FC',                loc:'Home', result:'L 1–3' },
+  { label:'GW4',  date:'Apr 5, 2026',  opp:'Portland Thorns',       loc:'Home', result:'D 2–2' },
+  { label:'GW5',  date:'Apr 26, 2026', opp:'Houston Dash',          loc:'Away', result:'W 1–0' },
+  { label:'GW6a', date:'Apr 30, 2026', opp:'Boston Legacy W',       loc:'Away', result:'D 2–2' },
+  { label:'GW6b', date:'May 2, 2026',  opp:'KC Current',            loc:'Home', result:'L 1–2' }
+];
+
+const SECTION_LABELS = {
+  sop:       'SOP Grading',
+  packing:   'Packing & Progression',
+  'box-dom': 'Box Domination',
+  'box-res': 'Box Resilience',
+  'def-int': 'Defensive Intensity'
+};
+
+const ALL_SECTIONS = {
+  sop:       [...DATA.sop.progression, ...DATA.sop.finishing],
+  packing:   [...DATA.packing.volume,  ...DATA.packing.linebreak],
+  'box-dom': [...DATA.boxdom.penetration, ...DATA.boxdom.finishing],
+  'box-res': [...DATA.boxres.denying,  ...DATA.boxres.nullifying],
+  'def-int': [...DATA.defint.volume,   ...DATA.defint.forward, ...DATA.defint.progallowed]
+};
+
+// Page assignment: which sections go on which page
+const PAGE_SECTIONS = {
+  1: ['sop', 'packing'],
+  2: ['box-dom', 'box-res'],
+  3: ['def-int']
+};
+
+function pvGradeHTML(grade) {
+  if (!grade) return '<span class="pv-grade na">—</span>';
+  const label = grade.charAt(0).toUpperCase() + grade.slice(1);
+  return `<span class="pv-grade ${grade}">${label}</span>`;
+}
+
+function sectionOverallGrade(key, idx) {
+  const rows = ALL_SECTIONS[key];
+  const order = ['excellent','good','typical','poor','abysmal'];
+  const graded = rows.map(r => r.vals[idx] !== null ? getGrade(r.vals[idx], r) : null).filter(Boolean);
+  if (!graded.length) return 'typical';
+  const avg = Math.round(graded.reduce((a, g) => a + order.indexOf(g), 0) / graded.length);
+  return order[Math.min(avg, 4)];
+}
+
+function buildNarrative(matchIdx) {
+  const order = ['excellent','good','typical','poor','abysmal'];
+  const sectionGrades = {};
+  Object.keys(ALL_SECTIONS).forEach(key => {
+    sectionGrades[key] = sectionOverallGrade(key, matchIdx);
+  });
+  const gradeWord = { excellent:'Excellent', good:'Good', typical:'Typical', poor:'Poor', abysmal:'Abysmal' };
+  const sorted = Object.entries(sectionGrades).sort((a,b) => order.indexOf(a[1]) - order.indexOf(b[1]));
+  const best = sorted[0], worst = sorted[sorted.length - 1];
+  const lines = Object.entries(sectionGrades).map(([k, g]) =>
+    `<strong>${SECTION_LABELS[k]}:</strong> ${gradeWord[g]}`
+  ).join(' &nbsp;·&nbsp; ');
+  const summary = (best[0] !== worst[0])
+    ? `<br>Strongest area was <strong>${SECTION_LABELS[best[0]]}</strong>; most room for improvement in <strong>${SECTION_LABELS[worst[0]]}</strong>.`
+    : '';
+  return lines + summary;
+}
+
+function buildSectionTable(key, idx) {
+  const rows = ALL_SECTIONS[key];
+  const rowsHTML = rows.map(r => {
+    const v = r.vals[idx];
+    const dispVal = v !== null ? fmt(v, r) : '—';
+    const g = v !== null ? getGrade(v, r) : (r.source ? 'pending' : null);
+    const worstDisp = (() => { const s = seasonStats(r.vals, r.higherBetter); return s.worst !== null ? fmt(s.worst, r) : '—'; })();
+    const bestDisp  = (() => { const s = seasonStats(r.vals, r.higherBetter); return s.best  !== null ? fmt(s.best,  r) : '—'; })();
+    return `<tr>
+      <td>${r.label}</td>
+      <td style="color:#9A9A92">${worstDisp}</td>
+      <td class="pv-val">${dispVal}</td>
+      <td style="color:#4A7C00">${bestDisp}</td>
+      <td>${pvGradeHTML(g)}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="pv-section">
+    <div class="pv-section-title">${SECTION_LABELS[key]}</div>
+    <table class="pv-table">
+      <thead><tr>
+        <th style="width:40%">Metric</th>
+        <th>Season Worst</th>
+        <th>Match Value</th>
+        <th>Season Best</th>
+        <th>Match Grade</th>
+      </tr></thead>
+      <tbody>${rowsHTML}</tbody>
+    </table>
+  </div>`;
+}
+
+function setPageHeader(num, info) {
+  const sfx = num === 1 ? '' : num.toString();
+  document.getElementById(`pv-title${sfx}`).textContent = `NC Courage — ${info.label} Match Summary`;
+  document.getElementById(`pv-subtitle${sfx}`).textContent = `vs ${info.opp} · ${info.loc}`;
+  document.getElementById(`pv-meta${sfx}`).innerHTML = `${info.date}<br><strong>${info.result}</strong>`;
+}
+
+function openPrint() {
+  if (currentMatch === -1) {
+    alert('Please select a specific match to print a summary.');
+    return;
+  }
+  const idx = currentMatch;
+  const info = MATCH_INFO[idx];
+
+  // Set headers on all 3 pages
+  setPageHeader(1, info);
+  setPageHeader(2, info);
+  setPageHeader(3, info);
+
+  // Date
+  document.getElementById('pv-date').textContent = new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+
+  // Overview bar (page 1)
+  document.getElementById('pv-overview').innerHTML = Object.keys(ALL_SECTIONS).map(key => {
+    const g = sectionOverallGrade(key, idx);
+    return `<div class="pv-ov-item">
+      <div class="pv-ov-label">${SECTION_LABELS[key]}</div>
+      <div class="pv-ov-grade ${g}">${g.charAt(0).toUpperCase() + g.slice(1)}</div>
+    </div>`;
+  }).join('');
+
+  // Narrative (page 1)
+  document.getElementById('pv-narrative').innerHTML = buildNarrative(idx);
+
+  // Sections per page
+  [1, 2, 3].forEach(p => {
+    document.getElementById(`pv-page${p}-sections`).innerHTML =
+      PAGE_SECTIONS[p].map(key => buildSectionTable(key, idx)).join('');
+  });
+
+  // Page 4: Match Insights
+  setPageHeader(4, info);
+  document.getElementById('pv-insights-content').innerHTML = buildPrintInsights(idx);
+
+  window.print();
+}
+
+function buildPrintInsights(matchIdx) {
+  const m   = MATCHES[matchIdx];
+  const rpt = MATCH_REPORT_DATA[matchIdx];
+  if (!rpt) return '<p style="color:#7A7A74;font-size:8pt">No match report data available.</p>';
+
+  function seasonAvg(metricId) {
+    const allSections = Object.values(DATA).flatMap(cat => Object.values(cat).flat());
+    const row = allSections.find(r => r.id === metricId);
+    if (!row) return null;
+    const clean = row.vals.filter(v => v !== null);
+    return clean.length ? clean.reduce((a,b)=>a+b,0)/clean.length : null;
+  }
+  function matchVal(metricId) {
+    const allSections = Object.values(DATA).flatMap(cat => Object.values(cat).flat());
+    const row = allSections.find(r => r.id === metricId);
+    return row ? row.vals[matchIdx] : null;
+  }
+
+  const res    = rpt.result;
+  const resCls = res==='W'?'win':res==='L'?'loss':res==='D'?'draw':'unknown';
+  const resLabel = res==='W'?'WIN':res==='L'?'LOSS':res==='D'?'DRAW':'—';
+  const score  = `${rpt.ncc_goals}–${rpt.opp_goals}`;
+  const xgDiff = rpt.ncc_xg - rpt.opp_xg;
+  const xgWon  = rpt.ncc_xg > rpt.opp_xg;
+  const xgSeasonAvg    = MATCH_REPORT_DATA.reduce((a,b)=>a+b.ncc_xg,0)/MATCH_REPORT_DATA.length;
+  const oppXgSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.opp_xg,0)/MATCH_REPORT_DATA.length;
+  const psxg_ncc = matchVal('psxg');
+  const psxg_opp = matchVal('opp_psxg');
+
+  function pcard(type, tag, headline, body, statsHTML, ctx) {
+    return `<div class="pv-ins-card ${type}">
+      <div class="pv-ins-card-tag">${tag}</div>
+      <div class="pv-ins-card-headline">${headline}</div>
+      <div class="pv-ins-card-body">${body}</div>
+      <div class="pv-ins-stats">${statsHTML}</div>
+      ${ctx ? `<div class="pv-ins-ctx">${ctx}</div>` : ''}
+    </div>`;
+  }
+  function pstat(val, lbl, cls='') {
+    return `<div class="pv-ins-stat"><div class="pv-ins-stat-val ${cls}">${val}</div><div class="pv-ins-stat-lbl">${lbl}</div></div>`;
+  }
+
+  const cards = [];
+
+  // xG vs Result
+  const xgOutcome = xgWon && res==='W' ? 'We earned the result — our xG backed the scoreline.'
+    : !xgWon && res==='L' ? 'Result backed by numbers — we were second-best in xG.'
+    : xgWon && res==='L' ? 'We deserved more — led on xG but couldn\'t convert.'
+    : xgWon && res==='D' ? 'We shaded the xG but couldn\'t turn dominance into a win.'
+    : !xgWon && res==='W' ? 'A clinical win — we outperformed the xG when it mattered.'
+    : 'We were xG-negative but resilience earned the point.';
+  const xgCardType = (xgWon&&(res==='W'||res==='D'))?'positive':(!xgWon&&res==='W')?'positive':(xgWon&&res==='L')?'negative':(!xgWon&&res==='L')?'negative':'warning';
+  cards.push(pcard(xgCardType, '⚖ xG vs Result', xgOutcome,
+    `Our xG: <strong>${rpt.ncc_xg.toFixed(2)}</strong> vs opp: <strong>${rpt.opp_xg.toFixed(2)}</strong>. Season avg ${xgSeasonAvg.toFixed(2)} (us) / ${oppXgSeasonAvg.toFixed(2)} (opp).`,
+    pstat(rpt.ncc_xg.toFixed(2),'Our xG','ncc') + pstat(rpt.opp_xg.toFixed(2),'Opp xG','opp') + (xgDiff>=0?pstat('+'+xgDiff.toFixed(2),'Advantage','good'):pstat(xgDiff.toFixed(2),'Deficit','poor')),
+    `Avg: us ${xgSeasonAvg.toFixed(2)} / Opp ${oppXgSeasonAvg.toFixed(2)}`
+  ));
+
+  // Shot Conversion
+  const nccSotSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.ncc_sot,0)/MATCH_REPORT_DATA.length;
+  const sotEff = rpt.ncc_sot>0?(rpt.ncc_goals/rpt.ncc_sot*100).toFixed(0):'0';
+  const finType = rpt.ncc_goals>=2?'positive':rpt.ncc_goals===0?'negative':rpt.ncc_sot>=nccSotSeasonAvg?'good':'warning';
+  const psxgNote = psxg_ncc!==null?` PSxG: ${psxg_ncc.toFixed(2)} — ${psxg_ncc>rpt.ncc_xg?'hitting dangerous zones.':'below pre-shot expectations.'}` : '';
+  cards.push(pcard(finType, '🎯 Shot Conversion',
+    rpt.ncc_goals===0?'We failed to convert despite creating chances.'
+    :rpt.ncc_goals>=2?`We were clinical, scoring ${rpt.ncc_goals} from ${rpt.ncc_sot} on target.`
+    :`We converted ${rpt.ncc_goals} of ${rpt.ncc_sot} on target.`,
+    `Our SOT ${rpt.ncc_sot>nccSotSeasonAvg?'above':'below'} season avg (${nccSotSeasonAvg.toFixed(1)}).${psxgNote}`,
+    pstat(rpt.ncc_shots,'Our Shots','ncc')+pstat(rpt.ncc_sot,'On Target','ncc')+pstat(sotEff+'%','SOT→Goal%',rpt.ncc_goals>0?'good':'poor')+(psxg_ncc!==null?pstat(psxg_ncc.toFixed(2),'PSxG'):''),
+    `Season avg SOT: ${nccSotSeasonAvg.toFixed(1)}`
+  ));
+
+  // Defensive Exposure
+  const oppSotSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.opp_sot,0)/MATCH_REPORT_DATA.length;
+  const defType = rpt.opp_goals===0?'positive':rpt.opp_sot<oppSotSeasonAvg?'good':rpt.opp_sot>oppSotSeasonAvg*1.2?'negative':'warning';
+  const psxgOppNote = psxg_opp!==null?` Opp PSxG: ${psxg_opp.toFixed(2)}.`:'';
+  cards.push(pcard(defType, '🛡 Defensive Exposure',
+    rpt.opp_goals===0?'Clean sheet — we were watertight defensively.'
+    :rpt.opp_sot<oppSotSeasonAvg?`We held ${m.opp} to limited danger.`
+    :`${m.opp} had ${rpt.opp_sot} shots on target.`,
+    `Opp SOT ${rpt.opp_sot>oppSotSeasonAvg?'above':'below'} season avg (${oppSotSeasonAvg.toFixed(1)}).${psxgOppNote}`,
+    pstat(rpt.opp_shots,'Opp Shots','opp')+pstat(rpt.opp_sot,'Opp SOT','opp')+(psxg_opp!==null?pstat(psxg_opp.toFixed(2),'Opp PSxG','opp'):'')+pstat(rpt.opp_goals,'Conceded',rpt.opp_goals===0?'good':'poor'),
+    `Season avg opp SOT: ${oppSotSeasonAvg.toFixed(1)}`
+  ));
+
+  // Possession & Build-up
+  const possSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.ncc_poss,0)/MATCH_REPORT_DATA.length;
+  const passSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.ncc_pass_pct,0)/MATCH_REPORT_DATA.length;
+  const highPoss = rpt.ncc_poss >= possSeasonAvg;
+  const possType = (highPoss&&rpt.ncc_pass_pct>=passSeasonAvg)?'positive':(!highPoss&&rpt.ncc_pass_pct<passSeasonAvg)?'warning':'good';
+  const z2pct=matchVal('Z2_pct'), z2avg=seasonAvg('Z2_pct');
+  const z3pct=matchVal('Z3_pct'), z3avg=seasonAvg('Z3_pct');
+  cards.push(pcard(possType, '⬡ Possession & Build-up',
+    highPoss&&res==='W'?'Our ball retention helped control the game.'
+    :highPoss&&res==='L'?'Possession didn\'t translate — quality of use under scrutiny.'
+    :!highPoss&&res==='W'?'We were efficient without the ball — lower possession, same result.'
+    :'Mixed territory and execution.',
+    `We had <strong>${rpt.ncc_poss}%</strong> poss (avg ${possSeasonAvg.toFixed(0)}%), <strong>${rpt.ncc_pass_pct}%</strong> pass comp (avg ${passSeasonAvg.toFixed(0)}%).`+(z2pct!==null?` Z2: <strong>${(z2pct*100).toFixed(0)}%</strong> vs avg ${(z2avg*100).toFixed(0)}%.`:''),
+    pstat(rpt.ncc_poss+'%','Possession',rpt.ncc_poss>=possSeasonAvg?'ncc':'')+pstat(rpt.ncc_pass_pct+'%','Pass Comp%',rpt.ncc_pass_pct>=passSeasonAvg?'good':'poor')+(z3pct!==null?pstat((z3pct*100).toFixed(0)+'%','Zone 3 Comp%',z3pct>=z3avg?'good':'poor'):''),
+    `Avg: ${possSeasonAvg.toFixed(0)}% poss / ${passSeasonAvg.toFixed(0)}% pass`
+  ));
+
+  // Press Intensity
+  const pressSeasonAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.ncc_pressures,0)/MATCH_REPORT_DATA.length;
+  const pressRegainAvg = MATCH_REPORT_DATA.reduce((a,b)=>a+b.ncc_press_regains,0)/MATCH_REPORT_DATA.length;
+  const pressEff = rpt.ncc_pressures>0?(rpt.ncc_press_regains/rpt.ncc_pressures*100).toFixed(0):'—';
+  const pressEffAvg = pressSeasonAvg>0?(pressRegainAvg/pressSeasonAvg*100).toFixed(0):'—';
+  const highPress = rpt.ncc_pressures >= pressSeasonAvg;
+  const pressType = highPress?(parseFloat(pressEff)>=parseFloat(pressEffAvg)?'positive':'good'):(res==='L'?'negative':'warning');
+  const pressOH=matchVal('press_oh_pct'), pressOHAvg=seasonAvg('press_oh_pct');
+  cards.push(pcard(pressType, '⬤ Press Intensity',
+    rpt.ncc_pressures<=100?'Season-low press — we sat deeper than usual.'
+    :highPress?`High-intensity press with ${rpt.ncc_press_regains} regains won.`
+    :'Below-average press intensity.',
+    `We applied <strong>${rpt.ncc_pressures}</strong> pressures (avg ${pressSeasonAvg.toFixed(0)}), winning <strong>${rpt.ncc_press_regains}</strong> regains (${pressEff}% eff vs ${pressEffAvg}% avg).`+(pressOH!==null?` Opp-half: <strong>${(pressOH*100).toFixed(0)}%</strong> (avg ${(pressOHAvg*100).toFixed(0)}%).`:''),
+    pstat(rpt.ncc_pressures,'Pressures',highPress?'good':'poor')+pstat(rpt.ncc_press_regains,'Regains')+pstat(pressEff+'%','Efficiency',parseFloat(pressEff)>=parseFloat(pressEffAvg)?'good':'poor')+(pressOH!==null?pstat((pressOH*100).toFixed(0)+'%','Opp Half%',pressOH>=pressOHAvg?'good':'poor'):''),
+    (!highPress&&res==='L')?'Reduced press correlates with the loss.':`Avg: ${pressSeasonAvg.toFixed(0)} pressures / ${pressRegainAvg.toFixed(0)} regains`
+  ));
+
+  // Box Penetration
+  const bea=matchVal('bea'), sbe=matchVal('sbe'), tib=matchVal('tib');
+  const beaAvg=seasonAvg('bea'), sbeAvg=seasonAvg('sbe');
+  const oppBea=matchVal('opp_bea'), oppSbe=matchVal('opp_sbe');
+  const oppBeaAvg=seasonAvg('opp_bea'), oppSbeAvg=seasonAvg('opp_sbe');
+  if (bea!==null) {
+    const beaSucRate=bea>0?((sbe/bea)*100).toFixed(0):'—';
+    const beaType=bea>=beaAvg&&sbe>=sbeAvg?'positive':bea<beaAvg*0.8?'negative':'good';
+    cards.push(pcard(beaType, '⬡ Box Penetration',
+      bea>=beaAvg*1.2?'High box entry volume — we were dominant in attacking areas.'
+      :bea<beaAvg*0.8?'Low box penetration — we struggled to threaten the area.'
+      :`Moderate — ${sbe} successful entries from ${bea} attempts.`,
+      `Us: <strong>${sbe}</strong>/${bea} (${beaSucRate}%). Opp: <strong>${oppSbe}</strong>/${oppBea}.`+(tib!==null?` TIB: <strong>${tib}</strong> (avg ${seasonAvg('tib').toFixed(0)}).`:''),
+      pstat(bea,'Our Entries','ncc')+pstat(sbe,'Successful',parseInt(beaSucRate)>=60?'good':'poor')+pstat(oppBea,'Opp Entries','opp')+pstat(oppSbe,'Opp Succ.',oppSbeAvg&&oppSbe<=oppSbeAvg?'good':'poor'),
+      `Avg — us: ${beaAvg.toFixed(0)} / ${sbeAvg.toFixed(0)} succ · Opp: ${oppBeaAvg.toFixed(0)}`
+    ));
+  }
+
+  // Set Piece Threat
+  const spxg_ncc=matchVal('spxg'), spxg_opp=matchVal('opp_spxg');
+  const spxgAvg=seasonAvg('spxg'), oppSpxgAvg=seasonAvg('opp_spxg');
+  if (spxg_ncc!==null) {
+    const spType=spxg_ncc>=spxgAvg*1.3?'positive':spxg_opp>=oppSpxgAvg*1.5?'negative':spxg_ncc<spxgAvg*0.5?'warning':'neutral';
+    cards.push(pcard(spType, '📐 Set Piece Threat',
+      spxg_opp>spxg_ncc*1.5?'Set-pieces a vulnerability — opp generated more SP threat.'
+      :spxg_ncc>=spxgAvg*1.2?'Strong SP output — above-average xG from dead balls.'
+      :'Modest set-piece threat from both sides.',
+      `Our SP xG: <strong>${spxg_ncc.toFixed(3)}</strong> (avg ${spxgAvg.toFixed(3)}). Opp: <strong>${spxg_opp.toFixed(3)}</strong> (avg ${oppSpxgAvg.toFixed(3)}).`,
+      pstat(spxg_ncc.toFixed(3),'Our SP xG',spxg_ncc>=spxgAvg?'good':'')+pstat(spxg_opp.toFixed(3),'Opp SP xG',spxg_opp>=oppSpxgAvg?'poor':'good'),
+      `Season avg — us: ${spxgAvg.toFixed(3)} / Opp: ${oppSpxgAvg.toFixed(3)}`
+    ));
+  }
+
+  // Final Third Access
+  const dp=matchVal('deep_prog'), dpAvg=seasonAvg('deep_prog');
+  const lbPct=matchVal('lb_pct_f3'), lbPctAvg=seasonAvg('lb_pct_f3');
+  const oppDp=matchVal('opp_dp'), oppDpAvg=seasonAvg('opp_dp');
+  if (dp!==null) {
+    const dpType=dp>=dpAvg*1.1?'positive':dp<dpAvg*0.8?'negative':'good';
+    cards.push(pcard(dpType, '↗ Final Third Access',
+      dp>=dpAvg*1.2?'We were highly effective at entering the final third.'
+      :dp<dpAvg*0.8?'Below-average F3 access — the opponent restricted us well.'
+      :'Solid F3 entries — consistent with season norms.',
+      `Us: <strong>${dp}</strong> F3 entries (avg ${dpAvg.toFixed(0)}). Opp: <strong>${oppDp}</strong> (avg ${oppDpAvg.toFixed(0)}).`+(lbPct!==null?` LB completion: <strong>${(lbPct*100).toFixed(0)}%</strong> (avg ${(lbPctAvg*100).toFixed(0)}%).`:''),
+      pstat(dp,'Our F3 Entries',dp>=dpAvg?'good':'poor')+pstat(oppDp,'Opp F3 Entries',oppDp<=oppDpAvg?'good':'poor')+(lbPct!==null?pstat((lbPct*100).toFixed(0)+'%','LB Comp%',lbPct>=lbPctAvg?'good':'poor'):''),
+      `Avg — us: ${dpAvg.toFixed(0)} / Opp: ${oppDpAvg.toFixed(0)}`
+    ));
+  }
+
+  const resultContext = {'W':`<strong>Win:</strong> ${rpt.note}`,'L':`<strong>Loss:</strong> ${rpt.note}`,'D':`<strong>Draw:</strong> ${rpt.note}`}[res] || rpt.note;
+
+  const sections = [
+    { label:'Attacking Output', cards: cards.slice(0,3) },
+    { label:'Possession & Press', cards: cards.slice(3,5) },
+    { label:'Territorial Control', cards: cards.slice(5) },
+  ].filter(s => s.cards.length > 0);
+
+  return `
+    <div class="pv-insights-header">
+      <div class="pv-ins-score ${resCls}">${score}</div>
+      <div style="flex:1">
+        <div class="pv-ins-title">${m.loc==='Home'?'vs':'@'} ${m.opp} &mdash; ${m.date}</div>
+        <div class="pv-ins-sub">${m.label} &nbsp;·&nbsp; ${m.loc} &nbsp;·&nbsp; ${resLabel}</div>
+      </div>
+      <div class="pv-ins-xg">
+        <div class="pv-ins-xg-lbl">Expected Goals</div>
+        <div class="pv-ins-xg-vals">
+          <span class="pv-ins-xg-ncc">${rpt.ncc_xg.toFixed(2)}</span>
+          <span style="color:#9A9A92;font-size:10pt"> – </span>
+          <span class="pv-ins-xg-opp">${rpt.opp_xg.toFixed(2)}</span>
+        </div>
+        <div class="pv-ins-xg-lbl">Us &nbsp;·&nbsp; Opp</div>
+      </div>
+    </div>
+    <div class="pv-ins-summary">${resultContext}</div>
+    ${sections.map(s=>`
+      <div class="pv-ins-section-label">${s.label}</div>
+      <div class="pv-ins-grid">${s.cards.join('')}</div>
+    `).join('')}
+  `;
+}
+</script>
+</body>
+</html>
