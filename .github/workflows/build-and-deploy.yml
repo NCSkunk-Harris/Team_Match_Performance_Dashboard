@@ -1,14 +1,15 @@
-name: Build & Deploy Dashboard
+name: Deploy Dashboard
 
-# Rebuilds the dashboard whenever data or the build script changes,
-# then publishes the HTML to GitHub Pages.
+# Match data lives outside this repo (../Data Organization And Cleaning/),
+# so CI cannot rebuild the dashboard. Rebuild locally with build_dashboard.py,
+# commit the regenerated HTML, and push — this workflow publishes it to Pages.
 on:
   push:
     branches: [main]
-  workflow_dispatch:        # lets you trigger a rebuild manually from the Actions tab
+  workflow_dispatch:        # lets you trigger a deploy manually from the Actions tab
 
 permissions:
-  contents: write           # allows committing the regenerated HTML back
+  contents: read
   pages: write
   id-token: write
 
@@ -17,30 +18,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
-        run: pip install -r "GitHub Automation/requirements.txt"
-
-      - name: Build dashboard
-        run: python build_dashboard.py
-
-      - name: Commit regenerated HTML (if changed)
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Courage_Team_Performance_Dashboard.html
-          git diff --staged --quiet || git commit -m "Auto-rebuild dashboard [skip ci]"
-          git push
 
       - name: Prepare Pages artifact
         run: |
@@ -52,13 +37,6 @@ jobs:
         with:
           path: _site
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

@@ -2552,47 +2552,68 @@ function seasonStats(vals, higherBetter) {
   return { best, worst, avg };
 }
 
-// Rolling 3-match average — only populates when matchIdx >= 2 (GW3+, i.e. 3 full matches available)
-// Season view (-1) returns null — no rolling avg shown there
+// Rolling 3-match average — strict consecutive window: requires the current
+// match and the two immediately preceding it to all have data. A data gap
+// suppresses the form value rather than silently spanning it.
+// Season view (-1) returns null — no rolling avg shown there.
 function rollingAvg(vals, matchIdx) {
-  if (matchIdx < 2) return null;
-  if (matchIdx === -1) return null;
-  const window = vals.slice(0, matchIdx + 1).filter(v => v !== null);
-  if (window.length < 3) return null;
-  const last3 = window.slice(-3);
+  if (matchIdx < 2 || matchIdx === -1) return null;
+  const last3 = vals.slice(matchIdx - 2, matchIdx + 1);
+  if (last3.some(v => v === null)) return null;
   return last3.reduce((a, b) => a + b, 0) / last3.length;
 }
 
-// Match Grade — min-max normalisation vs season range.
-// Answers: "how did this game compare to our season so far?"
-function getGrade(val, row) {
-  if (val === null) return null;
-  const { best, worst } = seasonStats(row.vals, row.higherBetter);
-  if (best === worst) return 'typical';
-  const range = best - worst;
-  const pos = (val - worst) / range;
-  if (pos >= 0.85) return 'excellent';
-  if (pos >= 0.65) return 'good';
-  if (pos >= 0.35) return 'typical';
-  if (pos >= 0.15) return 'poor';
+// Expanding-window stats: mean and sample SD over matches 0..idx only.
+// Grades computed from these NEVER change once a match is played, because
+// no future match enters the window.
+function statsThrough(vals, idx) {
+  const clean = vals.slice(0, idx + 1).filter(v => v !== null);
+  const n = clean.length;
+  if (n === 0) return { n: 0, mean: null, sd: null };
+  const mean = clean.reduce((a, b) => a + b, 0) / n;
+  const sd = n > 1
+    ? Math.sqrt(clean.reduce((a, b) => a + (b - mean) ** 2, 0) / (n - 1))
+    : 0;
+  return { n, mean, sd };
+}
+
+const MIN_GRADE_SAMPLE = 4;   // matches of history required before grading
+
+function zToGrade(z) {
+  if (z >=  1.25) return 'excellent';
+  if (z >=  0.50) return 'good';
+  if (z >  -0.50) return 'typical';
+  if (z >  -1.25) return 'poor';
   return 'abysmal';
 }
 
-// 3-Match Form — deviation from season mean, scaled by season range.
-// Answers: "is our current form above or below where we have been all season?"
-// ±10% of range = Typical boundary · ±35% = Excellent/Abysmal boundary.
-// Wider bands prevent hypersensitivity since rolling averages smooth toward centre.
-function getRollingGrade(rollVal, row) {
+// Match Grade — z-score vs matches played up to and including this one.
+// Answers: "how did this game compare to what we had shown up to that point?"
+// Fixed once established: later matches never alter an earlier grade.
+// Requires MIN_GRADE_SAMPLE matches of data; earlier matches show pending.
+function getGrade(val, row, idx) {
+  if (val === null) return null;
+  const i = (idx === undefined || idx === -1) ? row.vals.length - 1 : idx;
+  const { n, mean, sd } = statsThrough(row.vals, i);
+  if (n < MIN_GRADE_SAMPLE) return null;
+  if (sd === 0) return 'typical';
+  const z = row.higherBetter ? (val - mean) / sd : (mean - val) / sd;
+  return zToGrade(z);
+}
+
+// 3-Match Form — z-score of the rolling mean vs matches-to-date.
+// Answers: "is current form above or below our established baseline?"
+// Same expanding window as getGrade, so form grades are also fixed once
+// established. Rolling means are smoother than single matches, so the same
+// z-bands are effectively stricter here — by design.
+function getRollingGrade(rollVal, row, idx) {
   if (rollVal === null) return null;
-  const { best, worst, avg } = seasonStats(row.vals, row.higherBetter);
-  if (best === worst || avg === null) return 'typical';
-  const range = best - worst;
-  const deviation = row.higherBetter ? (rollVal - avg) / range : (avg - rollVal) / range;
-  if (deviation >=  0.35) return 'excellent';
-  if (deviation >=  0.10) return 'good';
-  if (deviation >= -0.10) return 'typical';
-  if (deviation >= -0.35) return 'poor';
-  return 'abysmal';
+  const i = (idx === undefined || idx === -1) ? row.vals.length - 1 : idx;
+  const { n, mean, sd } = statsThrough(row.vals, i);
+  if (n < MIN_GRADE_SAMPLE) return null;
+  if (sd === 0) return 'typical';
+  const z = row.higherBetter ? (rollVal - mean) / sd : (mean - rollVal) / sd;
+  return zToGrade(z);
 }
 
 function gradeHTML(grade) {
@@ -2670,10 +2691,10 @@ function buildRow(row, matchIdx, isSeason) {
   const val = isSeason ? null : row.vals[matchIdx];
   const stats = seasonStats(row.vals, row.higherBetter);
   const displayVal = fmt(val, row);
-  const grade = val !== null ? getGrade(val, row) : null;
+  const grade = val !== null ? getGrade(val, row, matchIdx) : null;
 
   const rollVal = rollingAvg(row.vals, isSeason ? -1 : matchIdx);
-  const rollGrade = rollVal !== null ? getRollingGrade(rollVal, row) : null;
+  const rollGrade = rollVal !== null ? getRollingGrade(rollVal, row, matchIdx) : null;
 
   let contextBadge = '';
   if (row.context === 'opp') contextBadge = '<span class="context-badge">Opp</span>';
@@ -2733,7 +2754,7 @@ const GRADE_HEX = {
 
 function sectionOverallGradeForInsights(key, idx) {
   const rows = ALL_SECTIONS[key];
-  const graded = rows.map(r => r.vals[idx] !== null ? getGrade(r.vals[idx], r) : null).filter(Boolean);
+  const graded = rows.map(r => r.vals[idx] !== null ? getGrade(r.vals[idx], r, idx) : null).filter(Boolean);
   if (!graded.length) return 'typical';
   const avg = Math.round(graded.reduce((a, g) => a + GRADE_ORDER.indexOf(g), 0) / graded.length);
   return GRADE_ORDER[Math.min(avg, 4)];
@@ -2771,7 +2792,7 @@ function buildCalloutSparkline(vals, higherBetter, selectedIdx) {
   const pathD = points.map((p, pi) => `${pi === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
   const dots = points.map(p => {
     const isSelected = p.i === selectedIdx;
-    const g = getGrade(vals[p.i], { vals, higherBetter });
+    const g = getGrade(vals[p.i], { vals, higherBetter }, p.i);
     const col = GRADE_HEX[g] || '#aaa';
     return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isSelected ? 3.5 : 2}" fill="${isSelected ? col : '#ccc'}" stroke="${isSelected ? '#fff' : 'none'}" stroke-width="1"/>`;
   }).join('');
@@ -2813,7 +2834,7 @@ function buildInsightsForMatch(idx) {
     const rows = ALL_SECTIONS[key];
     // For each match compute grade, then show all 4 match dots
     const matchGrades = MATCHES.map((_, mi) => {
-      const graded = rows.map(r => r.vals[mi] !== null ? getGrade(r.vals[mi], r) : null).filter(Boolean);
+      const graded = rows.map(r => r.vals[mi] !== null ? getGrade(r.vals[mi], r, mi) : null).filter(Boolean);
       if (!graded.length) return 'typical';
       const avg = Math.round(graded.reduce((a, g) => a + GRADE_ORDER.indexOf(g), 0) / graded.length);
       return GRADE_ORDER[Math.min(avg, 4)];
@@ -2871,12 +2892,12 @@ function buildInsightsForMatch(idx) {
     const cells = MATCHES.map((_, mi) => {
       const v = row.vals[mi];
       if (v === null) return `<div class="ins-hm-cell"><div class="ins-hm-cell-inner na"><span class="ins-hm-val">—</span></div></div>`;
-      const g = getGrade(v, row);
+      const g = getGrade(v, row, mi);
       const dispV = fmtInsight(v, row);
       const isActive = idx === -1 || mi === idx;
-      const gLabel = g.charAt(0).toUpperCase() + g.slice(1);
+      const gLabel = g ? g.charAt(0).toUpperCase() + g.slice(1) : '—';
       return `<div class="ins-hm-cell" style="opacity:${isActive ? 1 : 0.4}">
-        <div class="ins-hm-cell-inner ${g}">
+        <div class="ins-hm-cell-inner ${g || 'pending'}">
           <span class="ins-hm-val">${dispV}</span>
           <span class="ins-hm-glabel">${gLabel}</span>
         </div>
@@ -2905,7 +2926,7 @@ function buildInsightsForMatch(idx) {
   allRowsFlat.forEach(row => {
     const val = row.vals[idx];
     if (val === null) return;
-    const grade = getGrade(val, row);
+    const grade = getGrade(val, row, idx);
     if (grade === 'excellent' || grade === 'abysmal') {
       highlights.push({ row, val, grade });
     }
@@ -3145,7 +3166,7 @@ function renderOBVH2HTable() {
   function sideCells(row, side) {
     const val     = isSeason ? null : row.vals[idx];
     const display = fmt(val, row);
-    const grade   = val !== null ? getGrade(val, row) : null;
+    const grade   = val !== null ? getGrade(val, row, idx) : null;
 
     const valCell = display !== null
       ? `<td class="h2h-val ${side}">${display}</td>`
@@ -4030,7 +4051,7 @@ function renderInsights() {
           <div class="ctx-card-title">How Grades Are Calculated</div>
         </div>
         <div class="ctx-card-body">
-          <p class="ctx-body-text">Each metric uses <strong>two separate grading functions</strong> that answer different questions. <strong>Match Grade</strong> uses min-max normalisation across the current season — it positions the selected match on a 0–100% scale between NCC's season best and worst for that metric, then applies five bands (0–15% Abysmal through 85–100% Excellent). <strong>3-Match Form</strong> grades the rolling 3-match average against the <em>season mean</em>, not the extremes — measuring deviation from the baseline in units of the season range (±10% = Typical boundary, ±35% = Excellent/Abysmal boundary). This means a match can grade Poor on Match Grade yet Good on 3-Match Form, signalling a dip in a single game while the recent form window still tracks above the season baseline.</p>
+          <p class="ctx-body-text">Each metric uses <strong>two separate grading functions</strong> that answer different questions, and both are <strong>fixed once established</strong> — a grade is computed only from matches played up to and including the graded match, so later results never rewrite it. <strong>Match Grade</strong> is a z-score: the match value versus the mean and standard deviation of the team's performances to that point (z ≥ +1.25 Excellent · +0.5 Good · ±0.5 Typical · −1.25 Poor · below Abysmal, direction-aware). <strong>3-Match Form</strong> applies the same z-bands to the rolling average of the last three consecutive matches, against the same to-date baseline — because rolling averages are smoother, the identical bands are effectively a stricter test of sustained form. Both grades require four matches of history; earlier matches show as pending. A match can still grade Poor on Match Grade yet Good on 3-Match Form — a single-game dip inside a form window that tracks above baseline.</p>
           <p class="ctx-body-text">A Z-score approach (standard deviation from the mean) was considered but rejected at this stage — with only 7 matches in the dataset, the standard deviation is still sensitive to single-game outliers. Min-max will remain the method until at least 8–10 matches are logged.</p>
           <p class="ctx-body-text"><strong>Formula:</strong> Position = (Match Value − Season Worst) ÷ (Season Best − Season Worst)</p>
           <div class="ctx-grade-scale">
@@ -4313,7 +4334,7 @@ function pvGradeHTML(grade) {
 function sectionOverallGrade(key, idx) {
   const rows = ALL_SECTIONS[key];
   const order = ['excellent','good','typical','poor','abysmal'];
-  const graded = rows.map(r => r.vals[idx] !== null ? getGrade(r.vals[idx], r) : null).filter(Boolean);
+  const graded = rows.map(r => r.vals[idx] !== null ? getGrade(r.vals[idx], r, idx) : null).filter(Boolean);
   if (!graded.length) return 'typical';
   const avg = Math.round(graded.reduce((a, g) => a + order.indexOf(g), 0) / graded.length);
   return order[Math.min(avg, 4)];
@@ -4342,7 +4363,7 @@ function buildSectionTable(key, idx) {
   const rowsHTML = rows.map(r => {
     const v = r.vals[idx];
     const dispVal = v !== null ? fmt(v, r) : '—';
-    const g = v !== null ? getGrade(v, r) : (r.source ? 'pending' : null);
+    const g = v !== null ? getGrade(v, r, idx) : (r.source ? 'pending' : null);
     const worstDisp = (() => { const s = seasonStats(r.vals, r.higherBetter); return s.worst !== null ? fmt(s.worst, r) : '—'; })();
     const bestDisp  = (() => { const s = seasonStats(r.vals, r.higherBetter); return s.best  !== null ? fmt(s.best,  r) : '—'; })();
     return `<tr>

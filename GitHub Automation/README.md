@@ -16,9 +16,6 @@ Team Performance Dashboard/
 ├── Courage_Team_Performance_Dashboard.html  # Generated output (overwritten each run)
 ├── .gitignore                               # (must stay at root)
 ├── .github/workflows/build-and-deploy.yml   # Auto-rebuild + deploy (must stay at root)
-├── Data Source/
-│   ├── NWSL Match Data - Team Level.xlsx     # Match data — update weekly (sheet: "NCC Data")
-│   └── Data Metric Glossarys/                # Reference glossaries
 └── GitHub Automation/                       # Automation docs + config
     ├── README.md                            # This file
     ├── CONTRIBUTING.md
@@ -26,21 +23,24 @@ Team Performance Dashboard/
     └── requirements.txt                     # Python dependencies (openpyxl)
 ```
 
-> Note: `Courage_Team_Performance_Dashboard.html` is regenerated automatically
-> by CI on every push, so you normally don't commit it by hand.
+Match data lives OUTSIDE this repo, in the shared data folder used by all
+projects: `../Data Organization And Cleaning/` (NWSL StatsBomb Data.xlsx,
+NWSL Impect Data.xlsx, NWSL InHouse Data.xlsx — each with a "Team Event Data"
+sheet). Because the data isn't in the repo, CI does not rebuild the dashboard;
+it deploys the committed HTML. Rebuild locally, then commit/push.
 
 ---
 
 ## Weekly workflow
 
-1. Add the new match's rows to `Data Source/NWSL Match Data - Team Level.xlsx`
-   (sheet **"NCC Data"**): one NCC row (Opponent Data blank) and one opponent
-   row (Opponent Data = TRUE).
+1. Add the new match's rows to each provider file in
+   `../Data Organization And Cleaning/` (sheet **"Team Event Data"**): one
+   North Carolina Courage row + one opponent row (InHouse: Courage row only).
 2. If the match needs manual values (Shots on Target, Press Regains, narrative
    notes), add a new entry to the `MANUAL_OVERRIDES` dict in `build_dashboard.py`,
    keyed by game number (`"M12": {...}`). Use `None` for anything not yet available.
-3. Commit and push. GitHub Actions rebuilds the dashboard and republishes the
-   live page automatically.
+3. Run `python build_dashboard.py` (or use the watcher script), then commit and
+   push. GitHub Actions republishes the live page from the committed HTML.
 
 ### Running it locally (optional)
 

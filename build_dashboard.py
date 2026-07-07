@@ -6,16 +6,20 @@ Reads source data and generates the updated HTML dashboard.
 
 EXPECTED FOLDER STRUCTURE:
 
-    Team Performance Dashboard/
-    ├── build_dashboard.py                          ← this script
-    ├── template_dashboard.html                     ← the HTML template (do not delete)
-    ├── Courage_Team_Performance_Dashboard.html     ← OUTPUT (overwritten each run)
-    └── Data Source/
-        └── NCC_TEAM_Match_Data.xlsx                ← update weekly
+    Projects/
+    ├── Team Performance Dashboard/
+    │   ├── build_dashboard.py                          ← this script
+    │   ├── template_dashboard.html                     ← the HTML template (do not delete)
+    │   └── Courage_Team_Performance_Dashboard.html     ← OUTPUT (overwritten each run)
+    └── Data Organization And Cleaning/                 ← single data source for all projects
+        ├── NWSL StatsBomb Data.xlsx                    ← update weekly
+        ├── NWSL Impect Data.xlsx                       ← update weekly
+        └── NWSL InHouse Data.xlsx                      ← update weekly
 
 WEEKLY UPDATE WORKFLOW:
-  1. Add the new match's row(s) to NCC_TEAM_Match_Data.xlsx
-     (one NCC row [Opponent Data blank] + one Opp row [Opponent Data = TRUE])
+  1. Add the new match's rows to each provider file's "Team Event Data" sheet
+     (one North Carolina Courage row + one opponent row; InHouse needs the
+     Courage row only)
   2. Run this script (in Cowork: "Run build_dashboard.py")
   3. Open Courage_Team_Performance_Dashboard.html
 
@@ -42,9 +46,59 @@ import openpyxl
 # ─────────────────────────────────────────────────────────────────────────────
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-DATA_DIR = SCRIPT_DIR / "Data Source"
-SPREADSHEET = DATA_DIR / "NWSL Match Data - Team Level.xlsx"
-SPREADSHEET_SHEET = "NCC Data"
+DATA_DIR = SCRIPT_DIR.parent / "Data Organization And Cleaning"
+# Match data now spans three spreadsheets, one per provider.
+# Each contains a "Team Event Data" sheet keyed by Date / Match / Team.
+SOURCE_FILES = [
+    DATA_DIR / "NWSL StatsBomb Data.xlsx",   # xG, shots, box, pressing, OBV (NCC + OPP rows)
+    DATA_DIR / "NWSL Impect Data.xlsx",      # packing / bypassed metrics (NCC + OPP rows)
+    DATA_DIR / "NWSL InHouse Data.xlsx",     # zone metrics (NCC rows only)
+]
+SPREADSHEET_SHEET = "Team Event Data"
+
+# ── HEADER ALIAS TABLE ───────────────────────────────────────────────────────
+# The provider sheets and the dashboard code use different column names.
+# This table is the SINGLE place where sheet headers are translated to the
+# internal names the build scripts request. Mapping: sheet header → internal.
+#
+#   NWSL InHouse Data.xlsx → Team Event Data      internal name
+#   ------------------------------------------    -------------------
+#   Zone 2 Attempts / Completions              →  Z2 Attempts / Z2 Completions
+#   Zone 3 Attempts / Completions              →  Z3 Attempts / Z3 Completions
+#   Passing Zone Attempts / Completions        →  PZ Attempts / PZ Completions
+#   Shooting Zone Attempts / Completions       →  SZ Attempts / SZ Completions
+#
+# All other providers' headers are used verbatim (see EXPECTED_HEADERS below
+# for the ones the dashboard actually consumes). If you rename a column in a
+# sheet, update this table — a missing header no longer fails silently: the
+# build prints a MISSING HEADER warning naming the column.
+COLUMN_RENAMES = {
+    "Zone 2 Attempts": "Z2 Attempts",
+    "Zone 2 Completions": "Z2 Completions",
+    "Zone 3 Attempts": "Z3 Attempts",
+    "Zone 3 Completions": "Z3 Completions",
+    "Passing Zone Attempts": "PZ Attempts",
+    "Passing Zone Completions": "PZ Completions",
+    "Shooting Zone Attempts": "SZ Attempts",
+    "Shooting Zone Completions": "SZ Completions",
+}
+
+# Internal header names the dashboard build consumes from the merged sheet
+# data (post-rename). Checked at load time; absences are warned, not fatal.
+EXPECTED_HEADERS = [
+    # InHouse zone metrics (via COLUMN_RENAMES)
+    "Z2 Attempts", "Z2 Completions", "Z3 Attempts", "Z3 Completions",
+    "PZ Attempts", "PZ Completions", "SZ Attempts", "SZ Completions",
+    # Impect packing metrics
+    "Bypassed Opponents", "Bypassed Defenders",
+    "Ball Win Removed Opponents", "Ball Win Removed Opponents Defenders",
+    "Critical Ball Loss Number", "Ball Loss Removed Teammates",
+    # StatsBomb IQ line-breaking + video-coded + possession
+    "Line Breaking Passes Completed in Final Third",
+    "Line Breaking Passes Completed in Final Third%",
+    "Line Breaking Passes On Ball Value in Final Third",
+    "Quality Chances", "Big Chances", "Possession %",
+]
 TEMPLATE = SCRIPT_DIR / "template_dashboard.html"
 OUTPUT = SCRIPT_DIR / "Courage_Team_Performance_Dashboard.html"
 
@@ -184,72 +238,111 @@ def safe_div(num, den):
 # 1) READ SPREADSHEET
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _parse_date(date_v, context=""):
+    """Accept datetime or strings like '3/15/26'."""
+    if not isinstance(date_v, str):
+        return date_v
+    for fmt in ("%m/%d/%y", "%m/%d/%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(date_v.strip(), fmt)
+        except ValueError:
+            continue
+    sys.exit(f"ERROR: Could not parse Date '{date_v}' {context}")
+
+
+def _read_courage_rows(path):
+    """Read one provider workbook's 'Team Event Data' sheet and return a list of
+    (date, side, row_dict) for rows belonging to Courage matches.
+    side ∈ {"NCC", "OPP"} — determined by the Team column."""
+    if not path.exists():
+        sys.exit(f"ERROR: Spreadsheet not found at {path}")
+    wb = openpyxl.load_workbook(path, data_only=True)
+    if SPREADSHEET_SHEET not in wb.sheetnames:
+        sys.exit(f"ERROR: Sheet '{SPREADSHEET_SHEET}' missing from {path.name}")
+    ws = wb[SPREADSHEET_SHEET]
+
+    headers = {}
+    for c in range(1, ws.max_column + 1):
+        v = ws.cell(row=1, column=c).value
+        if v is not None:
+            headers[str(v).strip()] = c
+    for required in ("Date", "Game Week", "Match", "Team"):
+        if required not in headers:
+            sys.exit(f"ERROR: Required column '{required}' missing from {path.name}")
+
+    out = []
+    for r in range(2, ws.max_row + 1):
+        date_v = ws.cell(row=r, column=headers["Date"]).value
+        if date_v is None:
+            continue
+        match = str(ws.cell(row=r, column=headers["Match"]).value or "")
+        team_v = str(ws.cell(row=r, column=headers["Team"]).value or "")
+        is_ncc_row = "north carolina courage" in team_v.lower()
+        # Keep only rows from Courage matches (either side)
+        if not is_ncc_row and "north carolina courage" not in match.lower():
+            continue
+        date_v = _parse_date(date_v, f"on row {r} of {path.name}")
+
+        row_dict = {}
+        for hdr, col in headers.items():
+            row_dict[COLUMN_RENAMES.get(hdr, hdr)] = ws.cell(row=r, column=col).value
+        out.append((date_v, "NCC" if is_ncc_row else "OPP", row_dict))
+    return out
+
+
 def read_spreadsheet():
     """
     Returns (matches, sheet_data) where:
       matches    = ordered list of match metadata dicts (includes 'result')
       sheet_data = dict mapping (game_number, side) → {column_name: value}
                    side ∈ {"NCC", "OPP"}
+    Data is merged from the three provider spreadsheets in SOURCE_FILES,
+    joined on (Date, side). Game Numbers (M1, M2, …) are derived from the
+    chronological order of Courage matches — the source files no longer
+    carry a 'Game Number' column.
     """
-    print(f"\n[1/3] Reading spreadsheet: {SPREADSHEET.name}")
-    if not SPREADSHEET.exists():
-        sys.exit(f"ERROR: Spreadsheet not found at {SPREADSHEET}")
+    print(f"\n[1/3] Reading spreadsheets from: {DATA_DIR}")
 
-    wb = openpyxl.load_workbook(SPREADSHEET, data_only=True)
-    ws = wb[SPREADSHEET_SHEET]
+    # Merge all providers: (date, side) → combined row dict
+    merged = {}
+    for path in SOURCE_FILES:
+        rows = _read_courage_rows(path)
+        info(f"  · {path.name}: {len(rows)} Courage-match rows")
+        for date_v, side, row_dict in rows:
+            tgt = merged.setdefault((date_v, side), {})
+            for k, v in row_dict.items():
+                # Never let a later provider's blank overwrite real data
+                if v is not None or k not in tgt:
+                    tgt[k] = v
 
-    # Build header → column index map
-    headers = {}
-    for c in range(1, ws.max_column + 1):
-        v = ws.cell(row=1, column=c).value
-        if v is not None:
-            headers[str(v).strip()] = c
+    # Header validation: every internal name the dashboard consumes must be
+    # present somewhere in the merged data, else metrics render blank silently.
+    seen_headers = set()
+    for row_dict in merged.values():
+        seen_headers.update(row_dict.keys())
+    for h in EXPECTED_HEADERS:
+        if h not in seen_headers:
+            warn(f"MISSING HEADER: '{h}' not found in any provider sheet — "
+                 f"check COLUMN_RENAMES / sheet column names; its metrics "
+                 f"will render blank")
 
-    # Required headers
-    for required in ("Date", "Game Week", "Game Number", "Match", "Team"):
-        if required not in headers:
-            sys.exit(f"ERROR: Required column '{required}' missing from spreadsheet")
+    # Derive game numbers from chronological order of NCC rows
+    ncc_dates = sorted(d for (d, side) in merged if side == "NCC")
+    date_to_gn = {d: i + 1 for i, d in enumerate(ncc_dates)}
 
     matches = []         # ordered list of {game_number, game_week, date, opp, loc, ncc_home, result}
     sheet_data = {}      # (game_number, "NCC"|"OPP") → row dict
 
-    seen_gn = set()
-    for r in range(2, ws.max_row + 1):
-        date_v = ws.cell(row=r, column=headers["Date"]).value
-        if date_v is None:
+    for (date_v, side), row_dict in merged.items():
+        gn = date_to_gn.get(date_v)
+        if gn is None:
+            warn(f"OPP row on {date_v:%m/%d/%y} has no matching NCC row — skipped")
             continue
-        # Date may be a datetime or a string like "3/15/26"
-        if isinstance(date_v, str):
-            parsed = None
-            for fmt in ("%m/%d/%y", "%m/%d/%Y", "%Y-%m-%d"):
-                try:
-                    parsed = datetime.strptime(date_v.strip(), fmt)
-                    break
-                except ValueError:
-                    continue
-            if parsed is None:
-                sys.exit(f"ERROR: Could not parse Date '{date_v}' on row {r}")
-            date_v = parsed
-
-        gw = ws.cell(row=r, column=headers["Game Week"]).value
-        gn = ws.cell(row=r, column=headers["Game Number"]).value
-        match = ws.cell(row=r, column=headers["Match"]).value or ""
-        # Side is determined by the Team column: NCC rows have Team == North Carolina Courage
-        team_v = ws.cell(row=r, column=headers["Team"]).value or ""
-        is_opp_row = "north carolina courage" not in str(team_v).lower()
-
-        # Read the entire row as a dict
-        row_dict = {}
-        for hdr, col in headers.items():
-            row_dict[hdr] = ws.cell(row=r, column=col).value
-
-        side = "OPP" if is_opp_row else "NCC"
         sheet_data[(gn, side)] = row_dict
 
-        if not is_opp_row and gn not in seen_gn:
-            seen_gn.add(gn)
-            # Parse opponent name + home/away from "Match" cell
-            m = re.match(r"\s*(.+?)\s*vs\.?\s*(.+?)\s*$", str(match))
+        if side == "NCC":
+            match = str(row_dict.get("Match") or "")
+            m = re.match(r"\s*(.+?)\s*vs\.?\s*(.+?)\s*$", match)
             if m:
                 t1, t2 = m.group(1).strip(), m.group(2).strip()
                 if "north carolina courage" in t1.lower():
@@ -261,12 +354,12 @@ def read_spreadsheet():
 
             matches.append({
                 "game_number": gn,
-                "game_week": gw,
+                "game_week": row_dict.get("Game Week"),
                 "date": date_v,
                 "opp": opp_name,
                 "loc": "Home" if ncc_home else "Away",
                 "ncc_home": ncc_home,
-                "match_string": str(match),
+                "match_string": match,
                 "result": None,   # filled in after both rows are loaded
             })
 
