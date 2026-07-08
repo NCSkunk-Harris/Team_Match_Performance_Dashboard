@@ -451,6 +451,7 @@
   .grade.poor { background: rgba(230,126,34,0.12); color: var(--grade-poor); border: 1px solid rgba(230,126,34,0.25); }
   .grade.abysmal { background: rgba(192,57,43,0.12); color: var(--grade-abysmal); border: 1px solid rgba(192,57,43,0.25); }
   .grade.pending { background: rgba(0,0,0,0.05); color: var(--text-muted); border: 1px solid var(--border-strong); font-style: italic; }
+  .grade.baseline { background: rgba(0,0,0,0.05); color: var(--text-muted); border: 1px dashed var(--border-strong); font-style: italic; white-space: nowrap; }
 
   /* GRADE SCALE LEGEND */
   .grade-legend {
@@ -525,6 +526,51 @@
   .obv-radar-legend .leg-season::before { background: var(--courage-navy); opacity: 0.45; }
   .obv-radar-legend .leg-ncc::before    { background: var(--courage-red); }
   .obv-radar-legend .leg-opp::before    { background: var(--courage-navy); opacity: 0.7; }
+
+  /* ── OBV SIDE TABLES (flank the radar) ─────────────────────────────────── */
+  .obv-side-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 16px 16px 12px;
+    flex: 1 1 260px;
+    min-width: 250px;
+    align-self: center;
+  }
+  .obv-side-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .obv-side-title.ncc { color: var(--courage-red); }
+  .obv-side-title.opp { color: var(--courage-navy); }
+  .obv-side-table { width: 100%; border-collapse: collapse; }
+  .obv-side-table th {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .obv-side-table td {
+    padding: 8px;
+    font-size: 12px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-soft, rgba(0,0,0,0.06));
+  }
+  .obv-side-table tr:last-child td { border-bottom: none; }
+  .obv-side-table td.sv-val { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .obv-side-table td.sv-val.empty { color: var(--text-muted); font-weight: 400; }
+  .obv-side-table td.sv-val .h2h-win { margin-left: 4px; font-size: 10px; }
+  .obv-side-table td.sv-val .h2h-win.ncc { color: var(--courage-red); }
+  .obv-side-table td.sv-val .h2h-win.opp { color: var(--courage-navy); }
 
   /* ── COMBINED OBV HEAD-TO-HEAD TABLE ────────────────────────────────────── */
   .obv-h2h-table {
@@ -1966,12 +2012,12 @@
         <thead>
           <tr>
             <th>Metric</th>
-            <th>Trend</th>
-            <th>Season Worst</th>
             <th>Match Value</th>
-            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+            <th>Season Worst</th>
+            <th>Trend</th>
+            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="sop-progression-rows">
@@ -2000,12 +2046,12 @@
         <thead>
           <tr>
             <th>Metric</th>
-            <th>Trend</th>
-            <th>Season Worst</th>
             <th>Match Value</th>
-            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+            <th>Season Worst</th>
+            <th>Trend</th>
+            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="sop-finishing-rows">
@@ -2039,12 +2085,12 @@
         <thead>
           <tr>
             <th>Metric</th>
-            <th>Trend</th>
-            <th>Season Worst</th>
             <th>Match Value</th>
-            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+            <th>Season Worst</th>
+            <th>Trend</th>
+            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="packing-volume-rows"></tbody>
@@ -2072,12 +2118,12 @@
         <thead>
           <tr>
             <th>Metric</th>
-            <th>Trend</th>
-            <th>Season Worst</th>
             <th>Match Value</th>
-            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+            <th>Season Worst</th>
+            <th>Trend</th>
+            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="packing-linebreak-rows"></tbody>
@@ -2127,12 +2173,12 @@
         <thead>
           <tr>
             <th>Metric</th>
-            <th>Trend</th>
-            <th>Season Worst</th>
             <th>Match Value</th>
-            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+            <th>Season Worst</th>
+            <th>Trend</th>
+            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="dom-penetration-rows"></tbody>
@@ -2160,12 +2206,12 @@
         <thead>
           <tr>
             <th>Metric</th>
-            <th>Trend</th>
-            <th>Season Worst</th>
             <th>Match Value</th>
-            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+            <th>Season Worst</th>
+            <th>Trend</th>
+            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="dom-finishing-rows"></tbody>
@@ -2198,12 +2244,12 @@
         <thead>
           <tr>
             <th>Metric</th>
-            <th>Trend</th>
-            <th>Season Worst</th>
             <th>Match Value</th>
-            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+            <th>Season Worst</th>
+            <th>Trend</th>
+            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="res-denying-rows"></tbody>
@@ -2231,12 +2277,12 @@
         <thead>
           <tr>
             <th>Metric</th>
-            <th>Trend</th>
-            <th>Season Worst</th>
             <th>Match Value</th>
-            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+            <th>Season Worst</th>
+            <th>Trend</th>
+            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="res-nullifying-rows"></tbody>
@@ -2269,12 +2315,12 @@
         <thead>
           <tr>
             <th>Metric</th>
-            <th>Trend</th>
-            <th>Season Worst</th>
             <th>Match Value</th>
-            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+            <th>Season Worst</th>
+            <th>Trend</th>
+            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="def-volume-rows"></tbody>
@@ -2302,12 +2348,12 @@
         <thead>
           <tr>
             <th>Metric</th>
-            <th>Trend</th>
-            <th>Season Worst</th>
             <th>Match Value</th>
-            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+            <th>Season Worst</th>
+            <th>Trend</th>
+            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="def-forward-rows"></tbody>
@@ -2335,12 +2381,12 @@
         <thead>
           <tr>
             <th>Metric</th>
-            <th>Trend</th>
-            <th>Season Worst</th>
             <th>Match Value</th>
-            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+            <th>Season Worst</th>
+            <th>Trend</th>
+            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="def-progallowed-rows"></tbody>
@@ -2352,8 +2398,21 @@
   <!-- ON-BALL VALUE TAB -->
   <div class="subtab-content" id="tab-obv">
 
-    <!-- Combined OBV Radar — NCC vs Opposition on shared axes -->
-    <div class="obv-radar-row">
+    <!-- OBV row: NCC table (left) | combined radar (centre) | Opposition table (right) -->
+    <div class="section-header" style="margin-top:20px;">
+      <span class="section-tag">On-Ball Value</span>
+      <span class="section-title">NCC vs Opposition — Head-to-Head</span>
+    </div>
+    <div class="obv-radar-row" style="align-items:stretch;">
+
+      <div class="obv-side-card">
+        <div class="obv-side-title ncc">NC Courage</div>
+        <table class="obv-side-table">
+          <thead><tr><th>Metric</th><th>Value</th><th>Grade</th></tr></thead>
+          <tbody id="obv-ncc-rows"></tbody>
+        </table>
+      </div>
+
       <div class="obv-radar-card" style="max-width:540px;">
         <div class="obv-radar-card-title">On-Ball Value — NCC vs Opposition</div>
         <svg id="obv-radar-combined" width="100%" viewBox="0 0 380 320" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -2365,31 +2424,15 @@
           <span style="display:inline;">Each axis is scaled across both sides — a polygon reaching further out means more on-ball value added on that metric.</span>
         </div>
       </div>
-    </div>
 
-    <!-- Head-to-head OBV table — NCC left, metric centre, Opp right -->
-    <div class="table-section">
-      <div class="section-header">
-        <span class="section-tag">On-Ball Value</span>
-        <span class="section-title">NCC vs Opposition — Head-to-Head</span>
+      <div class="obv-side-card">
+        <div class="obv-side-title opp">Opposition</div>
+        <table class="obv-side-table">
+          <thead><tr><th>Metric</th><th>Value</th><th>Grade</th></tr></thead>
+          <tbody id="obv-opp-rows"></tbody>
+        </table>
       </div>
-      <table class="obv-h2h-table">
-        <colgroup>
-          <col style="width:14%"><col style="width:22%">
-          <col style="width:28%">
-          <col style="width:22%"><col style="width:14%">
-        </colgroup>
-        <thead>
-          <tr>
-            <th class="ncc-side">Grade</th>
-            <th class="ncc-side">NCC Value</th>
-            <th>Metric</th>
-            <th class="opp-side">Opp Value</th>
-            <th class="opp-side">Grade</th>
-          </tr>
-        </thead>
-        <tbody id="obv-h2h-rows"></tbody>
-      </table>
+
     </div>
   </div>
 
@@ -2521,7 +2564,7 @@ const DATA = {
   }
 };
 
-let currentMatch = 0;
+let currentMatch = MATCHES.length - 1; // default to latest match on load
 let currentSubtab = 'sop';
 
 function fmt(val, row) {
@@ -2706,24 +2749,28 @@ function buildRow(row, matchIdx, isSeason) {
     matchGradeCell = `<td>${gradeHTML(grade)}</td>`;
   } else if (isPending && !isSeason) {
     matchGradeCell = `<td><span class="grade pending">Pending</span></td>`;
+  } else if (val !== null) {
+    matchGradeCell = `<td><span class="grade baseline" title="Not enough matches yet to grade this value against a season baseline">Establishing baseline</span></td>`;
   } else {
     matchGradeCell = `<td><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
   }
 
   const rollGradeCell = rollGrade !== null
     ? `<td>${gradeHTML(rollGrade)}</td>`
-    : `<td><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
+    : (val !== null && !isSeason)
+      ? `<td><span class="grade baseline" title="Form grade needs at least 3 matches of data">More matches needed</span></td>`
+      : `<td><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
 
   const sparkCell = `<td style="padding:8px 14px;">${buildSparkline(row.vals, row.higherBetter, matchIdx, isSeason)}</td>`;
 
   return `<tr>
     <td class="metric-name">${row.label}${contextBadge}</td>
-    ${sparkCell}
-    <td class="stat worst">${worstDisp}</td>
     ${valCell}
-    <td class="stat best">${bestDisp}</td>
     ${matchGradeCell}
     ${rollGradeCell}
+    <td class="stat worst">${worstDisp}</td>
+    ${sparkCell}
+    <td class="stat best">${bestDisp}</td>
   </tr>`;
 }
 
@@ -3134,15 +3181,16 @@ function renderOBVRadars() {
 
 // ── OBV HEAD-TO-HEAD TABLE (NCC | Metric | Opp) ──────────────────────────────
 function renderOBVH2HTable() {
-  const tbody = document.getElementById('obv-h2h-rows');
-  if (!tbody) return;
+  const nccBody = document.getElementById('obv-ncc-rows');
+  const oppBody = document.getElementById('obv-opp-rows');
+  if (!nccBody || !oppBody) return;
 
   const isSeason = currentMatch === -1;
   const idx = isSeason ? 0 : currentMatch;
   const nccRows = DATA.obv.ncc;
   const oppRows = DATA.obv.opp;
 
-  // Short metric name shown in the centre column (no "OBV" suffix needed)
+  // Short metric name (no "OBV" suffix needed)
   function shortLabel(label) {
     return label
       .replace('Opp. ', '')
@@ -3151,55 +3199,33 @@ function renderOBVH2HTable() {
       .replace(' OBV', '');
   }
 
-  // Render value + grade cells for a single side of one metric row.
-  function sideCells(row, side) {
+  // Winner marker: dot next to the value on the side that added more OBV.
+  // Higher raw OBV is better for the side in question.
+  function winMark(row, other, side) {
+    if (isSeason) return '';
+    const v = row.vals[idx], o = other.vals[idx];
+    if (v === null || v === undefined || o === null || o === undefined || v <= o) return '';
+    return `<span class="h2h-win ${side}" title="Won this battle">●</span>`;
+  }
+
+  function rowHTML(row, other, side) {
     const val     = isSeason ? null : row.vals[idx];
     const display = fmt(val, row);
     const grade   = val !== null ? getGrade(val, row, idx) : null;
 
     const valCell = display !== null
-      ? `<td class="h2h-val ${side}">${display}</td>`
-      : `<td class="h2h-val ${side} empty">—</td>`;
+      ? `<td class="sv-val">${display}${winMark(row, other, side)}</td>`
+      : `<td class="sv-val empty">—</td>`;
 
     const gradeCell = (val !== null && grade)
-      ? `<td class="h2h-grade">${gradeHTML(grade)}</td>`
-      : `<td class="h2h-grade"><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
+      ? `<td>${gradeHTML(grade)}</td>`
+      : `<td><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
 
-    return { valCell, gradeCell };
+    return `<tr><td>${shortLabel(row.label)}</td>${valCell}${gradeCell}</tr>`;
   }
 
-  // Decide who won the battle on a metric and build a directional arrow.
-  // NCC wins when it added more on-ball value than the opposition did;
-  // higher raw OBV is better for the side in question.
-  function winnerArrow(ncc, opp) {
-    if (isSeason) return '';
-    const nv = ncc.vals[idx], ov = opp.vals[idx];
-    if (nv === null || nv === undefined || ov === null || ov === undefined) return '';
-    if (nv === ov) {
-      return `<span class="h2h-arrow tie" title="Even">=</span>`;
-    }
-    const nccWon = nv > ov;
-    const arrow = nccWon ? '◀' : '▶';
-    const cls   = nccWon ? 'ncc' : 'opp';
-    const who   = nccWon ? 'NCC won this battle' : 'Opposition won this battle';
-    return `<span class="h2h-arrow ${cls}" title="${who}">${arrow}</span>`;
-  }
-
-  tbody.innerHTML = nccRows.map((ncc, i) => {
-    const opp = oppRows[i];
-    const nccC = sideCells(ncc, 'ncc');
-    const oppC = sideCells(opp, 'opp');
-
-    // Column order (left → right):
-    //   NCC Grade | NCC Value | Metric (+winner arrow) | Opp Value | Opp Grade
-    return `<tr>
-      ${nccC.gradeCell}
-      ${nccC.valCell}
-      <td class="h2h-metric">${winnerArrow(ncc, opp)}<span class="h2h-metric-label">${shortLabel(ncc.label)}</span></td>
-      ${oppC.valCell}
-      ${oppC.gradeCell}
-    </tr>`;
-  }).join('');
+  nccBody.innerHTML = nccRows.map((r, i) => rowHTML(r, oppRows[i], 'ncc')).join('');
+  oppBody.innerHTML = oppRows.map((r, i) => rowHTML(r, nccRows[i], 'opp')).join('');
 }
 
 function renderAll() {
@@ -3282,6 +3308,7 @@ function buildMatchPills() {
     if (result.startsWith('L')) return 'var(--grade-poor)';
     return 'var(--grade-typical)';
   }
+  // Newest match first (left), oldest last (right)
   container.innerHTML = MATCHES.map((m, i) => {
     const locText = m.loc === 'Home' ? `&#x25CF; Home` : `&#x25CF; Away`;
     const locClass = m.loc === 'Home' ? 'home' : 'away';
@@ -3291,7 +3318,7 @@ function buildMatchPills() {
       <span class="opp">${m.loc === 'Away' ? '@ ' : 'vs '}${m.opp}</span>
       <span class="loc ${locClass}" style="color:${resultColor(m.result)}">${m.result} &nbsp;${locText}</span>
     </button>`;
-  }).join('');
+  }).reverse().join('');
 }
 
 // =====================================================================
