@@ -451,7 +451,6 @@
   .grade.poor { background: rgba(230,126,34,0.12); color: var(--grade-poor); border: 1px solid rgba(230,126,34,0.25); }
   .grade.abysmal { background: rgba(192,57,43,0.12); color: var(--grade-abysmal); border: 1px solid rgba(192,57,43,0.25); }
   .grade.pending { background: rgba(0,0,0,0.05); color: var(--text-muted); border: 1px solid var(--border-strong); font-style: italic; }
-  .grade.baseline { background: rgba(0,0,0,0.05); color: var(--text-muted); border: 1px dashed var(--border-strong); font-style: italic; white-space: nowrap; }
 
   /* GRADE SCALE LEGEND */
   .grade-legend {
@@ -526,51 +525,6 @@
   .obv-radar-legend .leg-season::before { background: var(--courage-navy); opacity: 0.45; }
   .obv-radar-legend .leg-ncc::before    { background: var(--courage-red); }
   .obv-radar-legend .leg-opp::before    { background: var(--courage-navy); opacity: 0.7; }
-
-  /* ── OBV SIDE TABLES (flank the radar) ─────────────────────────────────── */
-  .obv-side-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 16px 16px 12px;
-    flex: 1 1 260px;
-    min-width: 250px;
-    align-self: center;
-  }
-  .obv-side-title {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    text-align: center;
-  }
-  .obv-side-title.ncc { color: var(--courage-red); }
-  .obv-side-title.opp { color: var(--courage-navy); }
-  .obv-side-table { width: 100%; border-collapse: collapse; }
-  .obv-side-table th {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    text-align: left;
-    padding: 6px 8px;
-    border-bottom: 1px solid var(--border-strong);
-  }
-  .obv-side-table td {
-    padding: 8px;
-    font-size: 12px;
-    color: var(--text-primary);
-    border-bottom: 1px solid var(--border-soft, rgba(0,0,0,0.06));
-  }
-  .obv-side-table tr:last-child td { border-bottom: none; }
-  .obv-side-table td.sv-val { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .obv-side-table td.sv-val.empty { color: var(--text-muted); font-weight: 400; }
-  .obv-side-table td.sv-val .h2h-win { margin-left: 4px; font-size: 10px; }
-  .obv-side-table td.sv-val .h2h-win.ncc { color: var(--courage-red); }
-  .obv-side-table td.sv-val .h2h-win.opp { color: var(--courage-navy); }
 
   /* ── COMBINED OBV HEAD-TO-HEAD TABLE ────────────────────────────────────── */
   .obv-h2h-table {
@@ -2012,12 +1966,12 @@
         <thead>
           <tr>
             <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
             <th>Match Value</th>
+            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
-            <th>Season Worst</th>
-            <th>Trend</th>
-            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="sop-progression-rows">
@@ -2046,12 +2000,12 @@
         <thead>
           <tr>
             <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
             <th>Match Value</th>
+            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
-            <th>Season Worst</th>
-            <th>Trend</th>
-            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="sop-finishing-rows">
@@ -2085,12 +2039,12 @@
         <thead>
           <tr>
             <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
             <th>Match Value</th>
+            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
-            <th>Season Worst</th>
-            <th>Trend</th>
-            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="packing-volume-rows"></tbody>
@@ -2118,12 +2072,12 @@
         <thead>
           <tr>
             <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
             <th>Match Value</th>
+            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
-            <th>Season Worst</th>
-            <th>Trend</th>
-            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="packing-linebreak-rows"></tbody>
@@ -2173,12 +2127,12 @@
         <thead>
           <tr>
             <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
             <th>Match Value</th>
+            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
-            <th>Season Worst</th>
-            <th>Trend</th>
-            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="dom-penetration-rows"></tbody>
@@ -2206,12 +2160,12 @@
         <thead>
           <tr>
             <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
             <th>Match Value</th>
+            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
-            <th>Season Worst</th>
-            <th>Trend</th>
-            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="dom-finishing-rows"></tbody>
@@ -2244,12 +2198,12 @@
         <thead>
           <tr>
             <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
             <th>Match Value</th>
+            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
-            <th>Season Worst</th>
-            <th>Trend</th>
-            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="res-denying-rows"></tbody>
@@ -2277,12 +2231,12 @@
         <thead>
           <tr>
             <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
             <th>Match Value</th>
+            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
-            <th>Season Worst</th>
-            <th>Trend</th>
-            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="res-nullifying-rows"></tbody>
@@ -2315,12 +2269,12 @@
         <thead>
           <tr>
             <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
             <th>Match Value</th>
+            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
-            <th>Season Worst</th>
-            <th>Trend</th>
-            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="def-volume-rows"></tbody>
@@ -2348,12 +2302,12 @@
         <thead>
           <tr>
             <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
             <th>Match Value</th>
+            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
-            <th>Season Worst</th>
-            <th>Trend</th>
-            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="def-forward-rows"></tbody>
@@ -2381,12 +2335,12 @@
         <thead>
           <tr>
             <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
             <th>Match Value</th>
+            <th>Season Best</th>
             <th>Match Grade</th>
             <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
-            <th>Season Worst</th>
-            <th>Trend</th>
-            <th>Season Best</th>
           </tr>
         </thead>
         <tbody id="def-progallowed-rows"></tbody>
@@ -2398,21 +2352,8 @@
   <!-- ON-BALL VALUE TAB -->
   <div class="subtab-content" id="tab-obv">
 
-    <!-- OBV row: NCC table (left) | combined radar (centre) | Opposition table (right) -->
-    <div class="section-header" style="margin-top:20px;">
-      <span class="section-tag">On-Ball Value</span>
-      <span class="section-title">NCC vs Opposition — Head-to-Head</span>
-    </div>
-    <div class="obv-radar-row" style="align-items:stretch;">
-
-      <div class="obv-side-card">
-        <div class="obv-side-title ncc">NC Courage</div>
-        <table class="obv-side-table">
-          <thead><tr><th>Metric</th><th>Value</th><th>Grade</th></tr></thead>
-          <tbody id="obv-ncc-rows"></tbody>
-        </table>
-      </div>
-
+    <!-- Combined OBV Radar — NCC vs Opposition on shared axes -->
+    <div class="obv-radar-row">
       <div class="obv-radar-card" style="max-width:540px;">
         <div class="obv-radar-card-title">On-Ball Value — NCC vs Opposition</div>
         <svg id="obv-radar-combined" width="100%" viewBox="0 0 380 320" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -2424,15 +2365,31 @@
           <span style="display:inline;">Each axis is scaled across both sides — a polygon reaching further out means more on-ball value added on that metric.</span>
         </div>
       </div>
+    </div>
 
-      <div class="obv-side-card">
-        <div class="obv-side-title opp">Opposition</div>
-        <table class="obv-side-table">
-          <thead><tr><th>Metric</th><th>Value</th><th>Grade</th></tr></thead>
-          <tbody id="obv-opp-rows"></tbody>
-        </table>
+    <!-- Head-to-head OBV table — NCC left, metric centre, Opp right -->
+    <div class="table-section">
+      <div class="section-header">
+        <span class="section-tag">On-Ball Value</span>
+        <span class="section-title">NCC vs Opposition — Head-to-Head</span>
       </div>
-
+      <table class="obv-h2h-table">
+        <colgroup>
+          <col style="width:14%"><col style="width:22%">
+          <col style="width:28%">
+          <col style="width:22%"><col style="width:14%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="ncc-side">Grade</th>
+            <th class="ncc-side">NCC Value</th>
+            <th>Metric</th>
+            <th class="opp-side">Opp Value</th>
+            <th class="opp-side">Grade</th>
+          </tr>
+        </thead>
+        <tbody id="obv-h2h-rows"></tbody>
+      </table>
     </div>
   </div>
 
@@ -2456,115 +2413,116 @@ const MATCHES = [
   { label: 'GW8 · M9', date: 'May 17', opp: 'Chicago Red Stars', loc: 'Home', result: 'W 4-0' },
   { label: 'GW9 · M10', date: 'May 23', opp: 'Racing Louisville FC', loc: 'Away', result: 'W 2-1' },
   { label: 'GW10 · M11', date: 'Jun 1', opp: 'Angel City', loc: 'Away', result: 'W 2-1' },
-  { label: 'GW11 · M12', date: 'Jul 5', opp: 'Seattle Reign', loc: 'Home', result: 'W 3-1' }
+  { label: 'GW11 · M12', date: 'Jul 5', opp: 'Seattle Reign', loc: 'Home', result: 'W 3-1' },
+  { label: 'GW12 · M13', date: 'Jul 11', opp: 'Washington Spirit', loc: 'Home', result: 'L 0-2' }
 ];
 
 const DATA = {
   sop: {
     progression: [
-      { id:'Z2_att', label:'Zone 2 Attempts', vals:[46,69,53,53,49,55,53,44,56,61,50,60], higherBetter:true },
-      { id:'Z2_comp', label:'Zone 2 Completions', vals:[36,47,37,36,46,36,38,36,49,42,32,45], higherBetter:true },
-      { id:'Z2_pct', label:'Zone 2 Completion %', vals:[0.7826,0.6812,0.6981,0.6792,0.9388,0.6545,0.717,0.8182,0.875,0.6885,0.64,0.75], higherBetter:true, pct:true, dec:3 },
-      { id:'Z3_att', label:'Zone 3 Attempts', vals:[20,26,24,21,20,25,7,11,41,21,28,13], higherBetter:true },
-      { id:'Z3_comp', label:'Zone 3 Completions', vals:[12,8,4,11,11,7,6,7,22,9,9,5], higherBetter:true },
-      { id:'Z3_pct', label:'Zone 3 Completion %', vals:[0.6,0.3077,0.1667,0.5238,0.55,0.28,0.8571,0.6364,0.5366,0.4286,0.3214,0.3846], higherBetter:true, pct:true, dec:3 }
+      { id:'Z2_att', label:'Zone 2 Attempts', vals:[46,69,53,53,49,55,53,44,56,61,50,60,45], higherBetter:true },
+      { id:'Z2_comp', label:'Zone 2 Completions', vals:[36,47,37,36,46,36,38,36,49,42,32,45,29], higherBetter:true },
+      { id:'Z2_pct', label:'Zone 2 Completion %', vals:[0.7826,0.6812,0.6981,0.6792,0.9388,0.6545,0.717,0.8182,0.875,0.6885,0.64,0.75,0.6444], higherBetter:true, pct:true, dec:3 },
+      { id:'Z3_att', label:'Zone 3 Attempts', vals:[20,26,24,21,20,25,7,11,41,21,28,13,25], higherBetter:true },
+      { id:'Z3_comp', label:'Zone 3 Completions', vals:[12,8,4,11,11,7,6,7,22,9,9,5,13], higherBetter:true },
+      { id:'Z3_pct', label:'Zone 3 Completion %', vals:[0.6,0.3077,0.1667,0.5238,0.55,0.28,0.8571,0.6364,0.5366,0.4286,0.3214,0.3846,0.52], higherBetter:true, pct:true, dec:3 }
     ],
     finishing: [
-      { id:'PZ_att', label:'Pass Zone Attempts', vals:[15,12,15,17,14,22,18,16,18,12,5,9], higherBetter:true },
-      { id:'PZ_comp', label:'Pass Zone Completions', vals:[13,11,11,17,11,13,11,8,13,7,4,8], higherBetter:true },
-      { id:'PZ_pct', label:'Pass Zone Completion %', vals:[0.8667,0.9167,0.7333,1.0,0.7857,0.5909,0.6111,0.5,0.7222,0.5833,0.8,0.8889], higherBetter:true, pct:true, dec:3 },
-      { id:'SZ_att', label:'Shoot Zone Attempts', vals:[19,16,16,22,14,16,30,17,23,22,16,19], higherBetter:true },
-      { id:'SZ_comp', label:'Shoot Zone Completions', vals:[5,5,4,7,3,1,5,3,11,9,4,8], higherBetter:true },
-      { id:'SZ_pct', label:'Shoot Zone Completion %', vals:[0.2632,0.3125,0.25,0.3182,0.2143,0.0625,0.1667,0.1765,0.4783,0.4091,0.25,0.4211], higherBetter:true, pct:true, dec:3 }
+      { id:'PZ_att', label:'Pass Zone Attempts', vals:[15,12,15,17,14,22,18,16,18,12,5,9,11], higherBetter:true },
+      { id:'PZ_comp', label:'Pass Zone Completions', vals:[13,11,11,17,11,13,11,8,13,7,4,8,9], higherBetter:true },
+      { id:'PZ_pct', label:'Pass Zone Completion %', vals:[0.8667,0.9167,0.7333,1.0,0.7857,0.5909,0.6111,0.5,0.7222,0.5833,0.8,0.8889,0.8182], higherBetter:true, pct:true, dec:3 },
+      { id:'SZ_att', label:'Shoot Zone Attempts', vals:[19,16,16,22,14,16,30,17,23,22,16,19,24], higherBetter:true },
+      { id:'SZ_comp', label:'Shoot Zone Completions', vals:[5,5,4,7,3,1,5,3,11,9,4,8,4], higherBetter:true },
+      { id:'SZ_pct', label:'Shoot Zone Completion %', vals:[0.2632,0.3125,0.25,0.3182,0.2143,0.0625,0.1667,0.1765,0.4783,0.4091,0.25,0.4211,0.1667], higherBetter:true, pct:true, dec:3 }
     ]
   },
   packing: {
     volume: [
-      { id:'byp_opp', label:'Bypassed Opponents', vals:[445,378,363,358,371,320,377,335,457,417,334,379], higherBetter:true },
-      { id:'byp_def', label:'Bypassed Defenders', vals:[71,49,43,40,48,40,68,35,66,67,44,54], higherBetter:true },
-      { id:'bw_opp', label:'Ball Win Removed Opponents', vals:[194,195,194,174,213,194,254,121,174,165,153,161], higherBetter:true },
-      { id:'bw_def', label:'Ball Win Removed Defenders (PA)', vals:[13.2,10.2,7.0,4.9,6.7,15.3,16.7,3.5,12.5,9.6,7.7,5.6], higherBetter:true, dec:1 },
-      { id:'crit_loss', label:'Critical Ball Loss', vals:[13,9,15,21,10,11,8,9,16,6,16,10], higherBetter:false, context:'neg' },
-      { id:'bl_team', label:'Ball Loss Removed Teammates', vals:[196,129,176,167,149,138,128,119,140,128,174,134], higherBetter:false, context:'neg' },
-      { id:'deep_prog', label:'Final 3rd Entries', vals:[47,36,40,43,54,53,67,55,49,34,36,44], higherBetter:true }
+      { id:'byp_opp', label:'Bypassed Opponents', vals:[445,378,363,358,371,320,377,335,457,417,334,379,310], higherBetter:true },
+      { id:'byp_def', label:'Bypassed Defenders', vals:[71,49,43,40,48,40,68,35,66,67,44,54,45], higherBetter:true },
+      { id:'bw_opp', label:'Ball Win Removed Opponents', vals:[194,195,194,174,213,194,254,121,174,165,153,161,167], higherBetter:true },
+      { id:'bw_def', label:'Ball Win Removed Defenders (PA)', vals:[13.2,10.2,7.0,4.9,6.7,15.3,16.7,3.5,12.5,9.6,7.7,5.6,1.8], higherBetter:true, dec:1 },
+      { id:'crit_loss', label:'Critical Ball Loss', vals:[13,9,15,21,10,11,8,9,16,6,16,10,13], higherBetter:false, context:'neg' },
+      { id:'bl_team', label:'Ball Loss Removed Teammates', vals:[196,129,176,167,149,138,128,119,140,128,174,134,142], higherBetter:false, context:'neg' },
+      { id:'deep_prog', label:'Final 3rd Entries', vals:[47,36,40,43,54,53,67,55,49,34,36,44,44], higherBetter:true }
     ],
     linebreak: [
-      { id:'lb_comp_f3', label:'LB Passes Completed in Final Third', vals:[16,11,7,16,8,9,17,16,9,10,11,10], higherBetter:true },
-      { id:'lb_pct_f3', label:'LB Completion % (Final Third)', vals:[0.6153,0.4782,0.3043,0.5333,0.32,0.3214,0.3333,0.4324,0.4736,0.4166,0.4782,0.5], higherBetter:true, pct:true, dec:3 },
-      { id:'lb_obv_f3', label:'LB Passes OBV (Final Third)', vals:[0.351,0.319,0.248,0.583,0.11,0.362,0.244,0.143,0.288,0.197,0.243,0.528], higherBetter:true, dec:3 }
+      { id:'lb_comp_f3', label:'LB Passes Completed in Final Third', vals:[16,11,7,16,8,9,17,16,9,10,11,10,null], higherBetter:true },
+      { id:'lb_pct_f3', label:'LB Completion % (Final Third)', vals:[0.6153,0.4782,0.3043,0.5333,0.32,0.3214,0.3333,0.4324,0.4736,0.4166,0.4782,0.5,null], higherBetter:true, pct:true, dec:3 },
+      { id:'lb_obv_f3', label:'LB Passes OBV (Final Third)', vals:[0.351,0.319,0.248,0.583,0.11,0.362,0.244,0.143,0.288,0.197,0.243,0.528,null], higherBetter:true, dec:3 }
     ]
   },
   boxdom: {
     penetration: [
-      { id:'bea_cp', label:'Box Entries Attempted (Cross&Pass)', vals:[28,21,30,29,27,33,54,29,33,26,30,23], higherBetter:true },
-      { id:'bea_carry', label:'Box Entries Attempted (Carry)', vals:[6,5,4,5,6,7,8,7,8,8,3,6], higherBetter:true },
-      { id:'sbe', label:'Successful Box Entries', vals:[16,14,14,21,14,21,22,18,27,17,9,16], higherBetter:true },
-      { id:'tib', label:'Touches in Box', vals:[36,24,29,43,30,43,40,24,50,27,14,27], higherBetter:true }
+      { id:'bea_cp', label:'Box Entries Attempted (Cross&Pass)', vals:[28,21,30,29,27,33,54,29,33,26,30,23,28], higherBetter:true },
+      { id:'bea_carry', label:'Box Entries Attempted (Carry)', vals:[6,5,4,5,6,7,8,7,8,8,3,6,6], higherBetter:true },
+      { id:'sbe', label:'Successful Box Entries', vals:[16,14,14,21,14,21,22,18,27,17,9,16,13], higherBetter:true },
+      { id:'tib', label:'Touches in Box', vals:[36,24,29,43,30,43,40,24,50,27,14,27,27], higherBetter:true }
     ],
     finishing: [
-      { id:'xg', label:'Total xG', vals:[1.622,1.343,1.608,1.086,1.519,1.989,1.948,0.78,2.217,1.236,1.284,2.371], higherBetter:true, dec:3 },
-      { id:'spxg', label:'Set Piece xG', vals:[0.422,0.367,0.88,0.354,0.391,1.533,0.541,0.37,0.864,0.212,0.586,0.648], higherBetter:true, dec:3 },
-      { id:'shots', label:'Shots', vals:[15,14,13,11,16,21,16,12,17,11,10,16], higherBetter:true },
-      { id:'xgps', label:'xG/Shot', vals:[0.108,0.096,0.124,0.099,0.095,0.095,0.122,0.065,0.13,0.112,0.128,0.148], higherBetter:true, dec:3 },
-      { id:'psxg', label:'Post-Shot xG', vals:[2.36,0.65,1.1,1.44,2.36,2.18,1.76,0.01,2.83,1.79,1.78,1.55], higherBetter:true, dec:2 },
-      { id:'qc', label:'Quality Chances', vals:[1,2,4,1,1,1,0,0,3,1,0,4], higherBetter:true },
-      { id:'bc', label:'Big Chances', vals:[1,1,1,1,1,1,2,0,2,1,2,2], higherBetter:true }
+      { id:'xg', label:'Total xG', vals:[1.622,1.343,1.608,1.086,1.519,1.989,1.948,0.78,2.217,1.236,1.284,2.371,1.053], higherBetter:true, dec:3 },
+      { id:'spxg', label:'Set Piece xG', vals:[0.422,0.367,0.88,0.354,0.391,1.533,0.541,0.37,0.864,0.212,0.586,0.648,0.566], higherBetter:true, dec:3 },
+      { id:'shots', label:'Shots', vals:[15,14,13,11,16,21,16,12,17,11,10,16,11], higherBetter:true },
+      { id:'xgps', label:'xG/Shot', vals:[0.108,0.096,0.124,0.099,0.095,0.095,0.122,0.065,0.13,0.112,0.128,0.148,0.096], higherBetter:true, dec:3 },
+      { id:'psxg', label:'Post-Shot xG', vals:[2.36,0.65,1.1,1.44,2.36,2.18,1.76,0.01,2.83,1.79,1.78,1.55,0.18], higherBetter:true, dec:2 },
+      { id:'qc', label:'Quality Chances', vals:[1,2,4,1,1,1,0,0,3,1,0,4,2], higherBetter:true },
+      { id:'bc', label:'Big Chances', vals:[1,1,1,1,1,1,2,0,2,1,2,2,0], higherBetter:true }
     ]
   },
   boxres: {
     denying: [
-      { id:'opp_bea_cp', label:'Opp. Box Entries Attempted (Cross&Pass)', vals:[27,22,21,30,37,24,20,18,21,33,37,31], higherBetter:false, context:'opp' },
-      { id:'opp_bea_carry', label:'Opp. Box Entries Attempted (Carry)', vals:[8,5,4,6,11,5,5,8,4,7,7,7], higherBetter:false, context:'opp' },
-      { id:'opp_sbe', label:'Opp. Successful Box Entries', vals:[17,15,16,21,27,14,14,11,9,23,24,15], higherBetter:false, context:'opp' },
-      { id:'opp_tib', label:'Opp. Touches in Box', vals:[33,21,23,34,36,19,27,15,19,35,28,25], higherBetter:false, context:'opp' }
+      { id:'opp_bea_cp', label:'Opp. Box Entries Attempted (Cross&Pass)', vals:[27,22,21,30,37,24,20,18,21,33,37,31,15], higherBetter:false, context:'opp' },
+      { id:'opp_bea_carry', label:'Opp. Box Entries Attempted (Carry)', vals:[8,5,4,6,11,5,5,8,4,7,7,7,5], higherBetter:false, context:'opp' },
+      { id:'opp_sbe', label:'Opp. Successful Box Entries', vals:[17,15,16,21,27,14,14,11,9,23,24,15,10], higherBetter:false, context:'opp' },
+      { id:'opp_tib', label:'Opp. Touches in Box', vals:[33,21,23,34,36,19,27,15,19,35,28,25,20], higherBetter:false, context:'opp' }
     ],
     nullifying: [
-      { id:'opp_xg', label:'Opp. Total xG', vals:[1.914,0.653,1.082,1.644,1.389,0.781,2.247,0.446,0.948,1.309,1.68,1.349], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_spxg', label:'Opp. Set Piece xG', vals:[0.369,0.349,0.568,1.148,0.73,0.5,0.338,0.199,0.815,0.82,1.318,0.122], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_shots', label:'Opp. Shots', vals:[17,10,14,16,16,7,11,9,13,17,17,16], higherBetter:false, context:'opp' },
-      { id:'opp_xgps', label:'Opp. xG/Shot', vals:[0.113,0.065,0.077,0.103,0.087,0.112,0.204,0.05,0.073,0.077,0.099,0.084], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_psxg', label:'Opp. Post-Shot xG', vals:[1.49,0.39,2.32,2.11,0.12,1.61,1.42,1.07,0.95,0.94,2.56,1.67], higherBetter:false, dec:2, context:'opp' },
-      { id:'opp_qc', label:'Opp. Quality Chances', vals:[2,1,3,3,1,1,0,0,1,2,3,2], higherBetter:false, context:'opp' },
-      { id:'opp_bc', label:'Opp. Big Chances', vals:[1,0,0,1,1,1,3,0,1,0,1,0], higherBetter:false, context:'opp' }
+      { id:'opp_xg', label:'Opp. Total xG', vals:[1.914,0.653,1.082,1.644,1.389,0.781,2.247,0.446,0.948,1.309,1.68,1.349,0.955], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_spxg', label:'Opp. Set Piece xG', vals:[0.369,0.349,0.568,1.148,0.73,0.5,0.338,0.199,0.815,0.82,1.318,0.122,0.048], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_shots', label:'Opp. Shots', vals:[17,10,14,16,16,7,11,9,13,17,17,16,8], higherBetter:false, context:'opp' },
+      { id:'opp_xgps', label:'Opp. xG/Shot', vals:[0.113,0.065,0.077,0.103,0.087,0.112,0.204,0.05,0.073,0.077,0.099,0.084,0.119], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_psxg', label:'Opp. Post-Shot xG', vals:[1.49,0.39,2.32,2.11,0.12,1.61,1.42,1.07,0.95,0.94,2.56,1.67,1.28], higherBetter:false, dec:2, context:'opp' },
+      { id:'opp_qc', label:'Opp. Quality Chances', vals:[2,1,3,3,1,1,0,0,1,2,3,2,1], higherBetter:false, context:'opp' },
+      { id:'opp_bc', label:'Opp. Big Chances', vals:[1,0,0,1,1,1,3,0,1,0,1,0,1], higherBetter:false, context:'opp' }
     ]
   },
   defint: {
     volume: [
-      { id:'pressures', label:'Pressures (PA)', vals:[217.1,217.8,254.0,175.6,179.8,246.9,110.7,133.7,139.6,168.1,96.2,88.0], higherBetter:true, dec:1 },
-      { id:'cp', label:'Counterpressures (PA)', vals:[100.0,60.2,80.0,67.1,43.3,68.4,35.7,40.7,42.7,62.8,40.4,28.7], higherBetter:true, dec:1 },
-      { id:'agg_actions', label:'Aggressive Actions (PA)', vals:[242.1,239.0,279.0,198.8,201.0,266.3,136.9,160.5,156.2,188.3,121.2,105.6], higherBetter:true, dec:1 },
-      { id:'tack_int', label:'Tackles + Interceptions (PA)', vals:[22.4,21.2,27.0,18.3,23.1,18.4,21.4,16.3,17.7,23.4,17.3,13.0], higherBetter:true, dec:1 }
+      { id:'pressures', label:'Pressures (PA)', vals:[217.1,217.8,254.0,175.6,179.8,246.9,110.7,133.7,139.6,168.1,96.2,88.0,114.0], higherBetter:true, dec:1 },
+      { id:'cp', label:'Counterpressures (PA)', vals:[100.0,60.2,80.0,67.1,43.3,68.4,35.7,40.7,42.7,62.8,40.4,28.7,36.0], higherBetter:true, dec:1 },
+      { id:'agg_actions', label:'Aggressive Actions (PA)', vals:[242.1,239.0,279.0,198.8,201.0,266.3,136.9,160.5,156.2,188.3,121.2,105.6,125.4], higherBetter:true, dec:1 },
+      { id:'tack_int', label:'Tackles + Interceptions (PA)', vals:[22.4,21.2,27.0,18.3,23.1,18.4,21.4,16.3,17.7,23.4,17.3,13.0,9.6], higherBetter:true, dec:1 }
     ],
     forward: [
-      { id:'press_oh', label:'Pressures in Opp. Half (PA)', vals:[84.2,99.2,147.0,86.6,66.3,151.0,69.0,74.4,91.7,80.9,49.0,56.5], higherBetter:true, dec:1 },
-      { id:'press_oh_pct', label:'Pressures in Opp. Half %', vals:[0.3879,0.4553,0.5787,0.4931,0.369,0.6116,0.6237,0.5565,0.6567,0.481,0.51,0.6421], higherBetter:true, pct:true, dec:3 },
-      { id:'cp_oh', label:'Counterpressures in Opp. Half (PA)', vals:[52.6,28.0,62.0,39.0,25.0,54.1,27.4,29.1,26.0,45.7,26.0,18.5], higherBetter:true, dec:1 }
+      { id:'press_oh', label:'Pressures in Opp. Half (PA)', vals:[84.2,99.2,147.0,86.6,66.3,151.0,69.0,74.4,91.7,80.9,49.0,56.5,63.2], higherBetter:true, dec:1 },
+      { id:'press_oh_pct', label:'Pressures in Opp. Half %', vals:[0.3879,0.4553,0.5787,0.4931,0.369,0.6116,0.6237,0.5565,0.6567,0.481,0.51,0.6421,0.5538], higherBetter:true, pct:true, dec:3 },
+      { id:'cp_oh', label:'Counterpressures in Opp. Half (PA)', vals:[52.6,28.0,62.0,39.0,25.0,54.1,27.4,29.1,26.0,45.7,26.0,18.5,18.4], higherBetter:true, dec:1 }
     ],
     progallowed: [
-      { id:'opp_dp', label:'Opp. Final 3rd Entries', vals:[27,56,40,30,57,19,31,33,32,37,36,33], higherBetter:false, context:'opp' },
-      { id:'opp_lb_comp_f3', label:'Opp. LB Completed (Final Third)', vals:[6,9,9,13,22,12,8,4,4,8,9,7], higherBetter:false, context:'opp' },
-      { id:'opp_lb_pct', label:'Opp. LB Completion % (F3)', vals:[0.375,0.4285,0.375,0.5652,0.5945,0.6315,0.5333,0.3636,0.2857,0.32,0.5625,0.3888], higherBetter:false, pct:true, dec:3, context:'opp' }
+      { id:'opp_dp', label:'Opp. Final 3rd Entries', vals:[27,56,40,30,57,19,31,33,32,37,36,33,52], higherBetter:false, context:'opp' },
+      { id:'opp_lb_comp_f3', label:'Opp. LB Completed (Final Third)', vals:[6,9,9,13,22,12,8,4,4,8,9,7,null], higherBetter:false, context:'opp' },
+      { id:'opp_lb_pct', label:'Opp. LB Completion % (F3)', vals:[0.375,0.4285,0.375,0.5652,0.5945,0.6315,0.5333,0.3636,0.2857,0.32,0.5625,0.3888,null], higherBetter:false, pct:true, dec:3, context:'opp' }
     ]
   },
   obv: {
     ncc: [
-      { id:'obv_total', label:'Total OBV', vals:[4.154,1.022,0.867,0.784,3.768,1.796,1.171,1.156,3.564,2.478,3.761,3.316], higherBetter:true, dec:3 },
-      { id:'obv_pass', label:'Pass OBV', vals:[0.426,0.217,1.06,0.68,0.75,0.85,0.985,0.224,1.35,0.706,0.471,0.851], higherBetter:true, dec:3 },
-      { id:'obv_shot', label:'Shot OBV', vals:[0.243,-1.171,-0.338,-0.513,0.229,0.183,-1.009,-0.719,-0.101,0.586,0.508,-0.72], higherBetter:true, dec:3 },
-      { id:'obv_dribble', label:'Dribble & Carry OBV', vals:[1.546,1.026,0.722,0.823,1.458,0.934,1.677,1.009,0.959,0.586,0.763,2.225], higherBetter:true, dec:3 },
-      { id:'obv_def', label:'Defensive Action OBV', vals:[0.673,0.49,0.402,0.187,0.987,0.11,0.258,0.446,0.322,0.903,0.467,0.212], higherBetter:true, dec:3 }
+      { id:'obv_total', label:'Total OBV', vals:[4.154,1.022,0.867,0.784,3.768,1.796,1.171,1.156,3.564,2.478,3.761,3.316,0.235], higherBetter:true, dec:3 },
+      { id:'obv_pass', label:'Pass OBV', vals:[0.426,0.217,1.06,0.68,0.75,0.85,0.985,0.224,1.35,0.706,0.471,0.851,0.746], higherBetter:true, dec:3 },
+      { id:'obv_shot', label:'Shot OBV', vals:[0.243,-1.171,-0.338,-0.513,0.229,0.183,-1.009,-0.719,-0.101,0.586,0.508,-0.72,-0.802], higherBetter:true, dec:3 },
+      { id:'obv_dribble', label:'Dribble & Carry OBV', vals:[1.546,1.026,0.722,0.823,1.458,0.934,1.677,1.009,0.959,0.586,0.763,2.225,1.05], higherBetter:true, dec:3 },
+      { id:'obv_def', label:'Defensive Action OBV', vals:[0.673,0.49,0.402,0.187,0.987,0.11,0.258,0.446,0.322,0.903,0.467,0.212,0.006], higherBetter:true, dec:3 }
     ],
     opp: [
-      { id:'opp_obv_total', label:'Opp. Total OBV', vals:[2.962,1.782,2.852,1.976,1.66,1.863,2.271,1.545,0.985,1.817,1.991,1.316], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_obv_pass', label:'Opp. Pass OBV', vals:[0.984,-0.072,0.576,0.233,1.565,0.434,0.647,0.627,0.644,0.925,1.262,0.518], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_obv_shot', label:'Opp. Shot OBV', vals:[-0.508,-0.296,0.501,0.997,-1.486,0.132,-0.316,-0.249,0.163,-0.671,-0.125,0.241], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_obv_dribble', label:'Opp. Dribble & Carry OBV', vals:[1.126,1.167,1.212,0.809,0.306,0.557,1.231,0.489,0.86,1.179,0.9,0.564], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_obv_def', label:'Opp. Defensive Action OBV', vals:[0.14,0.395,0.665,0.612,0.143,1.18,-0.131,0.499,0.386,0.597,0.238,0.842], higherBetter:false, dec:3, context:'opp' }
+      { id:'opp_obv_total', label:'Opp. Total OBV', vals:[2.962,1.782,2.852,1.976,1.66,1.863,2.271,1.545,0.985,1.817,1.991,1.316,2.02], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_obv_pass', label:'Opp. Pass OBV', vals:[0.984,-0.072,0.576,0.233,1.565,0.434,0.647,0.627,0.644,0.925,1.262,0.518,0.14], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_obv_shot', label:'Opp. Shot OBV', vals:[-0.508,-0.296,0.501,0.997,-1.486,0.132,-0.316,-0.249,0.163,-0.671,-0.125,0.241,0.268], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_obv_dribble', label:'Opp. Dribble & Carry OBV', vals:[1.126,1.167,1.212,0.809,0.306,0.557,1.231,0.489,0.86,1.179,0.9,0.564,1.102], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_obv_def', label:'Opp. Defensive Action OBV', vals:[0.14,0.395,0.665,0.612,0.143,1.18,-0.131,0.499,0.386,0.597,0.238,0.842,0.41], higherBetter:false, dec:3, context:'opp' }
     ]
   }
 };
 
-let currentMatch = MATCHES.length - 1; // default to latest match on load
+let currentMatch = MATCHES.length - 1;  // default to most recent match played
 let currentSubtab = 'sop';
 
 function fmt(val, row) {
@@ -2749,28 +2707,24 @@ function buildRow(row, matchIdx, isSeason) {
     matchGradeCell = `<td>${gradeHTML(grade)}</td>`;
   } else if (isPending && !isSeason) {
     matchGradeCell = `<td><span class="grade pending">Pending</span></td>`;
-  } else if (val !== null) {
-    matchGradeCell = `<td><span class="grade baseline" title="Not enough matches yet to grade this value against a season baseline">Establishing baseline</span></td>`;
   } else {
     matchGradeCell = `<td><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
   }
 
   const rollGradeCell = rollGrade !== null
     ? `<td>${gradeHTML(rollGrade)}</td>`
-    : (val !== null && !isSeason)
-      ? `<td><span class="grade baseline" title="Form grade needs at least 3 matches of data">More matches needed</span></td>`
-      : `<td><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
+    : `<td><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
 
   const sparkCell = `<td style="padding:8px 14px;">${buildSparkline(row.vals, row.higherBetter, matchIdx, isSeason)}</td>`;
 
   return `<tr>
     <td class="metric-name">${row.label}${contextBadge}</td>
+    ${sparkCell}
+    <td class="stat worst">${worstDisp}</td>
     ${valCell}
+    <td class="stat best">${bestDisp}</td>
     ${matchGradeCell}
     ${rollGradeCell}
-    <td class="stat worst">${worstDisp}</td>
-    ${sparkCell}
-    <td class="stat best">${bestDisp}</td>
   </tr>`;
 }
 
@@ -3181,16 +3135,15 @@ function renderOBVRadars() {
 
 // ── OBV HEAD-TO-HEAD TABLE (NCC | Metric | Opp) ──────────────────────────────
 function renderOBVH2HTable() {
-  const nccBody = document.getElementById('obv-ncc-rows');
-  const oppBody = document.getElementById('obv-opp-rows');
-  if (!nccBody || !oppBody) return;
+  const tbody = document.getElementById('obv-h2h-rows');
+  if (!tbody) return;
 
   const isSeason = currentMatch === -1;
   const idx = isSeason ? 0 : currentMatch;
   const nccRows = DATA.obv.ncc;
   const oppRows = DATA.obv.opp;
 
-  // Short metric name (no "OBV" suffix needed)
+  // Short metric name shown in the centre column (no "OBV" suffix needed)
   function shortLabel(label) {
     return label
       .replace('Opp. ', '')
@@ -3199,33 +3152,55 @@ function renderOBVH2HTable() {
       .replace(' OBV', '');
   }
 
-  // Winner marker: dot next to the value on the side that added more OBV.
-  // Higher raw OBV is better for the side in question.
-  function winMark(row, other, side) {
-    if (isSeason) return '';
-    const v = row.vals[idx], o = other.vals[idx];
-    if (v === null || v === undefined || o === null || o === undefined || v <= o) return '';
-    return `<span class="h2h-win ${side}" title="Won this battle">●</span>`;
-  }
-
-  function rowHTML(row, other, side) {
+  // Render value + grade cells for a single side of one metric row.
+  function sideCells(row, side) {
     const val     = isSeason ? null : row.vals[idx];
     const display = fmt(val, row);
     const grade   = val !== null ? getGrade(val, row, idx) : null;
 
     const valCell = display !== null
-      ? `<td class="sv-val">${display}${winMark(row, other, side)}</td>`
-      : `<td class="sv-val empty">—</td>`;
+      ? `<td class="h2h-val ${side}">${display}</td>`
+      : `<td class="h2h-val ${side} empty">—</td>`;
 
     const gradeCell = (val !== null && grade)
-      ? `<td>${gradeHTML(grade)}</td>`
-      : `<td><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
+      ? `<td class="h2h-grade">${gradeHTML(grade)}</td>`
+      : `<td class="h2h-grade"><span style="color:var(--text-muted);font-size:11px;">—</span></td>`;
 
-    return `<tr><td>${shortLabel(row.label)}</td>${valCell}${gradeCell}</tr>`;
+    return { valCell, gradeCell };
   }
 
-  nccBody.innerHTML = nccRows.map((r, i) => rowHTML(r, oppRows[i], 'ncc')).join('');
-  oppBody.innerHTML = oppRows.map((r, i) => rowHTML(r, nccRows[i], 'opp')).join('');
+  // Decide who won the battle on a metric and build a directional arrow.
+  // NCC wins when it added more on-ball value than the opposition did;
+  // higher raw OBV is better for the side in question.
+  function winnerArrow(ncc, opp) {
+    if (isSeason) return '';
+    const nv = ncc.vals[idx], ov = opp.vals[idx];
+    if (nv === null || nv === undefined || ov === null || ov === undefined) return '';
+    if (nv === ov) {
+      return `<span class="h2h-arrow tie" title="Even">=</span>`;
+    }
+    const nccWon = nv > ov;
+    const arrow = nccWon ? '◀' : '▶';
+    const cls   = nccWon ? 'ncc' : 'opp';
+    const who   = nccWon ? 'NCC won this battle' : 'Opposition won this battle';
+    return `<span class="h2h-arrow ${cls}" title="${who}">${arrow}</span>`;
+  }
+
+  tbody.innerHTML = nccRows.map((ncc, i) => {
+    const opp = oppRows[i];
+    const nccC = sideCells(ncc, 'ncc');
+    const oppC = sideCells(opp, 'opp');
+
+    // Column order (left → right):
+    //   NCC Grade | NCC Value | Metric (+winner arrow) | Opp Value | Opp Grade
+    return `<tr>
+      ${nccC.gradeCell}
+      ${nccC.valCell}
+      <td class="h2h-metric">${winnerArrow(ncc, opp)}<span class="h2h-metric-label">${shortLabel(ncc.label)}</span></td>
+      ${oppC.valCell}
+      ${oppC.gradeCell}
+    </tr>`;
+  }).join('');
 }
 
 function renderAll() {
@@ -3308,8 +3283,8 @@ function buildMatchPills() {
     if (result.startsWith('L')) return 'var(--grade-poor)';
     return 'var(--grade-typical)';
   }
-  // Newest match first (left), oldest last (right)
-  container.innerHTML = MATCHES.map((m, i) => {
+  // Render newest match first (left) while preserving original indices.
+  container.innerHTML = MATCHES.map((m, i) => ({ m, i })).reverse().map(({ m, i }) => {
     const locText = m.loc === 'Home' ? `&#x25CF; Home` : `&#x25CF; Away`;
     const locClass = m.loc === 'Home' ? 'home' : 'away';
     const activeClass = i === currentMatch ? 'active' : '';
@@ -3318,7 +3293,7 @@ function buildMatchPills() {
       <span class="opp">${m.loc === 'Away' ? '@ ' : 'vs '}${m.opp}</span>
       <span class="loc ${locClass}" style="color:${resultColor(m.result)}">${m.result} &nbsp;${locText}</span>
     </button>`;
-  }).reverse().join('');
+  }).join('');
 }
 
 // =====================================================================
@@ -3337,7 +3312,8 @@ const MATCH_REPORT_DATA = [
   { ncc_goals:4, opp_goals:0, result:'W', ncc_xg:2.217, opp_xg:0.948, ncc_xg_sp:0.864, opp_xg_sp:0.815, ncc_shots:17, opp_shots:13, ncc_sot:6, opp_sot:3, ncc_poss:52, opp_poss:48, ncc_pass_pct:81, opp_pass_pct:79, ncc_pressures:134, opp_pressures:129, ncc_press_regains:24, opp_press_regains:23, top_shooters:null, top_kp:null, note:null },
   { ncc_goals:2, opp_goals:1, result:'W', ncc_xg:1.236, opp_xg:1.309, ncc_xg_sp:0.212, opp_xg_sp:0.82, ncc_shots:11, opp_shots:17, ncc_sot:4, opp_sot:2, ncc_poss:53, opp_poss:47, ncc_pass_pct:79, opp_pass_pct:74, ncc_pressures:158, opp_pressures:185, ncc_press_regains:35, opp_press_regains:31, top_shooters:'Ashley Nicole Sanchez (4 shots, 0.45xG), Shinomi Koyama (2, 0.09xG), Felicitas Rauch (2, 0.11xG)', top_kp:'Ryan Williams (2 KP, 0.67xG), Allyson Schlegel (2 KP, 0.11xG)', note:'W 2-1 away at Louisville. Won despite lower xG (1.23 vs 1.29) — clinical finishing from ANS. Louisville\'s corner volume generated 0.60 SP xG but NCC held firm defensively.' },
   { ncc_goals:2, opp_goals:1, result:'W', ncc_xg:1.284, opp_xg:1.68, ncc_xg_sp:0.586, opp_xg_sp:1.318, ncc_shots:10, opp_shots:17, ncc_sot:4, opp_sot:5, ncc_poss:48, opp_poss:52, ncc_pass_pct:75, opp_pass_pct:78, ncc_pressures:100, opp_pressures:94, ncc_press_regains:23, opp_press_regains:15, top_shooters:null, top_kp:null, note:null },
-  { ncc_goals:3, opp_goals:1, result:'W', ncc_xg:2.371, opp_xg:1.349, ncc_xg_sp:0.648, opp_xg_sp:0.122, ncc_shots:16, opp_shots:16, ncc_sot:6, opp_sot:4, ncc_poss:46, opp_poss:54, ncc_pass_pct:81, opp_pass_pct:81, ncc_pressures:95, opp_pressures:103, ncc_press_regains:18, opp_press_regains:22, top_shooters:null, top_kp:null, note:null }
+  { ncc_goals:3, opp_goals:1, result:'W', ncc_xg:2.371, opp_xg:1.349, ncc_xg_sp:0.648, opp_xg_sp:0.122, ncc_shots:16, opp_shots:16, ncc_sot:6, opp_sot:4, ncc_poss:46, opp_poss:54, ncc_pass_pct:81, opp_pass_pct:81, ncc_pressures:95, opp_pressures:103, ncc_press_regains:18, opp_press_regains:22, top_shooters:null, top_kp:null, note:null },
+  { ncc_goals:0, opp_goals:2, result:'L', ncc_xg:1.053, opp_xg:0.955, ncc_xg_sp:0.566, opp_xg_sp:0.048, ncc_shots:11, opp_shots:8, ncc_sot:1, opp_sot:5, ncc_poss:43, opp_poss:57, ncc_pass_pct:74, opp_pass_pct:83, ncc_pressures:130, opp_pressures:110, ncc_press_regains:19, opp_press_regains:19, top_shooters:null, top_kp:null, note:null }
 ];
 
 // =====================================================================
@@ -3358,7 +3334,8 @@ const BYPASS_SEGMENTS = [
   { ncc:[67,57,108,66,79,79], opp:[73,37,59,56,51,36] },
   { ncc:[62,55,122,64,47,67], opp:[60,23,83,52,38,80] },
   { ncc:[50,32,82,68,41,61], opp:[39,45,53,35,53,70] },
-  { ncc:[71,46,42,86,61,73], opp:[50,71,62,79,43,50] }
+  { ncc:[71,46,42,86,61,73], opp:[50,71,62,79,43,50] },
+  { ncc:[27,44,63,55,57,64], opp:[88,55,95,52,59,79] }
 ];
 
 function renderBypassSegments() {
@@ -4278,7 +4255,8 @@ const MATCH_INFO = [
   { label: 'GW8 · M9', date: 'May 17, 2026', opp: 'Chicago Red Stars', loc: 'Home', result: 'W 4–0' },
   { label: 'GW9 · M10', date: 'May 23, 2026', opp: 'Racing Louisville FC', loc: 'Away', result: 'W 2–1' },
   { label: 'GW10 · M11', date: 'Jun 1, 2026', opp: 'Angel City', loc: 'Away', result: 'W 2–1' },
-  { label: 'GW11 · M12', date: 'Jul 5, 2026', opp: 'Seattle Reign', loc: 'Home', result: 'W 3–1' }
+  { label: 'GW11 · M12', date: 'Jul 5, 2026', opp: 'Seattle Reign', loc: 'Home', result: 'W 3–1' },
+  { label: 'GW12 · M13', date: 'Jul 11, 2026', opp: 'Washington Spirit', loc: 'Home', result: 'L 0–2' }
 ];
 
 const SECTION_LABELS = {
