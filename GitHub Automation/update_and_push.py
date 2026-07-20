@@ -15,8 +15,6 @@ From Terminal:
     cd "/Users/tomharris/Desktop/Claude/Projects/Team Performance Dashboard"
     python3 "GitHub Automation/update_and_push.py"
 
-Or just double-click "Update Dashboard.command" in the project folder.
-
 OPTIONS
 -------
     --no-push   Rebuild and commit locally, but do not push.
