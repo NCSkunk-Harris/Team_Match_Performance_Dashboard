@@ -4,7 +4,7 @@ On-command rebuild + push for the Courage Performance Dashboard.
 ================================================================
 
 Runs ONCE when you call it (no background watching):
-  1. Rebuilds the dashboard via build_dashboard.py
+  1. Rebuilds the dashboard via build_dashboard_from_csv.py
   2. If — and only if — the build succeeds, commits the changes
   3. Pushes to GitHub so the live page updates
 

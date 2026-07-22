@@ -12,9 +12,13 @@ EXPECTED FOLDER STRUCTURE:
     │   ├── template_dashboard.html                     ← the HTML template (do not delete)
     │   └── Courage_Team_Performance_Dashboard.html     ← OUTPUT (overwritten each run)
     └── Data Organization And Cleaning/                 ← single data source for all projects
-        ├── NWSL StatsBomb Data.xlsx                    ← update weekly
-        ├── NWSL Impect Data.xlsx                       ← update weekly
-        └── NWSL InHouse Data.xlsx                      ← update weekly
+        └── Data/
+            ├── NWSL Impect Data.xlsx                   ← update weekly (carries Possession %)
+            ├── NWSL InHouse Data.xlsx                  ← update weekly
+            └── Statsbomb Match CSVs/                   ← one event CSV per match
+
+    NWSL StatsBomb Data.xlsx was retired 2026-07-20. Fixture spine and
+    Possession % now come from the Impect + InHouse union.
 
 WEEKLY UPDATE WORKFLOW:
   1. Add the new match's rows to each provider file's "Team Event Data" sheet
@@ -46,12 +50,15 @@ import openpyxl
 # ─────────────────────────────────────────────────────────────────────────────
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-DATA_DIR = SCRIPT_DIR.parent / "Data Organization And Cleaning"
+DATA_DIR = SCRIPT_DIR.parent / "Data Organization And Cleaning" / "Data"
 # Match data now spans three spreadsheets, one per provider.
 # Each contains a "Team Event Data" sheet keyed by Date / Match / Team.
+# NWSL StatsBomb Data.xlsx was retired on 2026-07-20. The fixture spine
+# (Date / Game Week / Venue / Match) and Possession % now come from the union
+# of the two live workbooks below, merged on (Date, side); a blank in one
+# provider never overwrites a real value from the other.
 SOURCE_FILES = [
-    DATA_DIR / "NWSL StatsBomb Data.xlsx",   # xG, shots, box, pressing, OBV (NCC + OPP rows)
-    DATA_DIR / "NWSL Impect Data.xlsx",      # packing / bypassed metrics (NCC + OPP rows)
+    DATA_DIR / "NWSL Impect Data.xlsx",      # packing/bypassed + Possession % (NCC + OPP rows)
     DATA_DIR / "NWSL InHouse Data.xlsx",     # zone metrics (NCC rows only)
 ]
 SPREADSHEET_SHEET = "Team Event Data"
@@ -81,6 +88,29 @@ COLUMN_RENAMES = {
     "Passing Zone Completions": "PZ Completions",
     "Shooting Zone Attempts": "SZ Attempts",
     "Shooting Zone Completions": "SZ Completions",
+    "Zone 2 Points": "Z2 Points",
+    "Zone 3 Points": "Z3 Points",
+    "Passing Zone Points": "PZ Points",
+    "Shooting Zone Points": "SZ Points",
+}
+
+# ── IN-HOUSE ZONE SCORING ────────────────────────────────────────────────────
+# The Points columns in NWSL InHouse Data.xlsx are Excel FORMULAS:
+#     Zone 2 Points        = Zone 2 Completions        * 1
+#     Zone 3 Points        = Zone 3 Completions        * 2
+#     Passing Zone Points  = Passing Zone Completions  * 3
+#     Shooting Zone Points = Shooting Zone Completions * 5
+# openpyxl reads cached formula results only. If the workbook is edited by a
+# tool that does not recalculate (or saved without Excel opening it), those
+# cells read as None and the metric silently disappears. We therefore DERIVE
+# points from completions whenever the sheet value is missing — the weights
+# below are the single source of truth for that fallback. If you change a
+# weight in Excel, change it here too.
+ZONE_POINT_WEIGHTS = {
+    "Z2 Points": ("Z2 Completions", 1),
+    "Z3 Points": ("Z3 Completions", 2),
+    "PZ Points": ("PZ Completions", 3),
+    "SZ Points": ("SZ Completions", 5),
 }
 
 # Internal header names the dashboard build consumes from the merged sheet
@@ -93,12 +123,17 @@ EXPECTED_HEADERS = [
     "Bypassed Opponents", "Bypassed Defenders",
     "Ball Win Removed Opponents", "Ball Win Removed Opponents Defenders",
     "Critical Ball Loss Number", "Ball Loss Removed Teammates",
-    # StatsBomb IQ line-breaking + video-coded + possession
-    "Line Breaking Passes Completed in Final Third",
-    "Line Breaking Passes Completed in Final Third%",
-    "Line Breaking Passes On Ball Value in Final Third",
-    "Quality Chances", "Big Chances", "Possession %",
+    # Possession drives every PA-adjusted metric, so its absence is serious.
+    "Possession %",
+    # In-house zone scoring (derived from completions if the formula cache is empty)
+    "Z2 Points", "Z3 Points", "PZ Points", "SZ Points",
 ]
+# Retired 2026-07-20 with NWSL StatsBomb Data.xlsx, deliberately NOT expected:
+#   Line Breaking Passes Completed in Final Third (+ % and OBV variants)
+#     — no surviving source in any provider; the rows were removed rather than
+#       left rendering blank.
+#   Quality Chances / Big Chances
+#     — now computed from shot xG bands in the CSVs (see build_dashboard_from_csv).
 TEMPLATE = SCRIPT_DIR / "template_dashboard.html"
 OUTPUT = SCRIPT_DIR / "Courage_Team_Performance_Dashboard.html"
 
@@ -294,6 +329,13 @@ def read_spreadsheet():
     """
     Returns (matches, sheet_data) where:
       matches    = ordered list of match metadata dicts (includes 'result')
+
+    NOTE ON GAME WEEKS: a game week can legitimately contain more than one
+    fixture (e.g. GW6 holds both 2026-04-30 and 2026-05-03). Game Week is
+    therefore NOT a unique key and must never be used to identify, sort or
+    deduplicate a match. The unique key is game_number, derived below from the
+    chronological order of Courage fixtures. Labels render as "GW6 · M6" /
+    "GW6 · M7" so a doubled week is visible rather than ambiguous.
       sheet_data = dict mapping (game_number, side) → {column_name: value}
                    side ∈ {"NCC", "OPP"}
     Data is merged from the three provider spreadsheets in SOURCE_FILES,
@@ -504,9 +546,6 @@ def build_data_block(matches, sheet_data):
     crit_loss = vals_from("NCC", "Critical Ball Loss Number")
     bl_team = vals_from("NCC", "Ball Loss Removed Teammates")
     deep_prog = vals_from("NCC", "Deep Progressions")
-    lb_comp_f3 = vals_from("NCC", "Line Breaking Passes Completed in Final Third")
-    lb_pct_f3 = vals_from("NCC", "Line Breaking Passes Completed in Final Third%")
-    lb_obv_f3 = vals_from("NCC", "Line Breaking Passes On Ball Value in Final Third")
 
     # ─── Box Domination ─────────────────────────────────────────────────────
     bea_cp = vals_from("NCC", "Box Entries Attempted (Cross&Pass)")
@@ -563,8 +602,6 @@ def build_data_block(matches, sheet_data):
     cp_oh = [pa_adjust(v, p) for v, p in zip(cp_oh_raw, opp_poss)]
 
     opp_dp = vals_from("OPP", "Deep Progressions")
-    opp_lb_comp_f3 = vals_from("OPP", "Line Breaking Passes Completed in Final Third")
-    opp_lb_pct = vals_from("OPP", "Line Breaking Passes Completed in Final Third%")
 
     # ─── On-Ball Value (OBV) ────────────────────────────────────────────────
     obv_total      = vals_from("NCC", "OBV")
@@ -612,11 +649,6 @@ def build_data_block(matches, sheet_data):
                 {"id": "crit_loss", "label": "Critical Ball Loss",          "vals": crit_loss, "higherBetter": False, "context": "neg"},
                 {"id": "bl_team",   "label": "Ball Loss Removed Teammates", "vals": bl_team,   "higherBetter": False, "context": "neg"},
                 {"id": "deep_prog", "label": "Final 3rd Entries",           "vals": deep_prog, "higherBetter": True},
-            ],
-            "linebreak": [
-                {"id": "lb_comp_f3",  "label": "LB Passes Completed in Final Third",   "vals": lb_comp_f3,            "higherBetter": True},
-                {"id": "lb_pct_f3",   "label": "LB Completion % (Final Third)",        "vals": r(lb_pct_f3, 4),       "higherBetter": True, "pct": True, "dec": 3},
-                {"id": "lb_obv_f3",   "label": "LB Passes OBV (Final Third)",          "vals": r(lb_obv_f3, 3),       "higherBetter": True, "dec": 3},
             ],
         },
         "boxdom": {
@@ -667,8 +699,6 @@ def build_data_block(matches, sheet_data):
             ],
             "progallowed": [
                 {"id": "opp_dp",         "label": "Opp. Final 3rd Entries",        "vals": opp_dp,             "higherBetter": False, "context": "opp"},
-                {"id": "opp_lb_comp_f3", "label": "Opp. LB Completed (Final Third)", "vals": opp_lb_comp_f3,   "higherBetter": False, "context": "opp"},
-                {"id": "opp_lb_pct",     "label": "Opp. LB Completion % (F3)",     "vals": r(opp_lb_pct, 4),   "higherBetter": False, "pct": True, "dec": 3, "context": "opp"},
             ],
         },
         "obv": {

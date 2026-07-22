@@ -1,8 +1,9 @@
 name: Deploy Dashboard
 
 # Match data lives outside this repo (../Data Organization And Cleaning/),
-# so CI cannot rebuild the dashboard. Rebuild locally with build_dashboard.py,
-# commit the regenerated HTML, and push — this workflow publishes it to Pages.
+# so CI cannot rebuild the dashboard. Rebuild locally with
+# build_dashboard_from_csv.py, commit the regenerated HTML, and push — this
+# workflow publishes it to Pages.
 on:
   push:
     branches: [main]

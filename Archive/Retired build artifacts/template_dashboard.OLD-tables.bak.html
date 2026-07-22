@@ -1899,6 +1899,7 @@
   <div class="subtab active" onclick="selectSubtab('sop', this)">SOP Grading</div>
   <div class="subtab" onclick="selectSubtab('packing', this)">Packing &amp; Progression</div>
   <div class="subtab" onclick="selectSubtab('box-dom', this)">Box Domination</div>
+  <div class="subtab" onclick="selectSubtab('box-res', this)">Box Resilience</div>
   <div class="subtab" onclick="selectSubtab('def-int', this)">Defensive Intensity</div>
   <div class="subtab" onclick="selectSubtab('obv', this)">On-Ball Value</div>
   <div class="subtab disabled" aria-disabled="true" title="Coming soon">Match Insights</div>
@@ -1944,16 +1945,38 @@
   <!-- ===================== SOP GRADING ===================== -->
   <div class="subtab-content active" id="tab-sop">
 
-    <!-- Zone Progression Funnel (quick-read pitch view) -->
+    <!-- Zone Grading (progression + finishing) -->
     <div class="table-section">
       <div class="section-header">
         <span class="section-tag">SOP Grading</span>
-        <span class="section-title">Zone Progression</span>
+        <span class="section-title">Zone Grading</span>
       </div>
-      <div class="table-section-title">
-        <span id="sop-funnel-ctx">Reads down the pitch toward goal &mdash; bar = completions &divide; attempts</span>
-      </div>
-      <div id="sop-funnel"></div>
+      <div class="table-section-title">Progression and finishing zones — attempts, completions, weighted points</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="sop-zones-rows">
+        </tbody>
+      </table>
     </div>
 
   </div>
@@ -1961,67 +1984,333 @@
   <!-- ===================== PACKING & PROGRESSION ===================== -->
   <div class="subtab-content" id="tab-packing">
 
-    <!-- Progression Battle (NCC vs Opponent head-to-head) -->
+    <!-- Progression Volume -->
     <div class="table-section">
       <div class="section-header">
         <span class="section-tag">Packing &amp; Progression</span>
-        <span class="section-title">Progression Battle</span>
+        <span class="section-title">Progression Volume</span>
       </div>
-      <div class="table-section-title">
-        <span id="pack-battle-ctx">NCC vs opponent &mdash; bar reaches the winning side of each metric</span>
-      </div>
-      <div id="pack-battle-score" style="margin:2px 0 12px;"></div>
-      <div id="pack-battle"></div>
+      <div class="table-section-title">Bypassing &amp; ball carry metrics</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="packing-volume-rows"></tbody>
+      </table>
     </div>
 
     <!-- Packing Momentum -->
     <div class="table-section">
-      <div class="section-header">
+      <div class="section-header" style="margin-top:8px;">
         <span class="section-tag">Packing &amp; Progression</span>
         <span class="section-title">Packing Momentum</span>
       </div>
-      <div class="table-section-title">
-        <span id="bypass-ctx">Bypassed players per 15-minute window &mdash; bar reaches whoever bypassed more</span>
+      <div class="table-section-title">Bypassed players per 15-minute segment — NCC vs Opposition</div>
+      <div id="bypass-segments-container" class="bypass-grid">
+        <!-- rendered by renderBypassSegments() -->
       </div>
-      <div id="bypass-score" style="margin:2px 0 12px;"></div>
-      <div id="bypass-segments-container"></div>
-      <p class="data-source-note" style="margin-top:8px;">Source: Impect packing data — spreadsheet data</p>
+      <p class="data-source-note" style="margin-top:8px;">
+        Higher NCC bars = we bypassed more opponents in that window (good).
+        Higher Opp bars = the opponent bypassed more of us (bad).
+        In Season view, values are per-match averages across all matches.
+      </p>
+      <p class="data-source-note">Source: Impect packing data &amp; StatsBomb — spreadsheet data</p>
     </div>
   </div>
 
   <!-- ===================== BOX DOMINATION ===================== -->
   <div class="subtab-content" id="tab-box-dom">
 
-    <!-- Box Battle (NCC attack vs Opponent attack, head-to-head) -->
+    <!-- Penetration -->
     <div class="table-section">
       <div class="section-header">
         <span class="section-tag">Box Domination</span>
-        <span class="section-title">Box Battle</span>
+        <span class="section-title">Penetration</span>
       </div>
-      <div class="table-section-title">
-        <span id="box-battle-ctx">NCC attack vs opponent attack &mdash; bar reaches whoever created more in the box</span>
+      <div class="table-section-title">Box entry &amp; delivery metrics</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="dom-penetration-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- Finishing & GK Influence -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">Box Domination</span>
+        <span class="section-title">Finishing</span>
       </div>
-      <div id="box-battle-score" style="margin:2px 0 12px;"></div>
-      <div id="box-battle"></div>
-      <p class="data-source-note" style="margin-top:8px;">Source: Match CSVs (StatsBomb events). xG = shot xG; set-piece xG = corner/free-kick/throw-in shots; post-shot xG = keeper save-difficulty xG; Quality Chances = shots xG 0.15–0.30; Big Chances = shots xG ≥ 0.30.</p>
+      <div class="table-section-title">Shot quality &amp; opposition goalkeeper</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="dom-finishing-rows"></tbody>
+      </table>
+      <p class="data-source-note">Source: StatsBomb — post-shot xG from match report PDFs for some metrics</p>
+    </div>
+  </div>
+
+  <!-- ===================== BOX RESILIENCE ===================== -->
+  <div class="subtab-content" id="tab-box-res">
+
+    <!-- Denying -->
+    <div class="table-section">
+      <div class="section-header">
+        <span class="section-tag">Box Resilience</span>
+        <span class="section-title">Denying</span>
+      </div>
+      <div class="table-section-title">Opposition box entry allowed</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="res-denying-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- Nullifying & GK Performance -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">Box Resilience</span>
+        <span class="section-title">Nullifying</span>
+      </div>
+      <div class="table-section-title">Shot suppression &amp; NCC goalkeeper</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="res-nullifying-rows"></tbody>
+      </table>
+      <p class="data-source-note">Source: StatsBomb — post-shot xG &amp; GSAA from match report PDFs for some metrics</p>
     </div>
   </div>
 
   <!-- ===================== DEFENSIVE INTENSITY ===================== -->
   <div class="subtab-content" id="tab-def-int">
 
-    <!-- Pressing Battle (NCC vs Opponent head-to-head) -->
+    <!-- Volume & Aggression -->
     <div class="table-section">
       <div class="section-header">
         <span class="section-tag">Defensive Intensity</span>
-        <span class="section-title">Pressing Battle</span>
+        <span class="section-title">Volume &amp; Aggression</span>
       </div>
-      <div class="table-section-title">
-        <span id="def-battle-ctx">NCC vs opponent &mdash; bar reaches whoever pressed harder on each metric</span>
+      <div class="table-section-title">Pressure count &amp; intensity metrics</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="def-volume-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- Forward Leaning -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">Defensive Intensity</span>
+        <span class="section-title">Forward Leaning</span>
       </div>
-      <div id="def-battle-score" style="margin:2px 0 12px;"></div>
-      <div id="def-battle"></div>
-      <p class="data-source-note" style="margin-top:8px;">Source: Match CSVs (raw StatsBomb events), all 14 matches. Tackles + Interceptions = interceptions plus tackle-type duels; opposing-half by event location.</p>
+      <div class="table-section-title">Press height &amp; directional metrics</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="def-forward-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- Progression Allowed -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">Defensive Intensity</span>
+        <span class="section-title">Progression Allowed</span>
+      </div>
+      <div class="table-section-title">Opposition progression conceded</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="def-progallowed-rows"></tbody>
+      </table>
+      <p class="data-source-note">Source: StatsBomb — PA metrics use formula: raw ÷ opp. possession% × 0.5. Possession% from match report PDFs. Tackles (Won) from PDF match stats page.</p>
+    </div>
+    <!-- Opposition Intensity -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">Defensive Intensity</span>
+        <span class="section-title">Opposition Intensity</span>
+      </div>
+      <div class="table-section-title">How hard the opposition pressed and defended — possession-adjusted</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="def-oppintensity-rows"></tbody>
+      </table>
     </div>
 
   </div>
@@ -2029,18 +2318,76 @@
   <!-- ON-BALL VALUE TAB -->
   <div class="subtab-content" id="tab-obv">
 
-    <!-- OBV Battle (NCC vs Opponent head-to-head) -->
+    <!-- Combined OBV Radar — NCC vs Opposition on shared axes -->
+    <div class="obv-radar-row">
+      <div class="obv-radar-card" style="max-width:540px;">
+        <div class="obv-radar-card-title">On-Ball Value — NCC vs Opposition</div>
+        <svg id="obv-radar-combined" width="100%" viewBox="0 0 380 320" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="obv-radar-legend">
+          <span class="leg-ncc">NC Courage</span>
+          <span class="leg-opp">Opposition</span>
+        </div>
+        <div class="obv-radar-legend" style="margin-top:4px;font-size:10px;font-style:italic;">
+          <span style="display:inline;">Each axis is scaled across both sides — a polygon reaching further out means more on-ball value added on that metric.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Head-to-head OBV table — NCC left, metric centre, Opp right -->
     <div class="table-section">
       <div class="section-header">
         <span class="section-tag">On-Ball Value</span>
-        <span class="section-title">OBV Battle</span>
+        <span class="section-title">NCC vs Opposition — Head-to-Head</span>
       </div>
-      <div class="table-section-title">
-        <span id="obv-battle-ctx">NCC vs opponent &mdash; bar length = value created (negative = value lost)</span>
+      <table class="obv-h2h-table">
+        <colgroup>
+          <col style="width:14%"><col style="width:22%">
+          <col style="width:28%">
+          <col style="width:22%"><col style="width:14%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="ncc-side">Grade</th>
+            <th class="ncc-side">NCC Value</th>
+            <th>Metric</th>
+            <th class="opp-side">Opp Value</th>
+            <th class="opp-side">Grade</th>
+          </tr>
+        </thead>
+        <tbody id="obv-h2h-rows"></tbody>
+      </table>
+    </div>
+    <!-- Net OBV -->
+    <div class="table-section">
+      <div class="section-header" style="margin-top:8px;">
+        <span class="section-tag">On Ball Value</span>
+        <span class="section-title">Net OBV</span>
       </div>
-      <div id="obv-battle-score" style="margin:2px 0 12px;"></div>
-      <div id="obv-battle"></div>
-      <p class="data-source-note" style="margin-top:8px;">Source: Match CSVs (StatsBomb events) — Total OBV = sum of on-ball value (obv_total_net) over a team's actions; split by action type. Defensive Action = ball recoveries, interceptions, blocks, clearances, tackle duels.</p>
+      <div class="table-section-title">Courage minus opposition — positive means Courage created more value</div>
+      <table class="metrics-table">
+        <colgroup>
+          <col class="c-metric">
+          <col class="c-val">
+          <col class="c-grade">
+          <col class="c-ravg">
+          <col class="c-rgrade">
+          <col class="c-stat">
+          <col class="c-stat">
+          <col class="c-stat">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Trend</th>
+            <th>Season Worst</th>
+            <th>Match Value</th>
+            <th>Season Best</th>
+            <th>Match Grade</th>
+            <th title="Grades rolling 3-match average vs season mean — shows whether recent form is above or below your season baseline">3-Match Form</th>
+          </tr>
+        </thead>
+        <tbody id="obv-net-rows"></tbody>
+      </table>
     </div>
 
   </div>
@@ -2054,138 +2401,122 @@
 
 <script>
 const MATCHES = [
-  { label: 'GW1 · M1', date: 'Mar 15', opp: 'Racing Louisville FC', loc: 'Home', result: 'W 2-1' },
-  { label: 'GW2 · M2', date: 'Mar 22', opp: 'NJ/NY Gotham FC', loc: 'Away', result: 'D 0-0' },
-  { label: 'GW3 · M3', date: 'Mar 29', opp: 'Bay FC', loc: 'Home', result: 'L 1-3' },
-  { label: 'GW4 · M4', date: 'Apr 5', opp: 'Portland Thorns', loc: 'Home', result: 'D 2-2' },
-  { label: 'GW5 · M5', date: 'Apr 26', opp: 'Houston Dash', loc: 'Away', result: 'W 1-0' },
-  { label: 'GW6 · M6', date: 'Apr 30', opp: 'Boston Legacy', loc: 'Away', result: 'D 2-2' },
-  { label: 'GW6 · M7', date: 'May 3', opp: 'KC Current', loc: 'Home', result: 'L 1-2' },
-  { label: 'GW7 · M8', date: 'May 9', opp: 'Orlando Pride', loc: 'Away', result: 'L 0-1' },
-  { label: 'GW8 · M9', date: 'May 17', opp: 'Chicago Red Stars', loc: 'Home', result: 'W 4-0' },
-  { label: 'GW9 · M10', date: 'May 23', opp: 'Racing Louisville FC', loc: 'Away', result: 'W 2-1' },
-  { label: 'GW10 · M11', date: 'Jun 1', opp: 'Angel City', loc: 'Away', result: 'W 2-1' },
-  { label: 'GW11 · M12', date: 'Jul 5', opp: 'Seattle Reign', loc: 'Home', result: 'W 3-1' },
-  { label: 'GW12 · M13', date: 'Jul 11', opp: 'Washington Spirit', loc: 'Home', result: 'L 0-2' },
-  { label: 'GW13 · M14', date: 'Jul 18', opp: 'Bay FC', loc: 'Away', result: 'L 0-3' }
+  { label: 'GW1', date: 'Mar 15', opp: 'Racing Louisville FC', loc: 'Home', result: 'W 2-1' },
+  { label: 'GW2', date: 'Mar 22', opp: 'NJ/NY Gotham FC', loc: 'Away', result: 'D 0-0' },
+  { label: 'GW3', date: 'Mar 29', opp: 'Bay FC', loc: 'Home', result: 'L 1-3' },
+  { label: 'GW4', date: 'Apr 5', opp: 'Portland Thorns', loc: 'Home', result: 'D 2-2' },
+  { label: 'GW5', date: 'Apr 26', opp: 'Houston Dash', loc: 'Away', result: 'W 1-0' },
+  { label: 'GW6a', date: 'Apr 30', opp: 'Boston Legacy W', loc: 'Away', result: 'D 2-2' },
+  { label: 'GW6b', date: 'May 2', opp: 'KC Current', loc: 'Home', result: 'L 1-2' }
 ];
 
 const DATA = {
   sop: {
     zones: [
-      { id:'Z2_att', label:'Zone 2 Attempts', vals:[46,69,53,53,49,55,53,44,56,61,50,60,45,53], higherBetter:true },
-      { id:'Z2_comp', label:'Zone 2 Completions', vals:[36,47,37,36,46,36,38,36,49,42,32,45,29,42], higherBetter:true },
-      { id:'Z2_pct', label:'Zone 2 Completion %', vals:[0.7826,0.6812,0.6981,0.6792,0.9388,0.6545,0.717,0.8182,0.875,0.6885,0.64,0.75,0.6444,0.7925], higherBetter:true, pct:true, dec:3 },
-      { id:'Z3_att', label:'Zone 3 Attempts', vals:[20,26,24,21,20,25,7,11,41,21,28,13,25,25], higherBetter:true },
-      { id:'Z3_comp', label:'Zone 3 Completions', vals:[12,8,4,11,11,7,6,7,22,9,9,5,13,17], higherBetter:true },
-      { id:'Z3_pct', label:'Zone 3 Completion %', vals:[0.6,0.3077,0.1667,0.5238,0.55,0.28,0.8571,0.6364,0.5366,0.4286,0.3214,0.3846,0.52,0.68], higherBetter:true, pct:true, dec:3 },
-      { id:'Z2_pts', label:'Zone 2 Points (x1)', vals:[36,47,37,36,46,36,38,36,49,42,32,45,29,42], higherBetter:true },
-      { id:'Z3_pts', label:'Zone 3 Points (x2)', vals:[24,16,8,22,22,14,12,14,44,18,18,10,26,34], higherBetter:true },
-      { id:'PZ_att', label:'Pass Zone Attempts', vals:[15,12,15,17,14,22,18,16,18,12,5,9,11,20], higherBetter:true },
-      { id:'PZ_comp', label:'Pass Zone Completions', vals:[13,11,11,17,11,13,11,8,13,7,4,8,9,15], higherBetter:true },
-      { id:'PZ_pct', label:'Pass Zone Completion %', vals:[0.8667,0.9167,0.7333,1.0,0.7857,0.5909,0.6111,0.5,0.7222,0.5833,0.8,0.8889,0.8182,0.75], higherBetter:true, pct:true, dec:3 },
-      { id:'SZ_att', label:'Shoot Zone Attempts', vals:[19,16,16,22,14,16,30,17,23,22,16,19,24,26], higherBetter:true },
-      { id:'SZ_comp', label:'Shoot Zone Completions', vals:[5,5,4,7,3,1,5,3,11,9,4,8,4,5], higherBetter:true },
-      { id:'SZ_pct', label:'Shoot Zone Completion %', vals:[0.2632,0.3125,0.25,0.3182,0.2143,0.0625,0.1667,0.1765,0.4783,0.4091,0.25,0.4211,0.1667,0.1923], higherBetter:true, pct:true, dec:3 },
-      { id:'PZ_pts', label:'Pass Zone Points (x3)', vals:[39,33,33,51,33,39,33,24,39,21,12,24,27,45], higherBetter:true },
-      { id:'SZ_pts', label:'Shoot Zone Points (x5)', vals:[25,25,20,35,15,5,25,15,55,45,20,40,20,25], higherBetter:true },
-      { id:'zone_pts_total', label:'Total Zone Points (weighted)', vals:[124,121,98,144,116,94,108,89,187,126,82,119,102,146], higherBetter:true }
+      { id:'Z2_att', label:'Zone 2 Attempts', vals:[46,69,53,53,49,55,53], higherBetter:true },
+      { id:'Z2_comp', label:'Zone 2 Completions', vals:[36,47,37,36,46,36,38], higherBetter:true },
+      { id:'Z2_pct', label:'Zone 2 Completion %', vals:[0.7826,0.6812,0.6981,0.6792,0.9388,0.6545,0.717], higherBetter:true, pct:true, dec:3 },
+      { id:'Z2_pts', label:'Zone 2 Points', vals:[36,48,37,36,46,36,38], higherBetter:true },
+      { id:'Z3_att', label:'Zone 3 Attempts', vals:[20,26,24,21,20,25,7], higherBetter:true },
+      { id:'Z3_comp', label:'Zone 3 Completions', vals:[12,8,4,11,11,7,6], higherBetter:true },
+      { id:'Z3_pct', label:'Zone 3 Completion %', vals:[0.6,0.3077,0.1667,0.5238,0.55,0.28,0.8571], higherBetter:true, pct:true, dec:3 },
+      { id:'Z3_pts', label:'Zone 3 Points', vals:[24,16,8,22,22,14,12], higherBetter:true }
+      ,
+      { id:'PZ_att', label:'Pass Zone Attempts', vals:[15,12,15,17,14,22,18], higherBetter:true },
+      { id:'PZ_comp', label:'Pass Zone Completions', vals:[13,11,11,17,11,13,11], higherBetter:true },
+      { id:'PZ_pct', label:'Pass Zone Completion %', vals:[0.8667,0.9167,0.7333,1,0.7857,0.5909,0.6111], higherBetter:true, pct:true, dec:3 },
+      { id:'PZ_pts', label:'Pass Zone Points', vals:[39,33,33,51,33,39,33], higherBetter:true },
+      { id:'SZ_att', label:'Shoot Zone Attempts', vals:[19,16,16,22,14,16,30], higherBetter:true },
+      { id:'SZ_comp', label:'Shoot Zone Completions', vals:[5,5,4,7,3,1,5], higherBetter:true },
+      { id:'SZ_pct', label:'Shoot Zone Completion %', vals:[0.2632,0.3125,0.25,0.3182,0.2143,0.0625,0.1667], higherBetter:true, pct:true, dec:3 },
+      { id:'SZ_pts', label:'Shoot Zone Points', vals:[25,25,20,35,15,5,25], higherBetter:true }
     ]
   },
   packing: {
     volume: [
-      { id:'byp_opp', label:'Bypassed Opponents', vals:[445,378,363,358,371,320,377,335,457,417,334,379,310,360], higherBetter:true },
-      { id:'byp_def', label:'Bypassed Defenders', vals:[71,49,43,40,48,40,68,35,66,67,44,54,45,36], higherBetter:true },
-      { id:'bw_opp', label:'Ball Win Removed Opponents', vals:[194,195,194,174,213,194,254,121,174,165,153,161,167,231], higherBetter:true },
-      { id:'bw_def', label:'Ball Win Removed Defenders (PA)', vals:[13.2,10.2,7.0,4.9,6.7,15.3,16.7,3.5,12.5,9.6,7.7,5.6,1.8,7.3], higherBetter:true, dec:1 },
-      { id:'crit_loss', label:'Critical Ball Loss', vals:[13,9,15,21,10,11,8,9,16,6,16,10,13,18], higherBetter:false, context:'neg' },
-      { id:'bl_team', label:'Ball Loss Removed Teammates', vals:[196,129,176,167,149,138,128,119,140,128,174,134,142,195], higherBetter:false, context:'neg' },
-      { id:'deep_prog', label:'Final 3rd Entries', vals:[47,36,40,43,54,53,67,55,49,34,36,44,44,46], higherBetter:true }
+      { id:'byp_opp', label:'Bypassed Opponents', vals:[445,378,363,358,371,320,345], higherBetter:true },
+      { id:'byp_def', label:'Bypassed Defenders', vals:[71,49,43,40,48,40,68], higherBetter:true },
+      { id:'bw_opp', label:'Ball Win Removed Opponents', vals:[194,195,194,174,213,194,254], higherBetter:true },
+      { id:'bw_def', label:'Ball Win Removed Defenders', vals:[10,12,7,4,7,15,14], higherBetter:true },
+      { id:'crit_loss', label:'Critical Ball Loss', vals:[13,9,15,21,10,11,8], higherBetter:false, context:'neg' },
+      { id:'bl_team', label:'Ball Loss Removed Teammates', vals:[196,129,176,167,149,138,128], higherBetter:false, context:'neg' },
+      { id:'deep_prog', label:'Final 3rd Entries', vals:[43,35,39,43,54,53,66], higherBetter:true }
     ],
-    battle: [
-      { label:'Bypassed Opponents', higherBetter:true, ncc:[445,378,363,358,371,320,377,335,457,417,334,379,310,360], opp:[232,412,411,269,359,311,345,276,311,335,295,355,428,341] },
-      { label:'Bypassed Defenders', higherBetter:true, ncc:[71,49,43,40,48,40,68,35,66,67,44,54,45,36], opp:[36,41,48,49,44,41,36,31,34,36,44,49,60,63] },
-      { label:'Ball Wins (opp removed)', higherBetter:true, ncc:[194,195,194,174,213,194,254,121,174,165,153,161,167,231], opp:[252,181,234,236,185,203,153,162,189,175,226,171,174,246] },
-      { label:'Ball Wins (def removed)', higherBetter:true, ncc:[10,12,7,4,7,15,14,3,12,9,8,6,2,7], opp:[8,5,7,22,3,10,6,6,12,7,17,4,5,21] },
-      { label:'Critical Ball Loss', higherBetter:false, ncc:[13,9,15,21,10,11,8,9,16,6,16,10,13,18], opp:[8,6,11,12,13,12,19,6,11,14,9,11,15,20] },
-      { label:'Players lost to turnovers', higherBetter:false, ncc:[196,129,176,167,149,138,128,119,140,128,174,134,142,195], opp:[159,137,150,126,163,142,203,96,122,132,116,138,131,200] }
-    ]
+    volume_placeholder_removed: []
   },
   boxdom: {
     penetration: [
+      { id:'tib', label:'Touches in Box', vals:[41,32,35,54,36,54,55], higherBetter:true },
+      { id:'bca', label:'Box Crosses Attempted', vals:[10,7,11,9,6,14,25], higherBetter:true, dec:0 },
+      { id:'pitb', label:'Passes Into Box Attempted', vals:[28,21,30,29,27,33,54], higherBetter:true },
+      { id:'spitb', label:'Successful Passes Into Box', vals:[10,9,10,16,8,14,14], higherBetter:true },
+      { id:'sbc', label:'Successful Box Crosses', vals:[1,3,4,3,1,6,4], higherBetter:true }
     ],
     finishing: [
-      { id:'xg', label:'Total xG', vals:[1.622,1.343,1.608,1.086,1.519,1.989,1.948,0.78,2.217,1.236,1.284,2.371,1.053,1.339], higherBetter:true, dec:3 },
-      { id:'spxg', label:'Set Piece xG', vals:[0.422,0.308,0.88,0.354,0.391,1.443,0.541,0.37,0.864,0.212,0.586,0.648,0.566,0.559], higherBetter:true, dec:3 },
-      { id:'shots', label:'Shots', vals:[15,14,13,11,16,21,16,12,17,11,10,16,11,14], higherBetter:true },
-      { id:'sot_pct', label:'Shots on Target %', vals:[0.3333,0.2143,0.1538,0.5455,0.5,0.1429,0.3125,0.0833,0.3529,0.3636,0.4,0.375,0.0909,0.2143], higherBetter:true, pct:true, dec:3 },
-      { id:'xgps', label:'xG/Shot', vals:[0.108,0.096,0.124,0.099,0.095,0.095,0.122,0.065,0.13,0.112,0.128,0.148,0.096,0.096], higherBetter:true, dec:3 },
-      { id:'psxg', label:'Post-Shot xG', vals:[2.36,0.65,1.1,1.44,2.36,2.18,1.76,0.01,2.83,1.79,1.78,1.55,0.18,1.71], higherBetter:true, dec:2 },
-      { id:'qc', label:'Quality Chances', vals:[1,2,3,2,1,1,0,0,4,0,0,1,2,2], higherBetter:true },
-      { id:'bc', label:'Big Chances', vals:[1,1,1,0,2,1,2,0,1,1,2,2,0,1], higherBetter:true }
+      { id:'xg', label:'Total xG', vals:[1.388,1.324,1.608,1.086,1.517,1.854,1.935], higherBetter:true, dec:3 },
+      { id:'spxg', label:'Set Piece xG', vals:[0.031,0.348,0.445,0.354,0.203,1.26,0.167], higherBetter:true, dec:3 },
+      { id:'shots', label:'Shots', vals:[15,14,13,11,16,21,16], higherBetter:true },
+      { id:'xgps', label:'xG/Shot', vals:[0.092,0.095,0.124,0.099,0.095,0.088,0.121], higherBetter:true, dec:3 },
+      { id:'psxg', label:'Post-Shot xG', vals:[1.44,0,2.34,2.74,0.12,1.61,1.27], higherBetter:true, dec:2 },
+      { id:'qc', label:'Quality Chances', vals:[1,2,3,1,null,null,null], higherBetter:true },
+      { id:'bc', label:'Big Chances', vals:[1,1,2,1,null,null,null], higherBetter:true },
+      { id:'opp_gsaa', label:'Opposition GK — GSAA', vals:[0.36,0.65,0.28,-0.54,0.84,0.18,0.63], higherBetter:false, dec:2, context:'opp' },
+      { id:'opp_npsave', label:'Opposition GK — NP Save %', vals:[0.6,1,0.5,0.667,0.857,0.333,0.667], higherBetter:false, pct:true, context:'opp' }
     ]
   },
   boxres: {
     denying: [
+      { id:'opp_tib', label:'Opp. Touches in Box', vals:[42,30,29,41,54,23,33], higherBetter:false, context:'opp' },
+      { id:'opp_bca', label:'Opp. Box Crosses Attempted', vals:[12,11,10,12,17,9,7], higherBetter:false, dec:0, context:'opp' },
+      { id:'opp_pitb', label:'Opp. Passes Into Box Attempted', vals:[27,22,21,30,37,24,20], higherBetter:false, context:'opp' },
+      { id:'opp_spitb', label:'Opp. Successful Passes Into Box', vals:[9,10,12,15,16,9,9], higherBetter:false, context:'opp' },
+      { id:'opp_sbc', label:'Opp. Successful Box Crosses', vals:[4,3,5,4,5,4,3], higherBetter:false, context:'opp' }
     ],
     nullifying: [
-      { id:'opp_xg', label:'Opp. Total xG', vals:[1.914,0.653,1.082,1.644,1.389,0.781,2.247,0.446,0.948,1.309,1.68,1.349,0.955,1.606], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_spxg', label:'Opp. Set Piece xG', vals:[0.369,0.349,0.568,1.148,0.73,0.5,0.338,0.199,0.815,0.82,1.318,0.122,0.048,0.162], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_shots', label:'Opp. Shots', vals:[17,10,14,16,16,7,11,9,13,17,17,16,8,14], higherBetter:false, context:'opp' },
-      { id:'opp_sot_pct', label:'Opp. Shots on Target %', vals:[0.2941,0.1,0.5,0.375,0.125,0.2857,0.2727,0.2222,0.2308,0.1176,0.2941,0.25,0.625,0.4286], higherBetter:false, pct:true, dec:3, context:'opp' },
-      { id:'opp_xgps', label:'Opp. xG/Shot', vals:[0.113,0.065,0.077,0.103,0.087,0.112,0.204,0.05,0.073,0.077,0.099,0.084,0.119,0.115], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_psxg', label:'Opp. Post-Shot xG', vals:[1.49,0.39,2.32,2.11,0.12,1.61,1.42,1.07,0.95,0.94,2.56,1.67,1.28,2.52], higherBetter:false, dec:2, context:'opp' },
-      { id:'opp_qc', label:'Opp. Quality Chances', vals:[1,1,1,2,1,1,1,0,0,1,3,2,1,0], higherBetter:false, context:'opp' },
-      { id:'opp_bc', label:'Opp. Big Chances', vals:[2,0,0,1,1,1,2,0,1,0,1,0,1,2], higherBetter:false, context:'opp' }
+      { id:'opp_xg', label:'Opp. Total xG', vals:[1.909,0.653,1.045,1.487,1.382,0.781,2.176], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_spxg', label:'Opp. Set Piece xG', vals:[0.175,0.104,0.215,0.173,0.645,0.106,0.184], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_shots', label:'Opp. Shots', vals:[17,10,14,16,16,7,11], higherBetter:false, context:'opp' },
+      { id:'opp_xgps', label:'Opp. xG/Shot', vals:[0.112,0.065,0.075,0.093,0.086,0.112,0.198], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_psxg', label:'Opp. Post-Shot xG', vals:[2.36,0.65,1.28,1.46,1.84,2.18,1.63], higherBetter:false, dec:2, context:'opp' },
+      { id:'opp_qc', label:'Opp. Quality Chances', vals:[1,1,3,3,null,null,null], higherBetter:false, context:'opp' },
+      { id:'opp_bc', label:'Opp. Big Chances', vals:[1,0,0,1,null,null,null], higherBetter:false, context:'opp' },
+      { id:'ncc_gsaa', label:'NCC GK — GSAA', vals:[0.44,0,-0.66,0.74,0.12,-0.39,-0.73], higherBetter:true, dec:2 },
+      { id:'ncc_npsave', label:'NCC GK — NP Save %', vals:[0.75,null,0.5,0.667,1,0,0], higherBetter:true, pct:true }
     ]
   },
   defint: {
     volume: [
-      { id:'pressures', label:'Pressures (PA)', vals:[217.1,217.8,254.0,175.6,179.8,246.9,110.7,133.7,139.6,168.1,96.2,88.0,114.0,134.4], higherBetter:true, dec:1 },
-      { id:'cp', label:'Counterpressures (PA)', vals:[100.0,60.2,80.0,67.1,43.3,68.4,35.7,40.7,42.7,62.8,40.4,28.7,36.0,45.8], higherBetter:true, dec:1 },
-      { id:'agg_actions', label:'Aggressive Actions (PA)', vals:[242.1,239.0,279.0,198.8,201.0,266.3,136.9,160.5,156.2,188.3,121.2,105.6,125.4,162.5], higherBetter:true, dec:1 },
-      { id:'tack_int', label:'Tackles + Interceptions (PA)', vals:[22.4,21.2,27.0,18.3,23.1,18.4,21.4,16.3,17.7,23.4,17.3,13.0,9.6,24.0], higherBetter:true, dec:1 },
-      { id:'press_regains', label:'Press Regains (PA)', vals:[56.6,36.4,48.0,31.7,29.8,36.7,28.6,27.9,25.0,37.2,22.1,16.7,16.7,35.4], higherBetter:true, dec:1 }
+      { id:'pressures', label:'Pressures (PA)', vals:[217.1,217.8,254,175.6,179.8,246.9,110.7], higherBetter:true, dec:1 },
+      { id:'cp', label:'Counterpressures (PA)', vals:[97.4,59.3,87,74.4,52.9,70.4,34.5], higherBetter:true, dec:1 },
+      { id:'agg_actions', label:'Aggressive Actions (PA)', vals:[80.3,122.9,129,91.5,97.1,123.5,64.3], higherBetter:true, dec:1 },
+      { id:'tack_int', label:'Tackles + Interceptions (PA)', vals:[36.8,32.2,36,24.4,31.7,30.6,26.2], higherBetter:true, dec:1 }
     ],
     forward: [
-      { id:'press_oh', label:'Pressures in Opp. Half (PA)', vals:[84.2,99.2,147.0,86.6,66.3,151.0,69.0,74.4,91.7,80.9,49.0,56.5,63.2,65.6], higherBetter:true, dec:1 },
-      { id:'press_oh_pct', label:'Pressures in Opp. Half %', vals:[0.3879,0.4553,0.5787,0.4931,0.369,0.6116,0.6237,0.5565,0.6567,0.481,0.51,0.6421,0.5538,0.4884], higherBetter:true, pct:true, dec:3 },
-      { id:'cp_oh', label:'Counterpressures in Opp. Half (PA)', vals:[52.6,28.0,62.0,39.0,25.0,54.1,27.4,29.1,26.0,45.7,26.0,18.5,18.4,21.9], higherBetter:true, dec:1 }
+      { id:'def_dist', label:'Defensive Action Distance', vals:[48.2,55.4,61.9,54.9,47.2,64.9,62.1], higherBetter:true, dec:1 },
+      { id:'press_def3', label:'Opp. Pressured Passes in Def. Third (PA)', vals:[27.6,41.5,43,40.2,20.2,68.4,17.9], higherBetter:true, dec:1 },
+      { id:'press_oh', label:'Pressures in Opp. Half (PA)', vals:[84.2,99.2,147,86.6,66.3,151,69], higherBetter:true, dec:1 },
+      { id:'press_oh_pct', label:'Pressures in Opp. Half %', vals:[0.3878,0.4552,0.5787,0.493,0.3689,0.6115,0.6236], higherBetter:true, pct:true, dec:3 },
+      { id:'cp_oh', label:'Counterpressures in Opp. Half (PA)', vals:[55.3,28.8,66,42.7,28.8,54.1,26.2], higherBetter:true, dec:1 }
     ],
     progallowed: [
-    ],
-    oppintensity: [
-    ],
-    battle: [
-      { label:'Pressures', higherBetter:true, ncc:[165,257,254,144,187,242,93,115,134,158,100,95,130,129], opp:[218,188,215,167,141,192,106,154,129,185,94,103,110,119] },
-      { label:'Counterpressures', higherBetter:true, ncc:[76,71,80,55,45,67,30,35,41,59,42,31,41,44], opp:[51,60,76,37,64,49,32,34,26,42,33,30,43,41] },
-      { label:'Tackles + Interceptions', higherBetter:true, ncc:[25,33,36,20,32,27,22,20,23,34,20,16,19,32], opp:[29,27,34,28,20,39,20,31,22,27,19,27,31,31] },
-      { label:'Ball Recoveries', higherBetter:true, ncc:[76,52,53,51,53,63,51,47,50,47,43,50,54,54], opp:[66,58,59,59,52,53,45,40,42,54,58,47,52,65] },
-      { label:'Pressures in Opp. Half', higherBetter:true, ncc:[64,117,147,71,69,148,58,64,88,76,51,61,72,63], opp:[122,113,93,73,77,51,37,59,62,85,39,52,52,58] },
-      { label:'Counterpressures in Opp. Half', higherBetter:true, ncc:[40,33,62,32,26,53,23,25,25,43,27,20,21,21], opp:[39,41,38,19,53,19,17,15,12,29,18,15,24,19] }
+      { id:'opp_dp', label:'Opp. Deep Progressions', vals:[27,56,37,26,55,18,29], higherBetter:false, context:'opp' },
+      { id:'opp_thru', label:'Opp. Through Passes', vals:[1,1,0,0,2,6,2], higherBetter:false, context:'opp' }
     ]
   },
   obv: {
     ncc: [
-      { id:'obv_total', label:'Total OBV', vals:[4.154,1.022,0.867,0.784,3.768,1.796,1.171,1.156,3.564,2.478,3.761,3.316,0.235,1.71], higherBetter:true, dec:3 },
-      { id:'obv_pass', label:'Pass OBV', vals:[0.426,0.217,1.06,0.68,0.75,0.85,0.985,0.224,1.35,0.706,0.471,0.851,0.746,0.873], higherBetter:true, dec:3 },
-      { id:'obv_shot', label:'Shot OBV', vals:[0.243,-1.171,-0.338,-0.513,0.229,0.183,-1.009,-0.719,-0.101,0.586,0.508,-0.72,-0.802,-0.072], higherBetter:true, dec:3 },
-      { id:'obv_dribble', label:'Dribble & Carry OBV', vals:[1.546,1.026,0.722,0.823,1.458,0.934,1.677,1.009,0.959,0.586,0.763,2.225,1.05,0.749], higherBetter:true, dec:3 },
-      { id:'obv_def', label:'Defensive Action OBV', vals:[0.768,0.617,0.483,0.313,1.197,0.155,0.177,0.555,0.401,0.723,0.588,0.339,0.289,0.853], higherBetter:true, dec:3 }
+      { id:'obv_total',   label:'Total OBV',             vals:[null,null,null,null,null,null,null], higherBetter:true, dec:3 },
+      { id:'obv_pass',    label:'Pass OBV',               vals:[null,null,null,null,null,null,null], higherBetter:true, dec:3 },
+      { id:'obv_shot',    label:'Shot OBV',               vals:[null,null,null,null,null,null,null], higherBetter:true, dec:3 },
+      { id:'obv_dribble', label:'Dribble & Carry OBV',   vals:[null,null,null,null,null,null,null], higherBetter:true, dec:3 },
+      { id:'obv_def',     label:'Defensive Action OBV',  vals:[null,null,null,null,null,null,null], higherBetter:true, dec:3 }
     ],
     opp: [
-      { id:'opp_obv_total', label:'Opp. Total OBV', vals:[2.962,1.782,2.852,1.976,1.66,1.863,2.271,1.545,0.985,1.817,1.991,1.316,2.02,4.512], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_obv_pass', label:'Opp. Pass OBV', vals:[0.984,-0.072,0.576,0.233,1.565,0.434,0.647,0.627,0.644,0.925,1.262,0.518,0.14,0.167], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_obv_shot', label:'Opp. Shot OBV', vals:[-0.508,-0.296,0.501,0.997,-1.486,0.132,-0.316,-0.249,0.163,-0.671,-0.125,0.241,0.268,0.727], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_obv_dribble', label:'Opp. Dribble & Carry OBV', vals:[1.126,1.167,1.212,0.809,0.306,0.557,1.231,0.489,0.86,1.179,0.9,0.564,1.102,1.2], higherBetter:false, dec:3, context:'opp' },
-      { id:'opp_obv_def', label:'Opp. Defensive Action OBV', vals:[0.472,0.454,0.551,0.59,0.09,1.18,0.132,0.671,0.595,0.754,0.199,1.423,0.395,0.555], higherBetter:false, dec:3, context:'opp' }
-    ],
-    net: [
-      { id:'net_obv_total', label:'Net Total OBV', vals:[1.192,-0.76,-1.986,-1.192,2.108,-0.066,-1.1,-0.389,2.579,0.661,1.77,2.0,-1.785,-2.802], higherBetter:true, dec:3 },
-      { id:'net_obv_pass', label:'Net Pass OBV', vals:[-0.558,0.29,0.484,0.448,-0.815,0.416,0.338,-0.403,0.706,-0.219,-0.79,0.333,0.606,0.707], higherBetter:true, dec:3 },
-      { id:'net_obv_shot', label:'Net Shot OBV', vals:[0.751,-0.875,-0.838,-1.511,1.715,0.051,-0.693,-0.47,-0.264,1.257,0.633,-0.961,-1.07,-0.799], higherBetter:true, dec:3 },
-      { id:'net_obv_dribble', label:'Net Dribble & Carry OBV', vals:[0.42,-0.141,-0.49,0.014,1.152,0.377,0.446,0.52,0.098,-0.592,-0.137,1.661,-0.053,-0.451], higherBetter:true, dec:3 },
-      { id:'net_obv_def', label:'Net Defensive Action OBV', vals:[0.296,0.163,-0.068,-0.277,1.107,-1.024,0.045,-0.116,-0.194,-0.031,0.389,-1.084,-0.106,0.299], higherBetter:true, dec:3 }
+      { id:'opp_obv_total',   label:'Opp. Total OBV',             vals:[null,null,null,null,null,null,null], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_obv_pass',    label:'Opp. Pass OBV',              vals:[null,null,null,null,null,null,null], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_obv_shot',    label:'Opp. Shot OBV',              vals:[null,null,null,null,null,null,null], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_obv_dribble', label:'Opp. Dribble & Carry OBV',  vals:[null,null,null,null,null,null,null], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_obv_def',     label:'Opp. Defensive Action OBV', vals:[null,null,null,null,null,null,null], higherBetter:false, dec:3, context:'opp' }
     ]
   }
 };
@@ -2409,28 +2740,6 @@ const GRADE_HEX = {
   poor:      '#E67E22',
   abysmal:   '#C0392B'
 };
-
-// ── BATTLE BAR GRADING ───────────────────────────────────────────────────────
-// Colour each battle bar by its Match Grade, always from NCC's perspective, so
-// green = good for Courage and red = bad. A value is graded against that side's
-// own season series (expanding window to the selected match) via getGrade.
-// The opponent side is graded with the direction inverted, because an opponent
-// performing well by their own measure is bad for us. Season view and the first
-// few matches (no grade yet) fall back to a neutral grey.
-const BATTLE_NEUTRAL = '#BEBCB4';
-function battleBarColor(val, vals, higherBetter, isSeason, idx) {
-  if (isSeason || val === null || val === undefined) return BATTLE_NEUTRAL;
-  const g = getGrade(val, { vals: vals, higherBetter: higherBetter }, idx);
-  return g ? GRADE_HEX[g] : BATTLE_NEUTRAL;
-}
-function battleLegendHTML() {
-  const items = [['excellent', 'Excellent'], ['good', 'Good'], ['typical', 'Typical'], ['poor', 'Poor'], ['abysmal', 'Abysmal']];
-  return `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--text-muted);align-items:center;">
-    <span>Grade (NCC view):</span>
-    ${items.map(([k, l]) => `<span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;border-radius:2px;background:${GRADE_HEX[k]}"></span>${l}</span>`).join('')}
-    <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;border-radius:2px;background:${BATTLE_NEUTRAL}"></span>Ungraded</span>
-  </div>`;
-}
 
 function sectionOverallGradeForInsights(key, idx) {
   const rows = ALL_SECTIONS[key];
@@ -2892,313 +3201,25 @@ function renderOBVH2HTable() {
   }).join('');
 }
 
-// ── SOP ZONE PROGRESSION FUNNEL ──────────────────────────────────────────────
-// Spatial quick-read of the four SOP zones, ordered down the pitch toward goal.
-// Each band shows completions/attempts (bar length = completion %) and the
-// zone's weighted point contribution. Colour = completion-rate band.
-function renderSOPFunnel() {
-  const host = document.getElementById('sop-funnel');
-  if (!host) return;
-  const isSeason = currentMatch === -1;
-  const idx = isSeason ? 0 : currentMatch;
-
-  const zmap = {};
-  DATA.sop.zones.forEach(r => zmap[r.id] = r);
-
-  const defs = [
-    { name: 'Zone 2',     att: 'Z2_att', comp: 'Z2_comp', pts: 'Z2_pts' },
-    { name: 'Zone 3',     att: 'Z3_att', comp: 'Z3_comp', pts: 'Z3_pts' },
-    { name: 'Pass Zone',  att: 'PZ_att', comp: 'PZ_comp', pts: 'PZ_pts' },
-    { name: 'Shoot Zone', att: 'SZ_att', comp: 'SZ_comp', pts: 'SZ_pts' }
-  ];
-
-  const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
-  const val  = id => isSeason ? mean(zmap[id].vals) : zmap[id].vals[idx];
-
-  const rows = defs.map(d => {
-    const att = val(d.att), comp = val(d.comp), pts = val(d.pts);
-    return { name: d.name, att, comp, pts, pct: att > 0 ? comp / att : 0 };
-  });
-  const maxPts = Math.max(...rows.map(r => r.pts)) || 1;
-  const totalPts = val('zone_pts_total');
-
-  function bandColor(p) {
-    if (p >= 0.70) return 'var(--grade-excellent)';
-    if (p >= 0.45) return 'var(--grade-typical)';
-    return 'var(--grade-abysmal)';
-  }
-
-  const ctxEl = document.getElementById('sop-funnel-ctx');
-  if (ctxEl) {
-    const label = isSeason
-      ? 'Season average'
-      : `vs ${MATCHES[idx].opp} (${MATCHES[idx].loc === 'Home' ? 'H' : 'A'})`;
-    ctxEl.innerHTML = `${label} &nbsp;&middot;&nbsp; bar = completions &divide; attempts`;
-  }
-
-  host.innerHTML = rows.map(r => {
-    const col   = bandColor(r.pct);
-    const barW  = Math.round(r.pct * 100);
-    const ptsW  = Math.round((r.pts / maxPts) * 100);
-    const pctTxt = Math.round(r.pct * 100) + '%';
-    return `<div style="display:flex;align-items:center;gap:12px;background:var(--bg-surface);border-radius:8px;padding:9px 12px;margin-bottom:7px;">
-      <div style="width:96px;flex:none;font-size:14px;font-weight:600;color:var(--text-primary);">${r.name}</div>
-      <div style="flex:1;">
-        <div style="height:22px;border-radius:6px;background:var(--bg-elevated);position:relative;overflow:hidden;">
-          <div style="height:100%;width:${barW}%;background:${col};border-radius:6px;"></div>
-          <span style="position:absolute;top:0;left:9px;line-height:22px;font-size:12px;font-weight:600;color:var(--text-primary);">${Math.round(r.comp)}/${Math.round(r.att)}</span>
-        </div>
-      </div>
-      <div style="width:42px;flex:none;text-align:right;font-size:15px;font-weight:700;color:${col};">${pctTxt}</div>
-      <div style="width:72px;flex:none;text-align:right;">
-        <div style="font-size:13px;font-weight:600;color:var(--text-primary);">${Math.round(r.pts)} pts</div>
-        <div style="height:4px;width:100%;background:var(--bg-elevated);border-radius:2px;margin-top:3px;"><div style="height:100%;width:${ptsW}%;background:var(--text-muted);border-radius:2px;"></div></div>
-      </div>
-    </div>`;
-  }).join('') + `<div style="display:flex;align-items:center;gap:12px;padding:9px 12px;margin-top:2px;border-top:1.5px solid var(--border-strong);">
-      <div style="width:96px;flex:none;font-size:14px;font-weight:700;color:var(--text-primary);">Total</div>
-      <div style="flex:1;"></div>
-      <div style="width:42px;flex:none;"></div>
-      <div style="width:72px;flex:none;text-align:right;font-size:15px;font-weight:700;color:var(--text-primary);">${Math.round(totalPts)} pts</div>
-    </div>`;
-}
-
-// ── PACKING PROGRESSION BATTLE (NCC vs Opponent) ─────────────────────────────
-// Tug-of-war head-to-head: each metric's bar grows from the centre toward
-// whoever won it. Winner side is direction-aware (fewer losses wins the
-// negative metrics). Season view compares per-match averages.
-function renderPackingBattle() {
-  const host = document.getElementById('pack-battle');
-  if (!host) return;
-  const isSeason = currentMatch === -1;
-  const idx = isSeason ? 0 : currentMatch;
-
-  const NCC = '#C8102E', OPP = '#5F5E5A', NCCm = '#E4A9B2', OPPm = '#B4B2A9';
-  const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
-  const pick = a => isSeason ? mean(a) : a[idx];
-
-  let nccWins = 0, oppWins = 0, ties = 0;
-
-  const rowsHTML = DATA.packing.battle.map(m => {
-    const nv = pick(m.ncc), ov = pick(m.opp);
-    const nccWon = m.higherBetter ? nv > ov : nv < ov;
-    const oppWon = m.higherBetter ? ov > nv : ov < nv;
-    const tie = nv === ov;
-    if (tie) ties++; else if (nccWon) nccWins++; else oppWins++;
-
-    const mx = Math.max(nv, ov) || 1;
-    const lw = Math.round(nv / mx * 100), rw = Math.round(ov / mx * 100);
-    const lc = battleBarColor(nv, m.ncc, m.higherBetter, isSeason, idx);
-    const rc = battleBarColor(ov, m.opp, !m.higherBetter, isSeason, idx);
-    const lvC = lc, rvC = rc;
-    const nd = Math.round(nv), od = Math.round(ov);
-
-    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
-      <div style="width:42px;flex:none;text-align:right;font-size:14px;font-weight:${nccWon ? 700 : 500};color:${lvC};">${nd}</div>
-      <div style="flex:1;display:flex;justify-content:flex-end;"><div style="height:16px;width:${lw}%;background:${lc};border-radius:5px 0 0 5px;"></div></div>
-      <div style="width:170px;flex:none;text-align:center;font-size:12px;color:var(--text-secondary);">${m.label}</div>
-      <div style="flex:1;display:flex;justify-content:flex-start;"><div style="height:16px;width:${rw}%;background:${rc};border-radius:0 5px 5px 0;"></div></div>
-      <div style="width:42px;flex:none;text-align:left;font-size:14px;font-weight:${oppWon ? 700 : 500};color:${rvC};">${od}</div>
-    </div>`;
-  }).join('');
-  host.innerHTML = rowsHTML + battleLegendHTML();
-
-  const scoreEl = document.getElementById('pack-battle-score');
-  if (scoreEl) {
-    scoreEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:16px;">
-      <span style="font-size:13px;font-weight:600;color:${NCC};">NCC</span>
-      <span style="font-size:22px;font-weight:700;color:var(--text-primary);"><span style="color:${NCC};">${nccWins}</span> <span style="color:var(--text-muted);font-size:15px;">&mdash;</span> <span style="color:${OPP};">${oppWins}</span></span>
-      <span style="font-size:13px;font-weight:600;color:${OPP};">OPP</span>
-      ${ties ? `<span style="font-size:12px;color:var(--text-muted);">${ties} even</span>` : ''}
-    </div>`;
-  }
-
-  const ctxEl = document.getElementById('pack-battle-ctx');
-  if (ctxEl) {
-    const label = isSeason
-      ? 'Season average'
-      : `vs ${MATCHES[idx].opp} (${MATCHES[idx].loc === 'Home' ? 'H' : 'A'})`;
-    ctxEl.innerHTML = `${label} &nbsp;&middot;&nbsp; bar reaches the winning side &nbsp;&middot;&nbsp; last two metrics: fewer is better`;
-  }
-}
-
-// ── BOX BATTLE (NCC attack vs Opponent attack) ───────────────────────────────
-// Combines Box Domination (NCC finishing) and Box Resilience (opponent
-// finishing) into one head-to-head. Each metric's bar reaches toward whoever
-// created more in the box; higher attacking output wins. Season view averages.
-function renderBoxBattle() {
-  const host = document.getElementById('box-battle');
-  if (!host) return;
-  const isSeason = currentMatch === -1;
-  const idx = isSeason ? 0 : currentMatch;
-
-  const NCC = '#C8102E', OPP = '#5F5E5A', NCCm = '#E4A9B2', OPPm = '#B4B2A9';
-  const nccRows = DATA.boxdom.finishing;
-  const oppRows = DATA.boxres.nullifying;
-
-  const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
-  const pick = a => isSeason ? mean(a) : a[idx];
-
-  let nccWins = 0, oppWins = 0, ties = 0;
-
-  const rowsHTML = nccRows.map((nr, i) => {
-    const orow = oppRows[i];
-    const nv = pick(nr.vals), ov = pick(orow.vals);
-    const nccWon = nv > ov, oppWon = ov > nv;
-    if (nv === ov) ties++; else if (nccWon) nccWins++; else oppWins++;
-
-    const mx = Math.max(nv, ov) || 1;
-    const lw = Math.round(nv / mx * 100), rw = Math.round(ov / mx * 100);
-    const lc = battleBarColor(nv, nr.vals, nr.higherBetter, isSeason, idx);
-    const rc = battleBarColor(ov, orow.vals, orow.higherBetter, isSeason, idx);
-    const lvC = lc, rvC = rc;
-    const nd = fmt(nv, nr), od = fmt(ov, orow);
-
-    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
-      <div style="width:52px;flex:none;text-align:right;font-size:14px;font-weight:${nccWon ? 700 : 500};color:${lvC};">${nd}</div>
-      <div style="flex:1;display:flex;justify-content:flex-end;"><div style="height:16px;width:${lw}%;background:${lc};border-radius:5px 0 0 5px;"></div></div>
-      <div style="width:150px;flex:none;text-align:center;font-size:12px;color:var(--text-secondary);">${nr.label}</div>
-      <div style="flex:1;display:flex;justify-content:flex-start;"><div style="height:16px;width:${rw}%;background:${rc};border-radius:0 5px 5px 0;"></div></div>
-      <div style="width:52px;flex:none;text-align:left;font-size:14px;font-weight:${oppWon ? 700 : 500};color:${rvC};">${od}</div>
-    </div>`;
-  }).join('');
-  host.innerHTML = rowsHTML + battleLegendHTML();
-
-  const scoreEl = document.getElementById('box-battle-score');
-  if (scoreEl) {
-    scoreEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:16px;">
-      <span style="font-size:13px;font-weight:600;color:${NCC};">NCC</span>
-      <span style="font-size:22px;font-weight:700;color:var(--text-primary);"><span style="color:${NCC};">${nccWins}</span> <span style="color:var(--text-muted);font-size:15px;">&mdash;</span> <span style="color:${OPP};">${oppWins}</span></span>
-      <span style="font-size:13px;font-weight:600;color:${OPP};">OPP</span>
-      ${ties ? `<span style="font-size:12px;color:var(--text-muted);">${ties} even</span>` : ''}
-      <span style="font-size:12px;color:var(--text-muted);">metrics won</span>
-    </div>`;
-  }
-
-  const ctxEl = document.getElementById('box-battle-ctx');
-  if (ctxEl) {
-    const label = isSeason
-      ? 'Season average'
-      : `vs ${MATCHES[idx].opp} (${MATCHES[idx].loc === 'Home' ? 'H' : 'A'})`;
-    ctxEl.innerHTML = `${label} &nbsp;&middot;&nbsp; NCC attack vs opponent attack &nbsp;&middot;&nbsp; bar reaches whoever created more`;
-  }
-}
-
-// ── DEFENSIVE INTENSITY BATTLE (NCC vs Opponent pressing) ────────────────────
-// Tug-of-war of raw pressing counts; whoever pressed more wins the metric.
-function renderDefBattle() {
-  const host = document.getElementById('def-battle');
-  if (!host) return;
-  const isSeason = currentMatch === -1;
-  const idx = isSeason ? 0 : currentMatch;
-
-  const NCC = '#C8102E', OPP = '#5F5E5A', NCCm = '#E4A9B2', OPPm = '#B4B2A9';
-  const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
-  const pick = a => isSeason ? mean(a) : a[idx];
-
-  let nccWins = 0, oppWins = 0, ties = 0;
-
-  host.innerHTML = DATA.defint.battle.map(m => {
-    const nv = pick(m.ncc), ov = pick(m.opp);
-    const nccWon = nv > ov, oppWon = ov > nv;
-    if (nv === ov) ties++; else if (nccWon) nccWins++; else oppWins++;
-
-    const mx = Math.max(nv, ov) || 1;
-    const lw = Math.round(nv / mx * 100), rw = Math.round(ov / mx * 100);
-    const lc = battleBarColor(nv, m.ncc, m.higherBetter, isSeason, idx);
-    const rc = battleBarColor(ov, m.opp, !m.higherBetter, isSeason, idx);
-    const lvC = lc, rvC = rc;
-
-    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
-      <div style="width:44px;flex:none;text-align:right;font-size:14px;font-weight:${nccWon ? 700 : 500};color:${lvC};">${Math.round(nv)}</div>
-      <div style="flex:1;display:flex;justify-content:flex-end;"><div style="height:16px;width:${lw}%;background:${lc};border-radius:5px 0 0 5px;"></div></div>
-      <div style="width:190px;flex:none;text-align:center;font-size:12px;color:var(--text-secondary);">${m.label}</div>
-      <div style="flex:1;display:flex;justify-content:flex-start;"><div style="height:16px;width:${rw}%;background:${rc};border-radius:0 5px 5px 0;"></div></div>
-      <div style="width:44px;flex:none;text-align:left;font-size:14px;font-weight:${oppWon ? 700 : 500};color:${rvC};">${Math.round(ov)}</div>
-    </div>`;
-  }).join('') + battleLegendHTML();
-
-  const scoreEl = document.getElementById('def-battle-score');
-  if (scoreEl) {
-    scoreEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:16px;">
-      <span style="font-size:13px;font-weight:600;color:${NCC};">NCC</span>
-      <span style="font-size:22px;font-weight:700;color:var(--text-primary);"><span style="color:${NCC};">${nccWins}</span> <span style="color:var(--text-muted);font-size:15px;">&mdash;</span> <span style="color:${OPP};">${oppWins}</span></span>
-      <span style="font-size:13px;font-weight:600;color:${OPP};">OPP</span>
-      ${ties ? `<span style="font-size:12px;color:var(--text-muted);">${ties} even</span>` : ''}
-      <span style="font-size:12px;color:var(--text-muted);">metrics won</span>
-    </div>`;
-  }
-
-  const ctxEl = document.getElementById('def-battle-ctx');
-  if (ctxEl) {
-    const label = isSeason ? 'Season average' : `vs ${MATCHES[idx].opp} (${MATCHES[idx].loc === 'Home' ? 'H' : 'A'})`;
-    ctxEl.innerHTML = `${label} &nbsp;&middot;&nbsp; raw pressing counts &nbsp;&middot;&nbsp; bar reaches whoever pressed more`;
-  }
-}
-
-// ── ON-BALL VALUE BATTLE (NCC vs Opponent) ───────────────────────────────────
-// OBV can be negative (value lost). Bar length shows value *created* (positive
-// only); the number still shows the true signed value. Winner = higher value.
-function renderOBVBattle() {
-  const host = document.getElementById('obv-battle');
-  if (!host) return;
-  const isSeason = currentMatch === -1;
-  const idx = isSeason ? 0 : currentMatch;
-
-  const NCC = '#C8102E', OPP = '#5F5E5A', NCCm = '#E4A9B2', OPPm = '#B4B2A9';
-  const nccRows = DATA.obv.ncc, oppRows = DATA.obv.opp;
-  const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
-  const pick = a => isSeason ? mean(a) : a[idx];
-
-  let nccWins = 0, oppWins = 0, ties = 0;
-
-  host.innerHTML = nccRows.map((nr, i) => {
-    const orow = oppRows[i];
-    const nv = pick(nr.vals), ov = pick(orow.vals);
-    const nccWon = nv > ov, oppWon = ov > nv;
-    if (nv === ov) ties++; else if (nccWon) nccWins++; else oppWins++;
-
-    const maxPos = Math.max(nv, ov, 0.001);
-    const lw = Math.round(Math.max(0, nv) / maxPos * 100);
-    const rw = Math.round(Math.max(0, ov) / maxPos * 100);
-    const lc = battleBarColor(nv, nr.vals, nr.higherBetter, isSeason, idx);
-    const rc = battleBarColor(ov, orow.vals, orow.higherBetter, isSeason, idx);
-    const lvC = lc, rvC = rc;
-
-    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
-      <div style="width:52px;flex:none;text-align:right;font-size:14px;font-weight:${nccWon ? 700 : 500};color:${lvC};">${fmt(nv, nr)}</div>
-      <div style="flex:1;display:flex;justify-content:flex-end;"><div style="height:16px;width:${lw}%;background:${lc};border-radius:5px 0 0 5px;"></div></div>
-      <div style="width:150px;flex:none;text-align:center;font-size:12px;color:var(--text-secondary);">${nr.label}</div>
-      <div style="flex:1;display:flex;justify-content:flex-start;"><div style="height:16px;width:${rw}%;background:${rc};border-radius:0 5px 5px 0;"></div></div>
-      <div style="width:52px;flex:none;text-align:left;font-size:14px;font-weight:${oppWon ? 700 : 500};color:${rvC};">${fmt(ov, orow)}</div>
-    </div>`;
-  }).join('') + battleLegendHTML();
-
-  const scoreEl = document.getElementById('obv-battle-score');
-  if (scoreEl) {
-    scoreEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:16px;">
-      <span style="font-size:13px;font-weight:600;color:${NCC};">NCC</span>
-      <span style="font-size:22px;font-weight:700;color:var(--text-primary);"><span style="color:${NCC};">${nccWins}</span> <span style="color:var(--text-muted);font-size:15px;">&mdash;</span> <span style="color:${OPP};">${oppWins}</span></span>
-      <span style="font-size:13px;font-weight:600;color:${OPP};">OPP</span>
-      ${ties ? `<span style="font-size:12px;color:var(--text-muted);">${ties} even</span>` : ''}
-      <span style="font-size:12px;color:var(--text-muted);">metrics won</span>
-    </div>`;
-  }
-
-  const ctxEl = document.getElementById('obv-battle-ctx');
-  if (ctxEl) {
-    const label = isSeason ? 'Season average' : `vs ${MATCHES[idx].opp} (${MATCHES[idx].loc === 'Home' ? 'H' : 'A'})`;
-    ctxEl.innerHTML = `${label} &nbsp;&middot;&nbsp; bar = value created (negative = value lost) &nbsp;&middot;&nbsp; higher value wins`;
-  }
-}
-
 function renderAll() {
   const isSeason = currentMatch === -1;
   const idx = isSeason ? 0 : currentMatch;
 
-  // All performance sub-tabs now render as battle graphics (see the render
-  // calls below); no metric tables remain to populate here.
-  const sections = [];
+  const sections = [
+    ['sop-zones-rows',        DATA.sop.zones],
+    ['packing-volume-rows',   DATA.packing.volume],
+    ['dom-penetration-rows',  DATA.boxdom.penetration],
+    ['dom-finishing-rows',    DATA.boxdom.finishing],
+    ['res-denying-rows',      DATA.boxres.denying],
+    ['res-nullifying-rows',   DATA.boxres.nullifying],
+    ['def-volume-rows',       DATA.defint.volume],
+    ['def-forward-rows',      DATA.defint.forward],
+    ['def-progallowed-rows',  DATA.defint.progallowed],
+    ['def-oppintensity-rows', DATA.defint.oppintensity],
+    ['obv-net-rows',          DATA.obv.net],
+    // NOTE: OBV no longer has separate NCC / Opp tables — it's rendered
+    // as a single head-to-head table by renderOBVH2HTable() below.
+  ];
 
   sections.forEach(([tbodyId, rows]) => {
     const tbody = document.getElementById(tbodyId);
@@ -3211,12 +3232,9 @@ function renderAll() {
   });
 
   document.getElementById('seasonSummary').style.display = isSeason ? 'grid' : 'none';
+  renderOBVRadars();
+  renderOBVH2HTable();
   renderBypassSegments();
-  renderSOPFunnel();
-  renderPackingBattle();
-  renderBoxBattle();
-  renderDefBattle();
-  renderOBVBattle();
 }
 
 function selectMatch(idx, el) {
@@ -3247,6 +3265,7 @@ function selectSubtab(name, el) {
     'sop':            'tab-sop',
     'packing':        'tab-packing',
     'box-dom':        'tab-box-dom',
+    'box-res':        'tab-box-res',
     'def-int':        'tab-def-int',
     'obv':            'tab-obv',
     'match-insights': 'tab-match-insights'
@@ -3254,7 +3273,7 @@ function selectSubtab(name, el) {
   const target = document.getElementById(tabMap[name]);
   if (target) target.classList.add('active');
   if (name === 'match-insights') renderMatchInsights(currentMatch);
-  if (name === 'obv') renderOBVBattle();
+  if (name === 'obv') { renderOBVRadars(); renderOBVH2HTable(); }
 }
 
 function buildMatchPills() {
@@ -3266,11 +3285,7 @@ function buildMatchPills() {
     if (result.startsWith('L')) return 'var(--grade-poor)';
     return 'var(--grade-typical)';
   }
-  // Render most recent match on the left, oldest on the right.
-  // Keep each button's original MATCHES index so selectMatch stays correct.
-  container.innerHTML = MATCHES.map((m, i) => ({ m, i }))
-    .slice().reverse()
-    .map(({ m, i }) => {
+  container.innerHTML = MATCHES.map((m, i) => {
     const locText = m.loc === 'Home' ? `&#x25CF; Home` : `&#x25CF; Away`;
     const locClass = m.loc === 'Home' ? 'home' : 'away';
     const activeClass = i === currentMatch ? 'active' : '';
@@ -3287,20 +3302,71 @@ function buildMatchPills() {
 //  Index order matches MATCHES array (0 = M1, 7 = M8)
 // =====================================================================
 const MATCH_REPORT_DATA = [
-  { ncc_goals:2, opp_goals:1, result:'W', ncc_xg:1.622, opp_xg:1.914, ncc_xg_sp:0.422, opp_xg_sp:0.369, ncc_shots:15, opp_shots:17, ncc_sot:5, opp_sot:5, ncc_poss:62, opp_poss:38, ncc_pass_pct:81, opp_pass_pct:65, ncc_pressures:165, opp_pressures:218, ncc_press_regains:43, opp_press_regains:37, top_shooters:'Ashley Nicole Sanchez (5 shots, 0.25xG), Hannah Betfort (2, 0.64xG)', top_kp:'Shinomi Koyama (3 KP, 0.11xG), Ryan Williams (2 KP, 0.17xG)', note:'Won despite being xG-negative. Efficiency from open play key — 1.22xG from open play sources.' },
-  { ncc_goals:0, opp_goals:0, result:'D', ncc_xg:1.343, opp_xg:0.653, ncc_xg_sp:0.308, opp_xg_sp:0.349, ncc_shots:14, opp_shots:10, ncc_sot:3, opp_sot:1, ncc_poss:41, opp_poss:59, ncc_pass_pct:76, opp_pass_pct:82, ncc_pressures:257, opp_pressures:188, ncc_press_regains:43, opp_press_regains:39, top_shooters:null, top_kp:null, note:'We dominated xG and territory but failed to convert. Their GK held firm.' },
-  { ncc_goals:1, opp_goals:3, result:'L', ncc_xg:1.608, opp_xg:1.082, ncc_xg_sp:0.88, opp_xg_sp:0.568, ncc_shots:13, opp_shots:14, ncc_sot:2, opp_sot:7, ncc_poss:50, opp_poss:50, ncc_pass_pct:80, opp_pass_pct:78, ncc_pressures:254, opp_pressures:215, ncc_press_regains:48, opp_press_regains:48, top_shooters:null, top_kp:null, note:'Lost despite higher xG. Bay FC converted 3 from 6 SOT — clinical finishing overturned the chance-quality gap.' },
-  { ncc_goals:2, opp_goals:2, result:'D', ncc_xg:1.086, opp_xg:1.644, ncc_xg_sp:0.354, opp_xg_sp:1.148, ncc_shots:11, opp_shots:16, ncc_sot:6, opp_sot:6, ncc_poss:59, opp_poss:41, ncc_pass_pct:84, opp_pass_pct:75, ncc_pressures:144, opp_pressures:167, ncc_press_regains:26, opp_press_regains:38, top_shooters:null, top_kp:null, note:'Allowed 6 SOT despite low opposition xG.' },
-  { ncc_goals:1, opp_goals:0, result:'W', ncc_xg:1.519, opp_xg:1.389, ncc_xg_sp:0.391, opp_xg_sp:0.73, ncc_shots:16, opp_shots:16, ncc_sot:8, opp_sot:2, ncc_poss:48, opp_poss:52, ncc_pass_pct:79, opp_pass_pct:81, ncc_pressures:187, opp_pressures:141, ncc_press_regains:31, opp_press_regains:31, top_shooters:'Manaka Matsukubo (8 shots, 0.76xG)', top_kp:'Avery Patterson (4 KP, 0.43xG)', note:'Won on fine margins. Houston dominated set-piece xG (0.65) but we nullified it. Matsukubo led our attacking threat.' },
-  { ncc_goals:2, opp_goals:2, result:'D', ncc_xg:1.989, opp_xg:0.781, ncc_xg_sp:1.443, opp_xg_sp:0.5, ncc_shots:21, opp_shots:7, ncc_sot:3, opp_sot:2, ncc_poss:51, opp_poss:49, ncc_pass_pct:78, opp_pass_pct:76, ncc_pressures:242, opp_pressures:192, ncc_press_regains:36, opp_press_regains:43, top_shooters:null, top_kp:null, note:'We scored 2 from just 0.78xG — season-high over-performance. Boston had 1.85xG but we held to a draw.' },
-  { ncc_goals:1, opp_goals:2, result:'L', ncc_xg:1.948, opp_xg:2.247, ncc_xg_sp:0.541, opp_xg_sp:0.338, ncc_shots:16, opp_shots:11, ncc_sot:5, opp_sot:3, ncc_poss:58, opp_poss:42, ncc_pass_pct:78, opp_pass_pct:76, ncc_pressures:93, opp_pressures:106, ncc_press_regains:24, opp_press_regains:13, top_shooters:null, top_kp:null, note:'Season low in pressures (93). KC had season-high opp xG (2.18). Low press intensity linked to defensive exposure.' },
-  { ncc_goals:0, opp_goals:1, result:'L', ncc_xg:0.78, opp_xg:0.446, ncc_xg_sp:0.37, opp_xg_sp:0.199, ncc_shots:12, opp_shots:9, ncc_sot:1, opp_sot:2, ncc_poss:57, opp_poss:43, ncc_pass_pct:82, opp_pass_pct:77, ncc_pressures:115, opp_pressures:154, ncc_press_regains:24, opp_press_regains:28, top_shooters:null, top_kp:null, note:'Lost despite leading on xG (0.78 vs 0.45) and possession (57%). Orlando converted their only quality chance — we were clinical in neither box.' },
-  { ncc_goals:4, opp_goals:0, result:'W', ncc_xg:2.217, opp_xg:0.948, ncc_xg_sp:0.864, opp_xg_sp:0.815, ncc_shots:17, opp_shots:13, ncc_sot:6, opp_sot:3, ncc_poss:52, opp_poss:48, ncc_pass_pct:81, opp_pass_pct:79, ncc_pressures:134, opp_pressures:129, ncc_press_regains:24, opp_press_regains:23, top_shooters:null, top_kp:null, note:null },
-  { ncc_goals:2, opp_goals:1, result:'W', ncc_xg:1.236, opp_xg:1.309, ncc_xg_sp:0.212, opp_xg_sp:0.82, ncc_shots:11, opp_shots:17, ncc_sot:4, opp_sot:2, ncc_poss:53, opp_poss:47, ncc_pass_pct:79, opp_pass_pct:74, ncc_pressures:158, opp_pressures:185, ncc_press_regains:35, opp_press_regains:31, top_shooters:'Ashley Nicole Sanchez (4 shots, 0.45xG), Shinomi Koyama (2, 0.09xG), Felicitas Rauch (2, 0.11xG)', top_kp:'Ryan Williams (2 KP, 0.67xG), Allyson Schlegel (2 KP, 0.11xG)', note:'W 2-1 away at Louisville. Won despite lower xG (1.23 vs 1.29) — clinical finishing from ANS. Louisville\'s corner volume generated 0.60 SP xG but NCC held firm defensively.' },
-  { ncc_goals:2, opp_goals:1, result:'W', ncc_xg:1.284, opp_xg:1.68, ncc_xg_sp:0.586, opp_xg_sp:1.318, ncc_shots:10, opp_shots:17, ncc_sot:4, opp_sot:5, ncc_poss:48, opp_poss:52, ncc_pass_pct:75, opp_pass_pct:78, ncc_pressures:100, opp_pressures:94, ncc_press_regains:23, opp_press_regains:15, top_shooters:null, top_kp:null, note:null },
-  { ncc_goals:3, opp_goals:1, result:'W', ncc_xg:2.371, opp_xg:1.349, ncc_xg_sp:0.648, opp_xg_sp:0.122, ncc_shots:16, opp_shots:16, ncc_sot:6, opp_sot:4, ncc_poss:46, opp_poss:54, ncc_pass_pct:81, opp_pass_pct:81, ncc_pressures:95, opp_pressures:103, ncc_press_regains:18, opp_press_regains:22, top_shooters:null, top_kp:null, note:null },
-  { ncc_goals:0, opp_goals:2, result:'L', ncc_xg:1.053, opp_xg:0.955, ncc_xg_sp:0.566, opp_xg_sp:0.048, ncc_shots:11, opp_shots:8, ncc_sot:1, opp_sot:5, ncc_poss:43, opp_poss:57, ncc_pass_pct:74, opp_pass_pct:83, ncc_pressures:130, opp_pressures:110, ncc_press_regains:19, opp_press_regains:19, top_shooters:null, top_kp:null, note:null },
-  { ncc_goals:0, opp_goals:3, result:'L', ncc_xg:1.339, opp_xg:1.606, ncc_xg_sp:0.559, opp_xg_sp:0.162, ncc_shots:14, opp_shots:14, ncc_sot:3, opp_sot:6, ncc_poss:52, opp_poss:48, ncc_pass_pct:79, opp_pass_pct:78, ncc_pressures:129, opp_pressures:119, ncc_press_regains:34, opp_press_regains:30, top_shooters:null, top_kp:null, note:null }
+  // M1: NCC 2-1 Racing Louisville FC (Home, W)
+  { ncc_goals:2, opp_goals:1, result:'W',
+    ncc_xg:1.62, opp_xg:1.91, ncc_xg_sp:0.09, opp_xg_sp:0.17,
+    ncc_shots:15, opp_shots:17, ncc_sot:5, opp_sot:5,
+    ncc_poss:62, opp_poss:38, ncc_pass_pct:81, opp_pass_pct:65,
+    ncc_pressures:165, opp_pressures:218, ncc_press_regains:56, opp_press_regains:53,
+    top_shooters:'Ashley Nicole Sanchez (5 shots, 0.25xG), Hannah Betfort (2, 0.64xG)',
+    top_kp:'Shinomi Koyama (3 KP, 0.11xG), Ryan Williams (2 KP, 0.17xG)',
+    note:'Won despite being xG-negative. Efficiency from open play key — 1.22xG from open play sources.' },
+  // M2: NCC 0-0 Gotham FC (Away, D)
+  { ncc_goals:0, opp_goals:0, result:'D',
+    ncc_xg:1.32, opp_xg:0.65, ncc_xg_sp:null, opp_xg_sp:null,
+    ncc_shots:14, opp_shots:9, ncc_sot:3, opp_sot:1,
+    ncc_poss:59, opp_poss:41, ncc_pass_pct:82, opp_pass_pct:76,
+    ncc_pressures:188, opp_pressures:257, ncc_press_regains:67, opp_press_regains:65,
+    top_shooters:null, top_kp:null,
+    note:'We dominated xG and territory but failed to convert. Their GK held firm.' },
+  // M3: NCC 1-3 Bay FC (Home, L)
+  { ncc_goals:1, opp_goals:3, result:'L',
+    ncc_xg:1.73, opp_xg:1.24, ncc_xg_sp:null, opp_xg_sp:null,
+    ncc_shots:13, opp_shots:13, ncc_sot:2, opp_sot:6,
+    ncc_poss:50, opp_poss:50, ncc_pass_pct:81, opp_pass_pct:78,
+    ncc_pressures:252, opp_pressures:215, ncc_press_regains:74, opp_press_regains:69,
+    top_shooters:null, top_kp:null,
+    note:'Lost despite higher xG. Bay FC converted 3 from 6 SOT — clinical finishing overturned the chance-quality gap.' },
+  // M4: NCC 2-2 Portland Thorns (Home, D)
+  { ncc_goals:2, opp_goals:2, result:'D',
+    ncc_xg:1.24, opp_xg:1.59, ncc_xg_sp:null, opp_xg_sp:null,
+    ncc_shots:11, opp_shots:16, ncc_sot:6, opp_sot:6,
+    ncc_poss:59, opp_poss:41, ncc_pass_pct:84, opp_pass_pct:75,
+    ncc_pressures:144, opp_pressures:167, ncc_press_regains:54, opp_press_regains:57,
+    top_shooters:null, top_kp:null,
+    note:'PSxG 2.74 — we generated our highest shot quality of the season. Allowed 6 SOT despite low opposition xG.' },
+  // M5: NCC 1-0 Houston Dash (Away, W)
+  { ncc_goals:1, opp_goals:0, result:'W',
+    ncc_xg:1.52, opp_xg:1.39, ncc_xg_sp:0.20, opp_xg_sp:0.65,
+    ncc_shots:16, opp_shots:16, ncc_sot:8, opp_sot:2,
+    ncc_poss:52, opp_poss:48, ncc_pass_pct:81, opp_pass_pct:79,
+    ncc_pressures:141, opp_pressures:187, ncc_press_regains:51, opp_press_regains:58,
+    top_shooters:'Manaka Matsukubo (8 shots, 0.76xG)', top_kp:'Avery Patterson (4 KP, 0.43xG)',
+    note:'Won on fine margins. Houston dominated set-piece xG (0.65) but we nullified it. Matsukubo led our attacking threat.' },
+  // M6: NCC 2-2 Boston Legacy W (Away, D)
+  { ncc_goals:2, opp_goals:2, result:'D',
+    ncc_xg:0.78, opp_xg:1.85, ncc_xg_sp:null, opp_xg_sp:null,
+    ncc_shots:21, opp_shots:7, ncc_sot:3, opp_sot:2,
+    ncc_poss:49, opp_poss:51, ncc_pass_pct:77, opp_pass_pct:78,
+    ncc_pressures:192, opp_pressures:242, ncc_press_regains:63, opp_press_regains:78,
+    top_shooters:null, top_kp:null,
+    note:'We scored 2 from just 0.78xG — season-high over-performance. Boston had 1.85xG but we held to a draw.' },
+  // M7: NCC 1-2 KC Current (Home, L)
+  { ncc_goals:1, opp_goals:2, result:'L',
+    ncc_xg:1.87, opp_xg:2.20, ncc_xg_sp:null, opp_xg_sp:null,
+    ncc_shots:14, opp_shots:10, ncc_sot:3, opp_sot:2,
+    ncc_poss:58, opp_poss:42, ncc_pass_pct:78, opp_pass_pct:76,
+    ncc_pressures:93, opp_pressures:106, ncc_press_regains:37, opp_press_regains:33,
+    top_shooters:null, top_kp:null,
+    note:'Season low in pressures (93). KC had season-high opp xG (2.20). Low press intensity linked to defensive exposure.' },
+  // M8: Orlando Pride 1-0 NCC (Away, L)
+  { ncc_goals:0, opp_goals:1, result:'L',
+    ncc_xg:0.78, opp_xg:0.45, ncc_xg_sp:null, opp_xg_sp:null,
+    ncc_shots:12, opp_shots:9, ncc_sot:1, opp_sot:2,
+    ncc_poss:57, opp_poss:43, ncc_pass_pct:82, opp_pass_pct:77,
+    ncc_pressures:154, opp_pressures:115, ncc_press_regains:37, opp_press_regains:29,
+    top_shooters:null, top_kp:null,
+    note:'Lost despite leading on xG (0.78 vs 0.45) and possession (57%). Orlando converted their only quality chance — we were clinical in neither box.' }
 ];
 
 // =====================================================================
@@ -3310,92 +3376,71 @@ const MATCH_REPORT_DATA = [
 // =====================================================================
 const BYPASS_SEGMENT_LABELS = ["0–15'","16–30'","31–45'","46–60'","61–75'","76–90'"];
 const BYPASS_SEGMENTS = [
-  { ncc:[69,77,103,80,76,41], opp:[45,27,36,37,41,47] },
-  { ncc:[51,54,82,46,79,66], opp:[66,66,62,62,71,85] },
-  { ncc:[30,54,79,66,58,75], opp:[39,43,107,112,46,65] },
-  { ncc:[32,56,90,52,50,78], opp:[39,37,51,39,45,57] },
-  { ncc:[99,47,85,82,32,26], opp:[43,59,51,80,54,71] },
-  { ncc:[35,47,69,67,18,83], opp:[47,31,74,41,67,50] },
-  { ncc:[38,78,48,52,60,101], opp:[51,63,75,58,58,39] },
-  { ncc:[62,45,57,80,34,57], opp:[22,48,49,49,66,42] },
-  { ncc:[67,57,108,66,79,79], opp:[73,37,59,56,51,36] },
-  { ncc:[62,55,122,64,47,67], opp:[60,23,83,52,38,80] },
-  { ncc:[50,32,82,68,41,61], opp:[39,45,53,35,53,70] },
-  { ncc:[71,46,42,86,61,73], opp:[50,71,62,79,43,50] },
-  { ncc:[27,44,63,55,57,64], opp:[88,55,95,52,59,79] },
-  { ncc:[46,52,62,54,47,98], opp:[70,78,75,33,38,49] }
+  { ncc:[0,0,0,0,0,0], opp:[0,0,0,0,0,0] }
 ];
 
-// Packing Momentum as a per-window tug-of-war, matching the Progression Battle
-// style: each 15-minute window is a row, bar reaches whoever bypassed more.
 function renderBypassSegments() {
   const el = document.getElementById('bypass-segments-container');
   if (!el) return;
   const isSeason = currentMatch === -1;
 
-  const NCC = '#C8102E', OPP = '#5F5E5A', NCCm = '#E4A9B2', OPPm = '#B4B2A9';
-
+  // Decide which values to use: a single match, or per-window averages
   let nccVals, oppVals;
   if (isSeason) {
-    const avg = key => BYPASS_SEGMENT_LABELS.map((_, i) => {
-      const xs = BYPASS_SEGMENTS.map(e => e[key][i]).filter(v => v !== null && v !== undefined);
-      return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
+    nccVals = BYPASS_SEGMENT_LABELS.map((_, i) => {
+      const xs = BYPASS_SEGMENTS.map(e => e.ncc[i]).filter(v => v !== null && v !== undefined);
+      return xs.length ? xs.reduce((a,b)=>a+b,0)/xs.length : null;
     });
-    nccVals = avg('ncc'); oppVals = avg('opp');
+    oppVals = BYPASS_SEGMENT_LABELS.map((_, i) => {
+      const xs = BYPASS_SEGMENTS.map(e => e.opp[i]).filter(v => v !== null && v !== undefined);
+      return xs.length ? xs.reduce((a,b)=>a+b,0)/xs.length : null;
+    });
   } else {
     const entry = BYPASS_SEGMENTS[currentMatch];
     nccVals = entry ? entry.ncc : BYPASS_SEGMENT_LABELS.map(() => null);
     oppVals = entry ? entry.opp : BYPASS_SEGMENT_LABELS.map(() => null);
   }
 
-  let nccWins = 0, oppWins = 0, ties = 0;
+  // Scale: max of all values in this view, with a floor of 1
+  const allVals = [...nccVals, ...oppVals].filter(v => v !== null && v !== undefined);
+  const maxV = allVals.length ? Math.max(...allVals, 1) : 1;
 
-  const rowsHTML = BYPASS_SEGMENT_LABELS.map((label, i) => {
+  const fmt = v => v === null || v === undefined ? '—' : (isSeason ? v.toFixed(0) : String(v));
+
+  const cells = BYPASS_SEGMENT_LABELS.map((label, i) => {
     const nv = nccVals[i], ov = oppVals[i];
     if (nv === null && ov === null) {
-      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
-        <div style="width:42px;flex:none;"></div><div style="flex:1;"></div>
-        <div style="width:64px;flex:none;text-align:center;font-size:12px;color:var(--text-muted);">${label}</div>
-        <div style="flex:1;"></div><div style="width:42px;flex:none;"></div></div>`;
+      return `<div class="bypass-cell">
+        <div class="bypass-cell-label">${label}</div>
+        <div class="bypass-cell-empty">No data</div>
+      </div>`;
     }
-    const nccWon = nv > ov, oppWon = ov > nv;
-    if (nv === ov) ties++; else if (nccWon) nccWins++; else oppWins++;
-
-    const mx = Math.max(nv, ov) || 1;
-    const lw = Math.round(nv / mx * 100), rw = Math.round(ov / mx * 100);
-    const lc = battleBarColor(nv, BYPASS_SEGMENTS.map(e => e.ncc[i]), true, isSeason, currentMatch);
-    const rc = battleBarColor(ov, BYPASS_SEGMENTS.map(e => e.opp[i]), false, isSeason, currentMatch);
-    const lvC = lc, rvC = rc;
-    const nd = Math.round(nv), od = Math.round(ov);
-
-    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
-      <div style="width:42px;flex:none;text-align:right;font-size:14px;font-weight:${nccWon ? 700 : 500};color:${lvC};">${nd}</div>
-      <div style="flex:1;display:flex;justify-content:flex-end;"><div style="height:16px;width:${lw}%;background:${lc};border-radius:5px 0 0 5px;"></div></div>
-      <div style="width:64px;flex:none;text-align:center;font-size:12px;color:var(--text-secondary);">${label}</div>
-      <div style="flex:1;display:flex;justify-content:flex-start;"><div style="height:16px;width:${rw}%;background:${rc};border-radius:0 5px 5px 0;"></div></div>
-      <div style="width:42px;flex:none;text-align:left;font-size:14px;font-weight:${oppWon ? 700 : 500};color:${rvC};">${od}</div>
+    const nccPct = nv !== null ? Math.max(2, (nv / maxV) * 100) : 0;
+    const oppPct = ov !== null ? Math.max(2, (ov / maxV) * 100) : 0;
+    const diff = (nv !== null && ov !== null) ? nv - ov : null;
+    let diffCls = 'neutral', diffTxt = '—';
+    if (diff !== null) {
+      const sign = diff > 0 ? '+' : '';
+      diffTxt = `${sign}${isSeason ? diff.toFixed(1) : diff}`;
+      diffCls = diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'neutral';
+    }
+    return `<div class="bypass-cell">
+      <div class="bypass-cell-label">${label}</div>
+      <div class="bypass-bar-row">
+        <span class="bypass-bar-label">NCC</span>
+        <div class="bypass-bar-track"><div class="bypass-bar-fill ncc" style="width:${nccPct}%"></div></div>
+        <span class="bypass-bar-value">${fmt(nv)}</span>
+      </div>
+      <div class="bypass-bar-row">
+        <span class="bypass-bar-label">OPP</span>
+        <div class="bypass-bar-track"><div class="bypass-bar-fill opp" style="width:${oppPct}%"></div></div>
+        <span class="bypass-bar-value">${fmt(ov)}</span>
+      </div>
+      <div class="bypass-cell-diff ${diffCls}">Δ ${diffTxt}</div>
     </div>`;
   }).join('');
-  el.innerHTML = rowsHTML + battleLegendHTML();
 
-  const scoreEl = document.getElementById('bypass-score');
-  if (scoreEl) {
-    scoreEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:16px;">
-      <span style="font-size:13px;font-weight:600;color:${NCC};">NCC</span>
-      <span style="font-size:22px;font-weight:700;color:var(--text-primary);"><span style="color:${NCC};">${nccWins}</span> <span style="color:var(--text-muted);font-size:15px;">&mdash;</span> <span style="color:${OPP};">${oppWins}</span></span>
-      <span style="font-size:13px;font-weight:600;color:${OPP};">OPP</span>
-      ${ties ? `<span style="font-size:12px;color:var(--text-muted);">${ties} even</span>` : ''}
-      <span style="font-size:12px;color:var(--text-muted);">windows won</span>
-    </div>`;
-  }
-
-  const ctxEl = document.getElementById('bypass-ctx');
-  if (ctxEl) {
-    const label = isSeason
-      ? 'Season average'
-      : `vs ${MATCHES[currentMatch].opp} (${MATCHES[currentMatch].loc === 'Home' ? 'H' : 'A'})`;
-    ctxEl.innerHTML = `${label} &nbsp;&middot;&nbsp; bypassed players per 15-min window &nbsp;&middot;&nbsp; bar reaches whoever bypassed more`;
-  }
+  el.innerHTML = cells;
 }
 
 // =====================================================================
@@ -4036,7 +4081,7 @@ function renderInsights() {
         <div class="ctx-card-body">
           <p class="ctx-body-text"><strong>Grades are relative, not absolute.</strong> A grade of Excellent means this was NCC's best performance of the season for that metric — it does not mean it is objectively excellent by league standards. Equally, Abysmal means it was the team's worst showing this season, not that it was catastrophic in isolation.</p>
           <p class="ctx-body-text"><strong>Small sample size.</strong> With 7 matches, the season range is building but grades will continue to recalibrate as more data arrives. A metric graded Excellent now may shift as stronger or weaker performances are recorded over the full season.</p>
-          <p class="ctx-body-text"><strong>Pressing metrics are raw match counts.</strong> Pressures, Counterpressures, Tackles+Interceptions, Ball Recoveries, Pressures in Opp. Half, and Counterpressures in Opp. Half are counted directly from the Match CSVs (raw StatsBomb events) for both teams. The Pressing Battle compares these head-to-head; higher volume = more intense pressing, not necessarily better defending.</p>
+          <p class="ctx-body-text"><strong>Pressing metrics are possession-adjusted (PA).</strong> Pressures, Counterpressures, Aggressive Actions, Tackles+Interceptions, Pressures in Opp. Half, and Counterpressures in Opp. Half are scaled using the formula: <em>raw ÷ opponent possession% × 0.5</em>. This normalises to a 50/50 possession baseline so a team with 40% possession is directly comparable to one with 60%. Possession percentages are sourced from StatsBomb match report PDFs.</p>
           <p class="ctx-body-text"><strong>3-Match Form activates from GW3 onwards.</strong> The Form column shows the average of the last 3 non-null values, graded against the <em>season mean</em> rather than the min/max range. The deviation bands are wider (±10% = Typical, ±35% = Excellent/Abysmal) to prevent hypersensitivity — rolling averages naturally smooth toward the centre, so tighter bands would produce artificially compressed grades. A Good or Excellent Form grade alongside a lower Match Grade signals positive trajectory: recent games are running above the season baseline even if the individual match underperformed.</p>
         </div>
       </div>
@@ -4053,7 +4098,7 @@ function renderInsights() {
         <div class="ctx-card-body">
           <p class="ctx-body-text">The Standard of Play (SOP) grading system tracks NCC's ability to progress the ball through defined pitch zones and convert that progression into finishing opportunities. The pitch is divided into four zones: <strong>Zone 2</strong> (defensive-to-midfield progression), <strong>Zone 3</strong> (midfield-to-final third), <strong>Pass Zone</strong> (pre-box delivery area), and <strong>Shoot Zone</strong> (shooting positions).</p>
           <p class="ctx-body-text">Each zone tracks <strong>Attempts</strong> (volume), <strong>Completions</strong> (success), <strong>Completion %</strong> (efficiency), and <strong>Points</strong> (a composite score). A high volume of Zone 3 Attempts with a low Completion % signals the team is trying to enter the final third but being blocked — a pattern worth noting for tactical review.</p>
-          <p class="ctx-body-text"><strong>Source:</strong> InHouse Data sheet (Team Event Data) — Z2, Z3, PZ, SZ attempts, completions &amp; points. Completion % calculated as Completions ÷ Attempts.</p>
+          <p class="ctx-body-text"><strong>Source:</strong> Match Stats spreadsheet — Z2, Z3, PZ, SZ columns. Note: Completion % columns in the spreadsheet show 0 — calculated as Completions ÷ Attempts.</p>
         </div>
       </div>
 
@@ -4065,7 +4110,7 @@ function renderInsights() {
         <div class="ctx-card-body">
           <p class="ctx-body-text">Packing metrics quantify how many opposition players NCC removes from the game through passing and carrying. <strong>Bypassed Opponents</strong> captures all players beaten by the ball; <strong>Bypassed Defenders</strong> focuses on the defensive unit specifically, making it a stronger indicator of genuine progression quality.</p>
           <p class="ctx-body-text"><strong>Ball Win metrics</strong> (Removed Opponents/Defenders) measure the same concept in the defensive-to-offensive transition — opponents removed by winning the ball back. <strong>Critical Ball Loss</strong> and <strong>Ball Loss Removed Teammates</strong> are negative contribution metrics; lower values are better.</p>
-          <p class="ctx-body-text"><strong>Source:</strong> Impect Data sheet (Team Event Data) — both NCC and opponent rows per match.</p>
+          <p class="ctx-body-text"><strong>Source:</strong> Match Stats spreadsheet. Note: config originally specified Impect PDFs — data is available in the spreadsheet and used directly.</p>
         </div>
       </div>
 
@@ -4078,7 +4123,7 @@ function renderInsights() {
           <p class="ctx-body-text">Box Domination measures NCC's ability to penetrate the opposition box and create high-quality chances. The <strong>Penetration</strong> table tracks entries (touches, passes into and inside the box, crosses), while the <strong>Finishing</strong> table assesses the quality of what NCC did once inside.</p>
           <p class="ctx-body-text"><strong>Post-Shot xG</strong> (Non Penalty PSxG Faced) measures the quality of shot placement — going beyond pre-shot position to account for where in the goal the shot was aimed. Higher PSxG indicates NCC placed shots in more dangerous areas of the frame.</p>
           <p class="ctx-body-text">The <strong>Opposition GK metrics</strong> (GSAA and NP Save %) measure how well the opposing goalkeeper performed. A high GSAA means the opp GK saved more than statistically expected — this is negative for NCC and graded accordingly (lower is better from NCC's perspective).</p>
-          <p class="ctx-body-text"><strong>Source:</strong> All box metrics are calculated from the Match CSVs (raw StatsBomb events). xG and shots from shot events; set-piece xG from corner/free-kick/throw-in shots; Post-Shot xG from the keeper save-difficulty xG on each shot; Quality Chances (xG 0.15–0.30) and Big Chances (xG ≥ 0.30) by classifying shot xG.</p>
+          <p class="ctx-body-text"><strong>Source:</strong> Match Stats spreadsheet for most metrics. Post-Shot xG (PSxG), GSAA, and NP Save % are sourced from StatsBomb match report PDFs (GK shot stopping table). Tackles Won from PDF match stats page (spreadsheet Tackles column = 0 for all matches).</p>
         </div>
       </div>
 
@@ -4140,22 +4185,22 @@ function renderInsights() {
             </thead>
             <tbody>
               <tr>
-                <td><span class="ctx-dot" style="background:#2E7D32"></span><strong>Match CSVs (StatsBomb events)</strong></td>
-                <td>Box: xG, set-piece xG, shots, SOT%, xG/shot, post-shot xG, quality &amp; big chances. Defensive Intensity: pressures, counterpressures, tackles+interceptions, ball recoveries, opp-half variants. On-Ball Value: total &amp; per-action-type OBV. All for both teams.</td>
-                <td>All 14 matches — complete</td>
-                <td>Aggregated per match from raw events (deduped by event id — shot freeze-frames explode into multiple rows). Post-shot xG = keeper save-difficulty xG; quality chance = shot xG 0.15–0.30, big chance = xG ≥ 0.30.</td>
+                <td><span class="ctx-dot" style="background:#2E7D32"></span><strong>Match Stats Spreadsheet</strong></td>
+                <td>SOP zones, packing, box penetration, xG, shots, quality &amp; big chances, defensive intensity, opposition metrics</td>
+                <td>All 7 matches — complete (GW6b LB data pending)</td>
+                <td>Primary source. All NCC and opponent row values. Completion % for SOP zones calculated as Completions ÷ Attempts (spreadsheet column shows 0).</td>
               </tr>
               <tr>
-                <td><span class="ctx-dot" style="background:#1565C0"></span><strong>InHouse Data sheet</strong></td>
-                <td>SOP zones — Zone 2/3, Passing Zone, Shooting Zone attempts, completions &amp; points</td>
-                <td>All 14 matches — complete</td>
-                <td>Team Event Data tab. Completion % calculated as Completions ÷ Attempts.</td>
+                <td><span class="ctx-dot" style="background:#1565C0"></span><strong>Player Stats Spreadsheet</strong></td>
+                <td>Post-Shot xG (Non Penalty PSxG Faced), Opposition Post-Shot xG</td>
+                <td>GW1–GW4 — complete; GW5–GW7 from PDFs</td>
+                <td>PSxG for GW5–GW7 sourced directly from StatsBomb match report PDFs (GK shot stopping table) since Player Stats spreadsheet not yet available for those matches.</td>
               </tr>
               <tr>
-                <td><span class="ctx-dot" style="background:#8B4513"></span><strong>Impect Data sheet</strong></td>
-                <td>Packing: bypassed opponents &amp; defenders, ball wins (opponents &amp; opponent defenders), critical ball loss, ball loss removed teammates, 15-min bypass segments; possession %</td>
-                <td>All 14 matches — complete</td>
-                <td>Team Event Data tab. Both NCC and opponent rows per match.</td>
+                <td><span class="ctx-dot" style="background:#8B4513"></span><strong>StatsBomb Match Report PDFs</strong></td>
+                <td>Opposition GK GSAA, Opposition GK NP Save %, NCC GK GSAA, NCC GK NP Save %, Tackles (Won), Possession %, PSxG (GW5–GW7)</td>
+                <td>All 7 matches — complete</td>
+                <td>GSAA = PSxG faced on SOT minus goals conceded. NP Save % = saves ÷ non-penalty shots on target. Tackles Won from PDF match stats page. Possession % used for all PA calculations (formula: raw ÷ opp_poss% × 0.5). GW2 NCC NP Save % is null — Sheridan faced 0 shots on target.</td>
               </tr>
             </tbody>
           </table>
@@ -4236,20 +4281,13 @@ function renderInsights() {
 
 <script>
 const MATCH_INFO = [
-  { label: 'GW1 · M1', date: 'Mar 15, 2026', opp: 'Racing Louisville FC', loc: 'Home', result: 'W 2–1' },
-  { label: 'GW2 · M2', date: 'Mar 22, 2026', opp: 'NJ/NY Gotham FC', loc: 'Away', result: 'D 0–0' },
-  { label: 'GW3 · M3', date: 'Mar 29, 2026', opp: 'Bay FC', loc: 'Home', result: 'L 1–3' },
-  { label: 'GW4 · M4', date: 'Apr 5, 2026', opp: 'Portland Thorns', loc: 'Home', result: 'D 2–2' },
-  { label: 'GW5 · M5', date: 'Apr 26, 2026', opp: 'Houston Dash', loc: 'Away', result: 'W 1–0' },
-  { label: 'GW6 · M6', date: 'Apr 30, 2026', opp: 'Boston Legacy', loc: 'Away', result: 'D 2–2' },
-  { label: 'GW6 · M7', date: 'May 3, 2026', opp: 'KC Current', loc: 'Home', result: 'L 1–2' },
-  { label: 'GW7 · M8', date: 'May 9, 2026', opp: 'Orlando Pride', loc: 'Away', result: 'L 0–1' },
-  { label: 'GW8 · M9', date: 'May 17, 2026', opp: 'Chicago Red Stars', loc: 'Home', result: 'W 4–0' },
-  { label: 'GW9 · M10', date: 'May 23, 2026', opp: 'Racing Louisville FC', loc: 'Away', result: 'W 2–1' },
-  { label: 'GW10 · M11', date: 'Jun 1, 2026', opp: 'Angel City', loc: 'Away', result: 'W 2–1' },
-  { label: 'GW11 · M12', date: 'Jul 5, 2026', opp: 'Seattle Reign', loc: 'Home', result: 'W 3–1' },
-  { label: 'GW12 · M13', date: 'Jul 11, 2026', opp: 'Washington Spirit', loc: 'Home', result: 'L 0–2' },
-  { label: 'GW13 · M14', date: 'Jul 18, 2026', opp: 'Bay FC', loc: 'Away', result: 'L 0–3' }
+  { label:'GW1',  date:'Mar 15, 2026', opp:'Racing Louisville FC', loc:'Home', result:'W 2–1' },
+  { label:'GW2',  date:'Mar 22, 2026', opp:'NJ/NY Gotham FC',      loc:'Away', result:'D 0–0' },
+  { label:'GW3',  date:'Mar 29, 2026', opp:'Bay FC',                loc:'Home', result:'L 1–3' },
+  { label:'GW4',  date:'Apr 5, 2026',  opp:'Portland Thorns',       loc:'Home', result:'D 2–2' },
+  { label:'GW5',  date:'Apr 26, 2026', opp:'Houston Dash',          loc:'Away', result:'W 1–0' },
+  { label:'GW6a', date:'Apr 30, 2026', opp:'Boston Legacy W',       loc:'Away', result:'D 2–2' },
+  { label:'GW6b', date:'May 2, 2026',  opp:'KC Current',            loc:'Home', result:'L 1–2' }
 ];
 
 const SECTION_LABELS = {

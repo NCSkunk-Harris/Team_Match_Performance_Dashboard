@@ -14,9 +14,14 @@ from pathlib import Path
 
 import openpyxl
 
-DATA_DIR = Path("/Users/tomharris/Desktop/Claude/Projects/Data Organization And Cleaning")
-CSV_PATH = DATA_DIR / "Statsbomb Match CSV Files/North Carolina Courage/North Carolina Courage_Washington Spirit_4047603.csv"
-WB_PATH = DATA_DIR / "NWSL StatsBomb Data.xlsx"
+# Resolved relative to this script so the folder can be moved or cloned
+# anywhere without editing paths. CSVs are now flat (no per-team subfolder).
+SCRIPT_DIR = Path(__file__).resolve().parent
+DATA_DIR = SCRIPT_DIR.parent / "Data Organization And Cleaning" / "Data"
+CSV_PATH = DATA_DIR / "Statsbomb Match CSVs" / "North Carolina Courage_Washington Spirit_4047603.csv"
+# NWSL StatsBomb Data.xlsx was retired 2026-07-20; the last backup is the only
+# remaining source of the aggregated IQ metrics this script checks against.
+WB_PATH = DATA_DIR / "date_backups" / "NWSL StatsBomb Data_20260720_142959.xlsx"
 
 GOAL = (120.0, 40.0)
 
