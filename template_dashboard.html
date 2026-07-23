@@ -1876,8 +1876,8 @@
   </div>
   <div style="display:flex;align-items:center;gap:12px;">
     <div class="header-meta">
-      <div>7 matches played</div>
-      <div style="margin-top:2px;">Updated May 4, 2026</div>
+      <div>{{MATCH_COUNT}} matches played</div>
+      <div style="margin-top:2px;">Updated {{UPDATED_DATE}}</div>
     </div>
     <button class="print-btn" onclick="openPrint()">&#x2399; Match Summary</button>
   </div>
@@ -1901,7 +1901,7 @@
   <div class="subtab" onclick="selectSubtab('box-dom', this)">Box Domination</div>
   <div class="subtab" onclick="selectSubtab('def-int', this)">Defensive Intensity</div>
   <div class="subtab" onclick="selectSubtab('obv', this)">On-Ball Value</div>
-  <div class="subtab disabled" aria-disabled="true" title="Coming soon">Match Insights</div>
+  <div class="subtab disabled" aria-disabled="true" title="Coming soon">Per-Match Report</div>
 </div>
 
 <div class="main">
@@ -1910,22 +1910,22 @@
   <div class="season-bar" id="seasonSummary" style="display:none;">
     <div class="season-stat">
       <div class="season-stat-label">Matches Played</div>
-      <div class="season-stat-value">4</div>
+      <div class="season-stat-value">14</div>
       <div class="season-stat-sub">2026 NWSL</div>
     </div>
     <div class="season-stat">
       <div class="season-stat-label">Goals Scored</div>
-      <div class="season-stat-value" id="stat-goals">—</div>
+      <div class="season-stat-value" id="stat-goals">20</div>
       <div class="season-stat-sub">across all matches</div>
     </div>
     <div class="season-stat">
       <div class="season-stat-label">Goals Conceded</div>
-      <div class="season-stat-value" id="stat-conceded">6</div>
-      <div class="season-stat-sub">1.50 per match</div>
+      <div class="season-stat-value" id="stat-conceded">19</div>
+      <div class="season-stat-sub">1.36 per match</div>
     </div>
     <div class="season-stat">
       <div class="season-stat-label">Avg xG</div>
-      <div class="season-stat-value" id="stat-xg">1.35</div>
+      <div class="season-stat-value" id="stat-xg">1.53</div>
       <div class="season-stat-sub">per match</div>
     </div>
   </div>
@@ -1950,9 +1950,6 @@
         <span class="section-tag">SOP Grading</span>
         <span class="section-title">Zone Progression</span>
       </div>
-      <div class="table-section-title">
-        <span id="sop-funnel-ctx">Reads down the pitch toward goal &mdash; bar = completions &divide; attempts</span>
-      </div>
       <div id="sop-funnel"></div>
     </div>
 
@@ -1967,10 +1964,6 @@
         <span class="section-tag">Packing &amp; Progression</span>
         <span class="section-title">Progression Battle</span>
       </div>
-      <div class="table-section-title">
-        <span id="pack-battle-ctx">NCC vs opponent &mdash; bar reaches the winning side of each metric</span>
-      </div>
-      <div id="pack-battle-score" style="margin:2px 0 12px;"></div>
       <div id="pack-battle"></div>
     </div>
 
@@ -1980,10 +1973,6 @@
         <span class="section-tag">Packing &amp; Progression</span>
         <span class="section-title">Packing Momentum</span>
       </div>
-      <div class="table-section-title">
-        <span id="bypass-ctx">Bypassed players per 15-minute window &mdash; bar reaches whoever bypassed more</span>
-      </div>
-      <div id="bypass-score" style="margin:2px 0 12px;"></div>
       <div id="bypass-segments-container"></div>
       <p class="data-source-note" style="margin-top:8px;">Source: Impect packing data — spreadsheet data</p>
     </div>
@@ -1998,12 +1987,8 @@
         <span class="section-tag">Box Domination</span>
         <span class="section-title">Box Battle</span>
       </div>
-      <div class="table-section-title">
-        <span id="box-battle-ctx">NCC attack vs opponent attack &mdash; bar reaches whoever created more in the box</span>
-      </div>
-      <div id="box-battle-score" style="margin:2px 0 12px;"></div>
       <div id="box-battle"></div>
-      <p class="data-source-note" style="margin-top:8px;">Source: Match CSVs (StatsBomb events). xG = shot xG; set-piece xG = corner/free-kick/throw-in shots; post-shot xG = keeper save-difficulty xG; Quality Chances = shots xG 0.15–0.30; Big Chances = shots xG ≥ 0.30.</p>
+      <p class="data-source-note" style="margin-top:8px;">Source: Match CSVs (StatsBomb events). Metric definitions in Context &amp; Logic → Box Domination.</p>
     </div>
   </div>
 
@@ -2016,10 +2001,6 @@
         <span class="section-tag">Defensive Intensity</span>
         <span class="section-title">Pressing Battle</span>
       </div>
-      <div class="table-section-title">
-        <span id="def-battle-ctx">NCC vs opponent &mdash; bar reaches whoever pressed harder on each metric</span>
-      </div>
-      <div id="def-battle-score" style="margin:2px 0 12px;"></div>
       <div id="def-battle"></div>
       <p class="data-source-note" style="margin-top:8px;">Source: Match CSVs (raw StatsBomb events), all 14 matches. Tackles + Interceptions = interceptions plus tackle-type duels; opposing-half by event location.</p>
     </div>
@@ -2035,10 +2016,6 @@
         <span class="section-tag">On-Ball Value</span>
         <span class="section-title">OBV Battle</span>
       </div>
-      <div class="table-section-title">
-        <span id="obv-battle-ctx">NCC vs opponent &mdash; bar length = value created (negative = value lost)</span>
-      </div>
-      <div id="obv-battle-score" style="margin:2px 0 12px;"></div>
       <div id="obv-battle"></div>
       <p class="data-source-note" style="margin-top:8px;">Source: Match CSVs (StatsBomb events) — Total OBV = sum of on-ball value (obv_total_net) over a team's actions; split by action type. Defensive Action = ball recoveries, interceptions, blocks, clearances, tackle duels.</p>
     </div>
@@ -2432,14 +2409,6 @@ function battleBarColor(val, vals, higherBetter, isSeason, idx) {
   if (isSeason || val === null || val === undefined) return BATTLE_NEUTRAL;
   const g = getGrade(val, { vals: vals, higherBetter: higherBetter }, idx);
   return g ? GRADE_HEX[g] : BATTLE_NEUTRAL;
-}
-function battleLegendHTML() {
-  const items = [['excellent', 'Excellent'], ['good', 'Good'], ['typical', 'Typical'], ['poor', 'Poor'], ['abysmal', 'Abysmal']];
-  return `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--text-muted);align-items:center;">
-    <span>Grade (NCC view):</span>
-    ${items.map(([k, l]) => `<span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;border-radius:2px;background:${GRADE_HEX[k]}"></span>${l}</span>`).join('')}
-    <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;border-radius:2px;background:${BATTLE_NEUTRAL}"></span>Ungraded</span>
-  </div>`;
 }
 
 function sectionOverallGradeForInsights(key, idx) {
@@ -2938,14 +2907,6 @@ function renderSOPFunnel() {
     return 'var(--grade-abysmal)';
   }
 
-  const ctxEl = document.getElementById('sop-funnel-ctx');
-  if (ctxEl) {
-    const label = isSeason
-      ? 'Season average'
-      : `vs ${MATCHES[idx].opp} (${MATCHES[idx].loc === 'Home' ? 'H' : 'A'})`;
-    ctxEl.innerHTML = `${label} &nbsp;&middot;&nbsp; bar = completions &divide; attempts`;
-  }
-
   host.innerHTML = rows.map(r => {
     const col   = bandColor(r.pct);
     const barW  = Math.round(r.pct * 100);
@@ -3011,25 +2972,9 @@ function renderPackingBattle() {
       <div style="width:42px;flex:none;text-align:left;font-size:14px;font-weight:${oppWon ? 700 : 500};color:${rvC};">${od}</div>
     </div>`;
   }).join('');
-  host.innerHTML = rowsHTML + battleLegendHTML();
+  host.innerHTML = rowsHTML;
 
-  const scoreEl = document.getElementById('pack-battle-score');
-  if (scoreEl) {
-    scoreEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:16px;">
-      <span style="font-size:13px;font-weight:600;color:${NCC};">NCC</span>
-      <span style="font-size:22px;font-weight:700;color:var(--text-primary);"><span style="color:${NCC};">${nccWins}</span> <span style="color:var(--text-muted);font-size:15px;">&mdash;</span> <span style="color:${OPP};">${oppWins}</span></span>
-      <span style="font-size:13px;font-weight:600;color:${OPP};">OPP</span>
-      ${ties ? `<span style="font-size:12px;color:var(--text-muted);">${ties} even</span>` : ''}
-    </div>`;
-  }
 
-  const ctxEl = document.getElementById('pack-battle-ctx');
-  if (ctxEl) {
-    const label = isSeason
-      ? 'Season average'
-      : `vs ${MATCHES[idx].opp} (${MATCHES[idx].loc === 'Home' ? 'H' : 'A'})`;
-    ctxEl.innerHTML = `${label} &nbsp;&middot;&nbsp; bar reaches the winning side &nbsp;&middot;&nbsp; last two metrics: fewer is better`;
-  }
 }
 
 // ── BOX BATTLE (NCC attack vs Opponent attack) ───────────────────────────────
@@ -3072,26 +3017,9 @@ function renderBoxBattle() {
       <div style="width:52px;flex:none;text-align:left;font-size:14px;font-weight:${oppWon ? 700 : 500};color:${rvC};">${od}</div>
     </div>`;
   }).join('');
-  host.innerHTML = rowsHTML + battleLegendHTML();
+  host.innerHTML = rowsHTML;
 
-  const scoreEl = document.getElementById('box-battle-score');
-  if (scoreEl) {
-    scoreEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:16px;">
-      <span style="font-size:13px;font-weight:600;color:${NCC};">NCC</span>
-      <span style="font-size:22px;font-weight:700;color:var(--text-primary);"><span style="color:${NCC};">${nccWins}</span> <span style="color:var(--text-muted);font-size:15px;">&mdash;</span> <span style="color:${OPP};">${oppWins}</span></span>
-      <span style="font-size:13px;font-weight:600;color:${OPP};">OPP</span>
-      ${ties ? `<span style="font-size:12px;color:var(--text-muted);">${ties} even</span>` : ''}
-      <span style="font-size:12px;color:var(--text-muted);">metrics won</span>
-    </div>`;
-  }
 
-  const ctxEl = document.getElementById('box-battle-ctx');
-  if (ctxEl) {
-    const label = isSeason
-      ? 'Season average'
-      : `vs ${MATCHES[idx].opp} (${MATCHES[idx].loc === 'Home' ? 'H' : 'A'})`;
-    ctxEl.innerHTML = `${label} &nbsp;&middot;&nbsp; NCC attack vs opponent attack &nbsp;&middot;&nbsp; bar reaches whoever created more`;
-  }
 }
 
 // ── DEFENSIVE INTENSITY BATTLE (NCC vs Opponent pressing) ────────────────────
@@ -3126,24 +3054,9 @@ function renderDefBattle() {
       <div style="flex:1;display:flex;justify-content:flex-start;"><div style="height:16px;width:${rw}%;background:${rc};border-radius:0 5px 5px 0;"></div></div>
       <div style="width:44px;flex:none;text-align:left;font-size:14px;font-weight:${oppWon ? 700 : 500};color:${rvC};">${Math.round(ov)}</div>
     </div>`;
-  }).join('') + battleLegendHTML();
+  }).join('');
 
-  const scoreEl = document.getElementById('def-battle-score');
-  if (scoreEl) {
-    scoreEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:16px;">
-      <span style="font-size:13px;font-weight:600;color:${NCC};">NCC</span>
-      <span style="font-size:22px;font-weight:700;color:var(--text-primary);"><span style="color:${NCC};">${nccWins}</span> <span style="color:var(--text-muted);font-size:15px;">&mdash;</span> <span style="color:${OPP};">${oppWins}</span></span>
-      <span style="font-size:13px;font-weight:600;color:${OPP};">OPP</span>
-      ${ties ? `<span style="font-size:12px;color:var(--text-muted);">${ties} even</span>` : ''}
-      <span style="font-size:12px;color:var(--text-muted);">metrics won</span>
-    </div>`;
-  }
 
-  const ctxEl = document.getElementById('def-battle-ctx');
-  if (ctxEl) {
-    const label = isSeason ? 'Season average' : `vs ${MATCHES[idx].opp} (${MATCHES[idx].loc === 'Home' ? 'H' : 'A'})`;
-    ctxEl.innerHTML = `${label} &nbsp;&middot;&nbsp; raw pressing counts &nbsp;&middot;&nbsp; bar reaches whoever pressed more`;
-  }
 }
 
 // ── ON-BALL VALUE BATTLE (NCC vs Opponent) ───────────────────────────────────
@@ -3182,24 +3095,9 @@ function renderOBVBattle() {
       <div style="flex:1;display:flex;justify-content:flex-start;"><div style="height:16px;width:${rw}%;background:${rc};border-radius:0 5px 5px 0;"></div></div>
       <div style="width:52px;flex:none;text-align:left;font-size:14px;font-weight:${oppWon ? 700 : 500};color:${rvC};">${fmt(ov, orow)}</div>
     </div>`;
-  }).join('') + battleLegendHTML();
+  }).join('');
 
-  const scoreEl = document.getElementById('obv-battle-score');
-  if (scoreEl) {
-    scoreEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:16px;">
-      <span style="font-size:13px;font-weight:600;color:${NCC};">NCC</span>
-      <span style="font-size:22px;font-weight:700;color:var(--text-primary);"><span style="color:${NCC};">${nccWins}</span> <span style="color:var(--text-muted);font-size:15px;">&mdash;</span> <span style="color:${OPP};">${oppWins}</span></span>
-      <span style="font-size:13px;font-weight:600;color:${OPP};">OPP</span>
-      ${ties ? `<span style="font-size:12px;color:var(--text-muted);">${ties} even</span>` : ''}
-      <span style="font-size:12px;color:var(--text-muted);">metrics won</span>
-    </div>`;
-  }
 
-  const ctxEl = document.getElementById('obv-battle-ctx');
-  if (ctxEl) {
-    const label = isSeason ? 'Season average' : `vs ${MATCHES[idx].opp} (${MATCHES[idx].loc === 'Home' ? 'H' : 'A'})`;
-    ctxEl.innerHTML = `${label} &nbsp;&middot;&nbsp; bar = value created (negative = value lost) &nbsp;&middot;&nbsp; higher value wins`;
-  }
 }
 
 function renderAll() {
@@ -3386,26 +3284,9 @@ function renderBypassSegments() {
       <div style="width:42px;flex:none;text-align:left;font-size:14px;font-weight:${oppWon ? 700 : 500};color:${rvC};">${od}</div>
     </div>`;
   }).join('');
-  el.innerHTML = rowsHTML + battleLegendHTML();
+  el.innerHTML = rowsHTML;
 
-  const scoreEl = document.getElementById('bypass-score');
-  if (scoreEl) {
-    scoreEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:16px;">
-      <span style="font-size:13px;font-weight:600;color:${NCC};">NCC</span>
-      <span style="font-size:22px;font-weight:700;color:var(--text-primary);"><span style="color:${NCC};">${nccWins}</span> <span style="color:var(--text-muted);font-size:15px;">&mdash;</span> <span style="color:${OPP};">${oppWins}</span></span>
-      <span style="font-size:13px;font-weight:600;color:${OPP};">OPP</span>
-      ${ties ? `<span style="font-size:12px;color:var(--text-muted);">${ties} even</span>` : ''}
-      <span style="font-size:12px;color:var(--text-muted);">windows won</span>
-    </div>`;
-  }
 
-  const ctxEl = document.getElementById('bypass-ctx');
-  if (ctxEl) {
-    const label = isSeason
-      ? 'Season average'
-      : `vs ${MATCHES[currentMatch].opp} (${MATCHES[currentMatch].loc === 'Home' ? 'H' : 'A'})`;
-    ctxEl.innerHTML = `${label} &nbsp;&middot;&nbsp; bypassed players per 15-min window &nbsp;&middot;&nbsp; bar reaches whoever bypassed more`;
-  }
 }
 
 // =====================================================================
@@ -4005,8 +3886,8 @@ function renderInsights() {
           <div class="ctx-card-title">How Grades Are Calculated</div>
         </div>
         <div class="ctx-card-body">
-          <p class="ctx-body-text">Each metric uses <strong>two separate grading functions</strong> that answer different questions, and both are <strong>fixed once established</strong> — a grade is computed only from matches played up to and including the graded match, so later results never rewrite it. <strong>Match Grade</strong> is a z-score: the match value versus the mean and standard deviation of the team's performances to that point (z ≥ +1.25 Excellent · +0.5 Good · ±0.5 Typical · −1.25 Poor · below Abysmal, direction-aware). <strong>3-Match Form</strong> applies the same z-bands to the rolling average of the last three consecutive matches, against the same to-date baseline — because rolling averages are smoother, the identical bands are effectively a stricter test of sustained form. Both grades require four matches of history; earlier matches show as pending. A match can still grade Poor on Match Grade yet Good on 3-Match Form — a single-game dip inside a form window that tracks above baseline.</p>
-          <p class="ctx-body-text">A Z-score approach (standard deviation from the mean) was considered but rejected at this stage — with only 7 matches in the dataset, the standard deviation is still sensitive to single-game outliers. Min-max will remain the method until at least 8–10 matches are logged.</p>
+          <p class="ctx-body-text">Each metric uses <strong>two separate grading functions</strong> that answer different questions, and both are <strong>fixed once established</strong> — a grade is computed only from matches played up to and including the graded match, so later results never rewrite it. <strong>Match Grade</strong> places the match value on the season’s min–max range for that metric to date (see Formula below): higher position = better, direction-aware for negative metrics. <strong>3-Match Form</strong> applies the grade bands to the rolling average of the last three consecutive matches, measured against the <em>season mean</em> rather than the min/max range, with wider deviation bands (±10% Typical, ±35% Excellent/Abysmal) so rolling averages aren’t over-graded. Both grades require four matches of history; earlier matches show as pending. A match can still grade Poor on Match Grade yet Good on 3-Match Form — a single-game dip inside a form window that tracks above baseline.</p>
+          <p class="ctx-body-text">A Z-score approach (standard deviation from the mean) was considered but rejected — with a small dataset the standard deviation is too sensitive to single-game outliers. Min-max remains the current method; a move to Z-scores can be revisited as the sample grows.</p>
           <p class="ctx-body-text"><strong>Formula:</strong> Position = (Match Value − Season Worst) ÷ (Season Best − Season Worst)</p>
           <div class="ctx-grade-scale">
             <div class="ctx-grade-row">
@@ -4045,7 +3926,7 @@ function renderInsights() {
         </div>
         <div class="ctx-card-body">
           <p class="ctx-body-text"><strong>Grades are relative, not absolute.</strong> A grade of Excellent means this was NCC's best performance of the season for that metric — it does not mean it is objectively excellent by league standards. Equally, Abysmal means it was the team's worst showing this season, not that it was catastrophic in isolation.</p>
-          <p class="ctx-body-text"><strong>Small sample size.</strong> With 7 matches, the season range is building but grades will continue to recalibrate as more data arrives. A metric graded Excellent now may shift as stronger or weaker performances are recorded over the full season.</p>
+          <p class="ctx-body-text"><strong>Small sample size.</strong> With 14 matches, the season range is building but grades will continue to recalibrate as more data arrives. A metric graded Excellent now may shift as stronger or weaker performances are recorded over the full season.</p>
           <p class="ctx-body-text"><strong>Pressing metrics are raw match counts.</strong> Pressures, Counterpressures, Tackles+Interceptions, Ball Recoveries, Pressures in Opp. Half, and Counterpressures in Opp. Half are counted directly from the Match CSVs (raw StatsBomb events) for both teams. The Pressing Battle compares these head-to-head; higher volume = more intense pressing, not necessarily better defending.</p>
           <p class="ctx-body-text"><strong>3-Match Form activates from GW3 onwards.</strong> The Form column shows the average of the last 3 non-null values, graded against the <em>season mean</em> rather than the min/max range. The deviation bands are wider (±10% = Typical, ±35% = Excellent/Abysmal) to prevent hypersensitivity — rolling averages naturally smooth toward the centre, so tighter bands would produce artificially compressed grades. A Good or Excellent Form grade alongside a lower Match Grade signals positive trajectory: recent games are running above the season baseline even if the individual match underperformed.</p>
         </div>
@@ -4159,7 +4040,7 @@ function renderInsights() {
                 <td><span class="ctx-dot" style="background:#1565C0"></span><strong>InHouse Data sheet</strong></td>
                 <td>SOP zones — Zone 2/3, Passing Zone, Shooting Zone attempts, completions &amp; points</td>
                 <td>All 14 matches — complete</td>
-                <td>Team Event Data tab. Completion % calculated as Completions ÷ Attempts.</td>
+                <td>Team Event Data tab.</td>
               </tr>
               <tr>
                 <td><span class="ctx-dot" style="background:#8B4513"></span><strong>Impect Data sheet</strong></td>

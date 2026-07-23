@@ -1039,6 +1039,13 @@ def render_html(matches_arr, match_info_arr, DATA, match_report_data, bypass_seg
         sys.exit(f"ERROR: Template not found at {TEMPLATE}")
     html = TEMPLATE.read_text(encoding="utf-8")
 
+    # Fill header tokens from the data so the count/date never go stale.
+    # matches_arr is sorted by game_number, so the last entry is the latest match.
+    match_count = len(matches_arr)
+    updated_date = match_info_arr[-1]["date"] if match_info_arr else "—"  # long form, e.g. "Jul 18, 2026"
+    html = html.replace("{{MATCH_COUNT}}", str(match_count))
+    html = html.replace("{{UPDATED_DATE}}", updated_date)
+
     # Replace MATCHES block (lines that begin with "const MATCHES = [" through "];")
     new_matches = render_matches_block(matches_arr)
     html = replace_block(html, "const MATCHES = [", "];", new_matches)

@@ -677,6 +677,10 @@ def main():
     segments = build_bypass_segments(matches, sheet_data)
 
     html = TEMPLATE.read_text(encoding="utf-8")
+    # Fill header tokens from the data so the count/date never go stale.
+    # marr is sorted by game number, so the last entry is the latest match.
+    html = html.replace("{{MATCH_COUNT}}", str(len(marr)))
+    html = html.replace("{{UPDATED_DATE}}", miarr[-1]["date"] if miarr else "—")
     html = replace_block(html, "const MATCHES = [", "];", render_matches_block(marr))
     html = replace_block(html, "const DATA = {", "};", render_data_block(DATA))
     html = replace_block(html, "const MATCH_INFO = [", "];", render_match_info_block(miarr))
