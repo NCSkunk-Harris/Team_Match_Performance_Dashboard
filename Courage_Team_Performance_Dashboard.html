@@ -138,6 +138,9 @@
     line-height: 1.2;
   }
 
+  /* Season View pill: same box as a match pill, pinned far left, never shrinks */
+  .season-pill { flex-shrink: 0; margin-right: 4px; }
+
   .match-pill span.opp { font-size: 10px; color: var(--text-muted); font-weight: 400; }
   .match-pill span.loc { font-size: 9px; }
   .match-pill span.loc.home { color: var(--courage-red); }
@@ -1865,9 +1868,13 @@
 <!-- MATCH SELECTOR -->
 <div class="match-bar" id="match-bar">
   <div class="match-bar-label">Match</div>
+  <button class="match-pill season-pill" id="seasonBtn" onclick="selectMatch(-1, this)">
+    <span>Season View</span>
+    <span class="opp">All Matches</span>
+    <span class="loc" style="color:var(--courage-gold);">&#x25CF; Per 90 min</span>
+  </button>
   <div class="match-bar-pills-scroll" id="match-pills"></div>
   <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;padding-left:8px;">
-    <button class="match-pill-season disabled" id="seasonBtn" aria-disabled="true" title="Coming soon" disabled>Season View</button>
     <button class="match-pill-season" id="insightsBtn" onclick="openInsightsView(this)" style="border-color:rgba(19,38,75,0.4);color:var(--courage-navy);">Insights</button>
     <button class="match-pill-season" id="contextBtn" onclick="openContextView(this)" style="border-color:rgba(200,16,46,0.4);color:var(--courage-red);">Context &amp; Logic</button>
   </div>
@@ -1875,12 +1882,7 @@
 
 <!-- SUB-TAB NAV -->
 <div class="subtab-nav">
-  <div class="subtab active" onclick="selectSubtab('sop', this)">SOP Grading</div>
-  <div class="subtab" onclick="selectSubtab('packing', this)">Packing &amp; Progression</div>
-  <div class="subtab" onclick="selectSubtab('box-dom', this)">Box Domination</div>
-  <div class="subtab" onclick="selectSubtab('def-int', this)">Defensive Intensity</div>
-  <div class="subtab" onclick="selectSubtab('obv', this)">On-Ball Value</div>
-  <div class="subtab disabled" aria-disabled="true" title="Coming soon">Per-Match Report</div>
+  <div class="subtab active was-active" onclick="selectSubtab('matrix', this)">Stat Matrix</div>
 </div>
 
 <div class="main">
@@ -1895,17 +1897,17 @@
     <div class="season-stat">
       <div class="season-stat-label">Goals Scored</div>
       <div class="season-stat-value" id="stat-goals">20</div>
-      <div class="season-stat-sub">across all matches</div>
+      <div class="season-stat-sub" id="stat-goals-sub">across all matches</div>
     </div>
     <div class="season-stat">
       <div class="season-stat-label">Goals Conceded</div>
       <div class="season-stat-value" id="stat-conceded">19</div>
-      <div class="season-stat-sub">1.36 per match</div>
+      <div class="season-stat-sub" id="stat-conceded-sub">per 90</div>
     </div>
     <div class="season-stat">
-      <div class="season-stat-label">Avg xG</div>
+      <div class="season-stat-label">xG / 90</div>
       <div class="season-stat-value" id="stat-xg">1.53</div>
-      <div class="season-stat-sub">per match</div>
+      <div class="season-stat-sub">per 90 minutes</div>
     </div>
   </div>
 
@@ -1921,7 +1923,7 @@
   </div>
 
   <!-- ===================== SOP GRADING ===================== -->
-  <div class="subtab-content active" id="tab-sop">
+  <div class="subtab-content" id="tab-sop">
 
     <!-- Zone Progression Funnel (quick-read pitch view) -->
     <div class="table-section">
@@ -2006,6 +2008,28 @@
     <div id="match-insights-inner" style="padding:24px 0 40px;"></div>
   </div>
 
+  <!-- STAT MATRIX TAB (all metrics at once) -->
+  <div class="subtab-content active" id="tab-matrix">
+    <div class="table-section">
+      <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <span class="section-tag">All Metrics</span>
+          <span class="section-title">Stat Matrix</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <label for="matrixSort" style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">Sort</label>
+          <select id="matrixSort" onchange="setMatrixSort(this.value)" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;padding:5px 8px;border:1px solid var(--border-strong);border-radius:4px;background:var(--bg-card);color:var(--text-primary);cursor:pointer;">
+            <option value="category">By category</option>
+            <option value="strength">Biggest strengths</option>
+            <option value="weakness">Biggest weaknesses</option>
+          </select>
+        </div>
+      </div>
+      <div id="matrix-note" class="data-source-note" style="margin:0 0 12px;"></div>
+      <div id="stat-matrix"></div>
+    </div>
+  </div>
+
 </div><!-- /main -->
 
 <script>
@@ -2025,6 +2049,34 @@ const MATCHES = [
   { label: 'GW12 · M13', date: 'Jul 11', opp: 'Washington Spirit', loc: 'Home', result: 'L 0-2' },
   { label: 'GW13 · M14', date: 'Jul 18', opp: 'Bay FC', loc: 'Away', result: 'L 0-3' }
 ];
+
+// Actual match duration (minutes) per match, index-aligned to MATCHES.
+// Source: StatsBomb match totals ("Minutes" = P1 end + (P2 end − 45)). M14
+// (Jul 18 @ Bay FC) computed from its event CSV the same way (97.33).
+// Used to convert season totals into true per-90 rates — the Courage's games
+// run long (avg ~103 min), so per-90 ≠ per-match average.
+const MATCH_MINUTES = [97.4543, 98.5956, 107.2086, 99.2592, 106.2436, 103.4186, 103.0674, 107.4141, 101.5407, 105.6540, 102.2381, 103.0274, 102.1594, 97.3300];
+
+// Per-90 aggregate of a per-match value array (sum of values ÷ sum of minutes
+// over matches that have data, × 90). Handles nulls and negatives (OBV).
+function per90Agg(vals) {
+  let sv = 0, sm = 0;
+  for (let i = 0; i < vals.length; i++) {
+    const v = vals[i];
+    if (v !== null && v !== undefined && MATCH_MINUTES[i] != null) { sv += v; sm += MATCH_MINUTES[i]; }
+  }
+  return sm > 0 ? sv / sm * 90 : 0;
+}
+// Plain mean — used for metrics that are already rates (percentages, xG/shot).
+function seasonMeanAgg(vals) {
+  const c = vals.filter(v => v !== null && v !== undefined);
+  return c.length ? c.reduce((a, b) => a + b, 0) / c.length : 0;
+}
+// Row-aware season aggregate: percentages and per-shot ratios stay as means;
+// everything else is converted to per-90.
+function seasonPick(vals, row) {
+  return (row && (row.pct || row.ratio)) ? seasonMeanAgg(vals) : per90Agg(vals);
+}
 
 const DATA = {
   sop: {
@@ -2075,7 +2127,7 @@ const DATA = {
       { id:'spxg', label:'Set Piece xG', vals:[0.422,0.308,0.88,0.354,0.391,1.443,0.541,0.37,0.864,0.212,0.586,0.648,0.566,0.559], higherBetter:true, dec:3 },
       { id:'shots', label:'Shots', vals:[15,14,13,11,16,21,16,12,17,11,10,16,11,14], higherBetter:true },
       { id:'sot_pct', label:'Shots on Target %', vals:[0.3333,0.2143,0.1538,0.5455,0.5,0.1429,0.3125,0.0833,0.3529,0.3636,0.4,0.375,0.0909,0.2143], higherBetter:true, pct:true, dec:3 },
-      { id:'xgps', label:'xG/Shot', vals:[0.108,0.096,0.124,0.099,0.095,0.095,0.122,0.065,0.13,0.112,0.128,0.148,0.096,0.096], higherBetter:true, dec:3 },
+      { id:'xgps', label:'xG/Shot', vals:[0.108,0.096,0.124,0.099,0.095,0.095,0.122,0.065,0.13,0.112,0.128,0.148,0.096,0.096], higherBetter:true, dec:3, ratio:true },
       { id:'psxg', label:'Post-Shot xG', vals:[2.36,0.65,1.1,1.44,2.36,2.18,1.76,0.01,2.83,1.79,1.78,1.55,0.18,1.71], higherBetter:true, dec:2 },
       { id:'qc', label:'Quality Chances', vals:[1,2,3,2,1,1,0,0,4,0,0,1,2,2], higherBetter:true },
       { id:'bc', label:'Big Chances', vals:[1,1,1,0,2,1,2,0,1,1,2,2,0,1], higherBetter:true }
@@ -2089,7 +2141,7 @@ const DATA = {
       { id:'opp_spxg', label:'Opp. Set Piece xG', vals:[0.369,0.349,0.568,1.148,0.73,0.5,0.338,0.199,0.815,0.82,1.318,0.122,0.048,0.162], higherBetter:false, dec:3, context:'opp' },
       { id:'opp_shots', label:'Opp. Shots', vals:[17,10,14,16,16,7,11,9,13,17,17,16,8,14], higherBetter:false, context:'opp' },
       { id:'opp_sot_pct', label:'Opp. Shots on Target %', vals:[0.2941,0.1,0.5,0.375,0.125,0.2857,0.2727,0.2222,0.2308,0.1176,0.2941,0.25,0.625,0.4286], higherBetter:false, pct:true, dec:3, context:'opp' },
-      { id:'opp_xgps', label:'Opp. xG/Shot', vals:[0.113,0.065,0.077,0.103,0.087,0.112,0.204,0.05,0.073,0.077,0.099,0.084,0.119,0.115], higherBetter:false, dec:3, context:'opp' },
+      { id:'opp_xgps', label:'Opp. xG/Shot', vals:[0.113,0.065,0.077,0.103,0.087,0.112,0.204,0.05,0.073,0.077,0.099,0.084,0.119,0.115], higherBetter:false, dec:3, context:'opp', ratio:true },
       { id:'opp_psxg', label:'Opp. Post-Shot xG', vals:[1.49,0.39,2.32,2.11,0.12,1.61,1.42,1.07,0.95,0.94,2.56,1.67,1.28,2.52], higherBetter:false, dec:2, context:'opp' },
       { id:'opp_qc', label:'Opp. Quality Chances', vals:[1,1,1,2,1,1,1,0,0,1,3,2,1,0], higherBetter:false, context:'opp' },
       { id:'opp_bc', label:'Opp. Big Chances', vals:[2,0,0,1,1,1,2,0,1,0,1,0,1,2], higherBetter:false, context:'opp' }
@@ -2146,8 +2198,9 @@ const DATA = {
   }
 };
 
-let currentMatch = 0;
-let currentSubtab = 'sop';
+// Default selection = Season View (aggregate across all matches).
+let currentMatch = -1;
+let currentSubtab = 'matrix';
 
 function fmt(val, row) {
   if (val === null || val === undefined) return null;
@@ -2666,10 +2719,9 @@ function renderOBVRadars() {
     if (!combined.length) return { min: 0, max: 1, nccAvg: 0, oppAvg: 0 };
     const min = Math.min(...combined);
     const max = Math.max(...combined);
-    const nccValid = (row.vals || []).filter(v => v !== null && v !== undefined);
-    const oppValid = (oppRow ? oppRow.vals : []).filter(v => v !== null && v !== undefined);
-    const nccAvg = nccValid.length ? nccValid.reduce((a,b)=>a+b,0)/nccValid.length : 0;
-    const oppAvg = oppValid.length ? oppValid.reduce((a,b)=>a+b,0)/oppValid.length : 0;
+    // Season aggregate is per-90 (OBV is a value total, not a rate).
+    const nccAvg = per90Agg(row.vals || []);
+    const oppAvg = per90Agg(oppRow ? oppRow.vals : []);
     return { min, max, nccAvg, oppAvg };
   });
 
@@ -2762,7 +2814,7 @@ function renderOBVRadars() {
 
   // Centre label
   const centreLabel = isSeason
-    ? 'Season Avg'
+    ? 'Season /90'
     : (MATCHES[idx] ? `vs ${MATCHES[idx].opp.split(' ').slice(-1)[0]}` : '');
   html += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle"
     font-size="9.5" font-family="Barlow Condensed, sans-serif" fill="#9A9890" font-style="italic">${centreLabel}</text>`;
@@ -2860,8 +2912,9 @@ function renderSOPFunnel() {
     { name: 'Shoot Zone', att: 'SZ_att', comp: 'SZ_comp', pts: 'SZ_pts' }
   ];
 
-  const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
-  const val  = id => isSeason ? mean(zmap[id].vals) : zmap[id].vals[idx];
+  // Season = per-90 (zone counts). The completion % below is derived from the
+  // per-90 comp/att, so the ratio is preserved.
+  const val  = id => isSeason ? per90Agg(zmap[id].vals) : zmap[id].vals[idx];
 
   const rows = defs.map(d => {
     const att = val(d.att), comp = val(d.comp), pts = val(d.pts);
@@ -2914,8 +2967,7 @@ function renderPackingBattle() {
   const idx = isSeason ? 0 : currentMatch;
 
   const NCC = '#C8102E', OPP = '#5F5E5A', NCCm = '#E4A9B2', OPPm = '#B4B2A9';
-  const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
-  const pick = a => isSeason ? mean(a) : a[idx];
+  const pick = a => isSeason ? per90Agg(a) : a[idx];   // season = per-90 (counts)
 
 
   const rowsHTML = DATA.packing.battle.map(m => {
@@ -2958,13 +3010,14 @@ function renderBoxBattle() {
   const nccRows = DATA.boxdom.finishing;
   const oppRows = DATA.boxres.nullifying;
 
-  const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
-  const pick = a => isSeason ? mean(a) : a[idx];
+  // Season = per-90 for counts (xG, shots, PSxG, QC, BC); SOT% and xG/Shot are
+  // rates and stay as means (row-aware via seasonPick).
+  const pick = (a, row) => isSeason ? seasonPick(a, row) : a[idx];
 
 
   const rowsHTML = nccRows.map((nr, i) => {
     const orow = oppRows[i];
-    const nv = pick(nr.vals), ov = pick(orow.vals);
+    const nv = pick(nr.vals, nr), ov = pick(orow.vals, orow);
     const nccWon = nv > ov, oppWon = ov > nv;
 
     const mx = Math.max(nv, ov) || 1;
@@ -2996,8 +3049,10 @@ function renderDefBattle() {
   const idx = isSeason ? 0 : currentMatch;
 
   const NCC = '#C8102E', OPP = '#5F5E5A', NCCm = '#E4A9B2', OPPm = '#B4B2A9';
-  const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
-  const pick = a => isSeason ? mean(a) : a[idx];
+  // Season = per-90. PA (possession-adjusted) values are also put on a per-90
+  // basis: possession-adjustment handles possession share within a game, per-90
+  // handles match length — the two normalise different things.
+  const pick = a => isSeason ? per90Agg(a) : a[idx];
 
 
   host.innerHTML = DATA.defint.battle.map(m => {
@@ -3033,8 +3088,7 @@ function renderOBVBattle() {
 
   const NCC = '#C8102E', OPP = '#5F5E5A', NCCm = '#E4A9B2', OPPm = '#B4B2A9';
   const nccRows = DATA.obv.ncc, oppRows = DATA.obv.opp;
-  const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
-  const pick = a => isSeason ? mean(a) : a[idx];
+  const pick = a => isSeason ? per90Agg(a) : a[idx];   // season = per-90 (OBV totals)
 
 
   host.innerHTML = nccRows.map((nr, i) => {
@@ -3061,6 +3115,163 @@ function renderOBVBattle() {
 
 }
 
+// =====================================================================
+//  STAT MATRIX — every metric on one screen (Option B)
+//  Each metric is a compact tile: Courage value, opponent value (when a
+//  head-to-head exists), a tug bar, a 14-match sparkline, and an accent
+//  showing whether Courage is ahead. Season = per-90; single match = totals.
+// =====================================================================
+let matrixSort = 'category';
+function setMatrixSort(v) { matrixSort = v; renderStatMatrix(); }
+
+const MATRIX_CAT_COLOR = {
+  'SOP Grading': '#13264B', 'Packing': '#0F6E56', 'Box': '#C8102E',
+  'Defensive': '#BA7517', 'On-Ball Value': '#534AB7'
+};
+
+// Assemble the full metric list. Paired categories carry a Courage array and
+// an opponent array; SOP and OBV-net are Courage-only.
+function collectMatrixMetrics() {
+  const out = [];
+  DATA.sop.zones.forEach(r => out.push({ cat: 'SOP Grading', label: r.label, ncc: r.vals, opp: null, nrow: r, orow: null }));
+  DATA.packing.battle.forEach(m => out.push({ cat: 'Packing', label: m.label, ncc: m.ncc, opp: m.opp, nrow: m, orow: m }));
+  const deep = DATA.packing.volume.find(r => r.id === 'deep_prog');
+  if (deep) out.push({ cat: 'Packing', label: deep.label, ncc: deep.vals, opp: null, nrow: deep, orow: null });
+  DATA.boxdom.finishing.forEach((nr, i) => {
+    const orow = DATA.boxres.nullifying[i];
+    out.push({ cat: 'Box', label: nr.label, ncc: nr.vals, opp: orow ? orow.vals : null, nrow: nr, orow: orow || null });
+  });
+  DATA.defint.battle.forEach(m => out.push({ cat: 'Defensive', label: m.label, ncc: m.ncc, opp: m.opp, nrow: m, orow: m }));
+  DATA.obv.ncc.forEach((nr, i) => {
+    const orow = DATA.obv.opp[i];
+    out.push({ cat: 'On-Ball Value', label: nr.label, ncc: nr.vals, opp: orow ? orow.vals : null, nrow: nr, orow: orow || null });
+  });
+  DATA.obv.net.forEach(r => out.push({ cat: 'On-Ball Value', label: r.label, ncc: r.vals, opp: null, nrow: r, orow: null }));
+  return out;
+}
+
+function renderStatMatrix() {
+  const host = document.getElementById('stat-matrix');
+  if (!host) return;
+  const isSeason = currentMatch === -1;
+  const idx = isSeason ? 0 : currentMatch;
+
+  const fmtM = (v, row) => {
+    if (v === null || v === undefined) return '—';
+    if (row && row.pct) return (v * 100).toFixed(1) + '%';
+    if (row && (row.ratio || row.dec != null)) return v.toFixed(row.dec != null ? row.dec : 2);
+    return isSeason ? v.toFixed(1) : (Number.isInteger(v) ? String(v) : v.toFixed(1));
+  };
+  const agg = (vals, row) => vals ? (isSeason ? seasonPick(vals, row) : (vals[idx] ?? null)) : null;
+
+  // Build one enriched record per metric.
+  const recs = collectMatrixMetrics().map(m => {
+    const nv = agg(m.ncc, m.nrow);
+    const ov = m.opp ? agg(m.opp, m.orow) : null;
+    let nccAhead = null, margin = null;
+    if (ov !== null && nv !== null) {
+      nccAhead = (m.nrow.higherBetter === false) ? nv < ov : nv > ov;
+      const base = (m.nrow.higherBetter === false) ? (ov - nv) : (nv - ov);
+      const scale = (Math.abs(nv) + Math.abs(ov)) / 2 + 1e-6;
+      margin = base / scale;                       // + = Courage advantage
+    }
+    return { ...m, nv, ov, nccAhead, margin };
+  });
+
+  // Sort / group.
+  let ordered = recs.slice();
+  if (matrixSort === 'strength' || matrixSort === 'weakness') {
+    const paired = ordered.filter(r => r.margin !== null);
+    const solo   = ordered.filter(r => r.margin === null);
+    paired.sort((a, b) => matrixSort === 'strength' ? b.margin - a.margin : a.margin - b.margin);
+    ordered = paired.concat(solo);
+  }
+
+  const NCC = '#C8102E', OPP = '#5F5E5A', NCCm = '#F0BFC6', OPPm = '#C9C8C2';
+
+  function tug(nv, ov, ahead) {
+    const mx = Math.max(Math.abs(nv), Math.abs(ov)) || 1;
+    const lw = Math.round(Math.abs(nv) / mx * 100), rw = Math.round(Math.abs(ov) / mx * 100);
+    const lc = ahead ? NCC : NCCm, rc = !ahead ? OPP : OPPm;
+    return `<div style="display:flex;align-items:center;height:10px;margin-top:6px;">
+      <div style="flex:1;display:flex;justify-content:flex-end;"><div style="height:8px;width:${lw}%;background:${lc};border-radius:4px 0 0 4px;"></div></div>
+      <div style="width:1px;height:10px;background:var(--border-strong);"></div>
+      <div style="flex:1;display:flex;justify-content:flex-start;"><div style="height:8px;width:${rw}%;background:${rc};border-radius:0 4px 4px 0;"></div></div>
+    </div>`;
+  }
+
+  function tile(r) {
+    const accent = r.nccAhead === null ? 'var(--border-strong)' : (r.nccAhead ? 'var(--grade-good)' : 'var(--grade-poor)');
+    const dot = MATRIX_CAT_COLOR[r.cat] || '#888';
+    const spark = buildSparkline(r.ncc, r.nrow.higherBetter, currentMatch, isSeason);
+    const paired = r.ov !== null && r.nv !== null;
+    const valRow = paired
+      ? `<div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px;">
+           <span style="font-size:17px;font-weight:700;color:${r.nccAhead ? 'var(--grade-good)' : 'var(--text-primary)'};">${fmtM(r.nv, r.nrow)}</span>
+           <span style="font-size:10px;color:var(--text-muted);letter-spacing:0.08em;">NCC</span>
+           <span style="flex:1;"></span>
+           <span style="font-size:10px;color:var(--text-muted);letter-spacing:0.08em;">OPP</span>
+           <span style="font-size:15px;font-weight:600;color:var(--text-secondary);">${fmtM(r.ov, r.orow)}</span>
+         </div>${tug(r.nv, r.ov, r.nccAhead)}`
+      : `<div style="display:flex;align-items:baseline;gap:6px;">
+           <span style="font-size:17px;font-weight:700;color:var(--text-primary);">${fmtM(r.nv, r.nrow)}</span>
+           <span style="font-size:10px;color:var(--text-muted);letter-spacing:0.08em;">NCC</span>
+         </div>`;
+    return `<div style="border-left:3px solid ${accent};border-radius:0;background:var(--bg-surface);padding:8px 10px;display:flex;flex-direction:column;gap:2px;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="width:6px;height:6px;border-radius:50%;background:${dot};flex:none;"></span>
+        <span style="font-size:11.5px;font-weight:600;color:var(--text-secondary);line-height:1.2;">${r.label}</span>
+      </div>
+      ${valRow}
+      <div style="margin-top:2px;">${spark}</div>
+    </div>`;
+  }
+
+  const gridOpen = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;">`;
+  let html = '';
+  if (matrixSort === 'category') {
+    const cats = ['SOP Grading', 'Packing', 'Box', 'Defensive', 'On-Ball Value'];
+    cats.forEach(c => {
+      const items = ordered.filter(r => r.cat === c);
+      if (!items.length) return;
+      html += `<div style="display:flex;align-items:center;gap:8px;margin:14px 0 8px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:${MATRIX_CAT_COLOR[c]};"></span>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-primary);">${c}</span>
+        <span style="flex:1;height:1px;background:var(--border);"></span>
+        <span style="font-size:11px;color:var(--text-muted);">${items.length}</span>
+      </div>` + gridOpen + items.map(tile).join('') + `</div>`;
+    });
+  } else {
+    html = gridOpen + ordered.map(tile).join('') + `</div>`;
+  }
+  host.innerHTML = html;
+
+  const note = document.getElementById('matrix-note');
+  if (note) {
+    const scope = isSeason ? 'Per 90 minutes' : `${MATCHES[idx] ? MATCHES[idx].label + ' — ' + MATCHES[idx].opp : 'Match'} · match totals`;
+    note.innerHTML = `${scope} · ${recs.length} metrics · sparkline = 14-match trend · <span style="color:var(--grade-good);">green</span> = Courage ahead of opponent, <span style="color:var(--grade-poor);">red</span> = behind, grey = no direct opponent metric.`;
+  }
+}
+
+// Fill the season summary KPI cards. Goals are season totals; xG and the
+// goals-conceded sub-line are shown per-90 (total ÷ total minutes × 90).
+function populateSeasonSummary() {
+  const totMin = MATCH_MINUTES.reduce((a, b) => a + b, 0);
+  const gs = MATCH_REPORT_DATA.reduce((a, b) => a + b.ncc_goals, 0);
+  const gc = MATCH_REPORT_DATA.reduce((a, b) => a + b.opp_goals, 0);
+  const xgRow = DATA.boxdom.finishing.find(r => r.id === 'xg');
+  const gEl = document.getElementById('stat-goals');
+  const cEl = document.getElementById('stat-conceded');
+  const xEl = document.getElementById('stat-xg');
+  if (gEl) gEl.textContent = gs;
+  if (cEl) cEl.textContent = gc;
+  if (xEl) xEl.textContent = per90Agg(xgRow.vals).toFixed(2);
+  const gsSub = document.getElementById('stat-goals-sub');
+  const gcSub = document.getElementById('stat-conceded-sub');
+  if (gsSub) gsSub.textContent = (gs / totMin * 90).toFixed(2) + ' per 90';
+  if (gcSub) gcSub.textContent = (gc / totMin * 90).toFixed(2) + ' per 90';
+}
+
 function renderAll() {
   const isSeason = currentMatch === -1;
   const idx = isSeason ? 0 : currentMatch;
@@ -3080,12 +3291,14 @@ function renderAll() {
   });
 
   document.getElementById('seasonSummary').style.display = isSeason ? 'grid' : 'none';
+  if (isSeason) populateSeasonSummary();
   renderBypassSegments();
   renderSOPFunnel();
   renderPackingBattle();
   renderBoxBattle();
   renderDefBattle();
   renderOBVBattle();
+  renderStatMatrix();
 }
 
 function selectMatch(idx, el) {
@@ -3118,12 +3331,14 @@ function selectSubtab(name, el) {
     'box-dom':        'tab-box-dom',
     'def-int':        'tab-def-int',
     'obv':            'tab-obv',
+    'matrix':         'tab-matrix',
     'match-insights': 'tab-match-insights'
   };
   const target = document.getElementById(tabMap[name]);
   if (target) target.classList.add('active');
   if (name === 'match-insights') renderMatchInsights(currentMatch);
   if (name === 'obv') renderOBVBattle();
+  if (name === 'matrix') renderStatMatrix();
 }
 
 function buildMatchPills() {
@@ -3206,11 +3421,10 @@ function renderBypassSegments() {
 
   let nccVals, oppVals;
   if (isSeason) {
-    const avg = key => BYPASS_SEGMENT_LABELS.map((_, i) => {
-      const xs = BYPASS_SEGMENTS.map(e => e[key][i]).filter(v => v !== null && v !== undefined);
-      return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
-    });
-    nccVals = avg('ncc'); oppVals = avg('opp');
+    // Season = per-90 for each 15-min window (bypassed-opponent counts).
+    const agg = key => BYPASS_SEGMENT_LABELS.map((_, i) =>
+      per90Agg(BYPASS_SEGMENTS.map(e => e[key][i])));
+    nccVals = agg('ncc'); oppVals = agg('opp');
   } else {
     const entry = BYPASS_SEGMENTS[currentMatch];
     nccVals = entry ? entry.ncc : BYPASS_SEGMENT_LABELS.map(() => null);
@@ -3490,6 +3704,11 @@ function renderMatchInsights(matchIdx) {
 
 buildMatchPills();
 renderAll();
+// Reflect the default Season View selection in the pill's active state.
+if (currentMatch === -1) {
+  const sb = document.getElementById('seasonBtn');
+  if (sb) sb.classList.add('active');
+}
 
 // =====================================================================
 //  INSIGHTS ENGINE — season-level analysis
