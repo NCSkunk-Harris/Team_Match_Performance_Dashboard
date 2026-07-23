@@ -276,27 +276,6 @@
     margin-bottom: 32px;
   }
 
-  .table-section-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 10px;
-    padding-left: 2px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .table-section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
   /* METRICS TABLE */
   .metrics-table {
     width: 100%;
@@ -2948,14 +2927,12 @@ function renderPackingBattle() {
   const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
   const pick = a => isSeason ? mean(a) : a[idx];
 
-  let nccWins = 0, oppWins = 0, ties = 0;
 
   const rowsHTML = DATA.packing.battle.map(m => {
     const nv = pick(m.ncc), ov = pick(m.opp);
     const nccWon = m.higherBetter ? nv > ov : nv < ov;
     const oppWon = m.higherBetter ? ov > nv : ov < nv;
     const tie = nv === ov;
-    if (tie) ties++; else if (nccWon) nccWins++; else oppWins++;
 
     const mx = Math.max(nv, ov) || 1;
     const lw = Math.round(nv / mx * 100), rw = Math.round(ov / mx * 100);
@@ -2994,13 +2971,11 @@ function renderBoxBattle() {
   const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
   const pick = a => isSeason ? mean(a) : a[idx];
 
-  let nccWins = 0, oppWins = 0, ties = 0;
 
   const rowsHTML = nccRows.map((nr, i) => {
     const orow = oppRows[i];
     const nv = pick(nr.vals), ov = pick(orow.vals);
     const nccWon = nv > ov, oppWon = ov > nv;
-    if (nv === ov) ties++; else if (nccWon) nccWins++; else oppWins++;
 
     const mx = Math.max(nv, ov) || 1;
     const lw = Math.round(nv / mx * 100), rw = Math.round(ov / mx * 100);
@@ -3034,12 +3009,10 @@ function renderDefBattle() {
   const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
   const pick = a => isSeason ? mean(a) : a[idx];
 
-  let nccWins = 0, oppWins = 0, ties = 0;
 
   host.innerHTML = DATA.defint.battle.map(m => {
     const nv = pick(m.ncc), ov = pick(m.opp);
     const nccWon = nv > ov, oppWon = ov > nv;
-    if (nv === ov) ties++; else if (nccWon) nccWins++; else oppWins++;
 
     const mx = Math.max(nv, ov) || 1;
     const lw = Math.round(nv / mx * 100), rw = Math.round(ov / mx * 100);
@@ -3073,13 +3046,11 @@ function renderOBVBattle() {
   const mean = a => { const c = a.filter(v => v !== null && v !== undefined); return c.length ? c.reduce((x, y) => x + y, 0) / c.length : 0; };
   const pick = a => isSeason ? mean(a) : a[idx];
 
-  let nccWins = 0, oppWins = 0, ties = 0;
 
   host.innerHTML = nccRows.map((nr, i) => {
     const orow = oppRows[i];
     const nv = pick(nr.vals), ov = pick(orow.vals);
     const nccWon = nv > ov, oppWon = ov > nv;
-    if (nv === ov) ties++; else if (nccWon) nccWins++; else oppWins++;
 
     const maxPos = Math.max(nv, ov, 0.001);
     const lw = Math.round(Math.max(0, nv) / maxPos * 100);
@@ -3256,7 +3227,6 @@ function renderBypassSegments() {
     oppVals = entry ? entry.opp : BYPASS_SEGMENT_LABELS.map(() => null);
   }
 
-  let nccWins = 0, oppWins = 0, ties = 0;
 
   const rowsHTML = BYPASS_SEGMENT_LABELS.map((label, i) => {
     const nv = nccVals[i], ov = oppVals[i];
@@ -3267,7 +3237,6 @@ function renderBypassSegments() {
         <div style="flex:1;"></div><div style="width:42px;flex:none;"></div></div>`;
     }
     const nccWon = nv > ov, oppWon = ov > nv;
-    if (nv === ov) ties++; else if (nccWon) nccWins++; else oppWins++;
 
     const mx = Math.max(nv, ov) || 1;
     const lw = Math.round(nv / mx * 100), rw = Math.round(ov / mx * 100);
