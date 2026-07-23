@@ -1882,7 +1882,13 @@
 
 <!-- SUB-TAB NAV -->
 <div class="subtab-nav">
-  <div class="subtab active was-active" onclick="selectSubtab('matrix', this)">Stat Matrix</div>
+  <div class="subtab match-only active was-active" onclick="selectSubtab('sop', this)">SOP Grading</div>
+  <div class="subtab match-only" onclick="selectSubtab('packing', this)">Packing &amp; Progression</div>
+  <div class="subtab match-only" onclick="selectSubtab('box-dom', this)">Box Domination</div>
+  <div class="subtab match-only" onclick="selectSubtab('def-int', this)">Defensive Intensity</div>
+  <div class="subtab match-only" onclick="selectSubtab('obv', this)">On-Ball Value</div>
+  <div class="subtab match-only disabled" aria-disabled="true" title="Coming soon">Per-Match Report</div>
+  <div class="subtab season-only" onclick="selectSubtab('matrix', this)">Stat Matrix</div>
 </div>
 
 <div class="main">
@@ -3312,9 +3318,8 @@ function selectMatch(idx, el) {
   } else {
     if (el) el.classList.add('active');
   }
-  // Restore active subtab in the performance nav
-  const activeSub = document.querySelector('.subtab.was-active') || document.querySelector('.subtab:first-child');
-  if (activeSub && !document.querySelector('.subtab.active')) activeSub.classList.add('active');
+  // Show the right tabs for this view (Season = Stat Matrix only).
+  applyViewMode(idx === -1);
   renderAll();
   if (currentSubtab === 'match-insights') renderMatchInsights(idx);
 }
@@ -3339,6 +3344,19 @@ function selectSubtab(name, el) {
   if (name === 'match-insights') renderMatchInsights(currentMatch);
   if (name === 'obv') renderOBVBattle();
   if (name === 'matrix') renderStatMatrix();
+}
+
+// Season View shows only the Stat Matrix tab; the per-match view keeps its
+// original tabs (SOP, Packing, Box, Defensive, OBV). Toggle which nav buttons
+// are visible and switch to a valid tab for the current view.
+function applyViewMode(isSeason) {
+  document.querySelectorAll('.subtab.season-only').forEach(b => b.style.display = isSeason ? '' : 'none');
+  document.querySelectorAll('.subtab.match-only').forEach(b => b.style.display = isSeason ? 'none' : '');
+  const matchTabs = ['sop', 'packing', 'box-dom', 'def-int', 'obv'];
+  const target = isSeason ? 'matrix' : (matchTabs.includes(currentSubtab) ? currentSubtab : 'sop');
+  const el = Array.from(document.querySelectorAll('.subtab'))
+    .find(b => (b.getAttribute('onclick') || '').includes("'" + target + "'"));
+  if (el) selectSubtab(target, el);
 }
 
 function buildMatchPills() {
@@ -3703,6 +3721,7 @@ function renderMatchInsights(matchIdx) {
 }
 
 buildMatchPills();
+applyViewMode(currentMatch === -1);
 renderAll();
 // Reflect the default Season View selection in the pill's active state.
 if (currentMatch === -1) {
